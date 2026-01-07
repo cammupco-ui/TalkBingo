@@ -84,8 +84,17 @@ class _SplashScreenState extends State<SplashScreen> {
         print('SplashScreen: Auth Callback Detected. Waiting for Session...');
         if (mounted) setState(() => _progress = 0.8); // Visual Feedback
         
+        // Attempt Manual Exchange immediately if code is present (Robustness for Web)
+        if (kIsWeb && inviteCode != null && inviteCode.length > 20) { // Long code = Auth Code
+           try {
+             print('SplashScreen: Attempting Manual Code Exchange for $inviteCode');
+             await Supabase.instance.client.auth.exchangeCodeForSession(inviteCode);
+           } catch (e) {
+             print('SplashScreen: Manual Exchange Error (might be auto-handled): $e');
+           }
+        }
+
         // Wait for session with a timeout (e.g., 5 seconds)
-        // logic: polling or stream listener
         final completer = Completer<Session?>();
         final subscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
            if (data.session != null) {
