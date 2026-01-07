@@ -3,7 +3,7 @@
 # Navigate to the app directory
 cd app
 
-# Deploy trigger: Force update
+# Deploy trigger: Force update (Safety Net)
 # Create .env file from Vercel Environment Variables
 echo "Generating .env file..."
 echo "SUPABASE_URL=$SUPABASE_URL" > .env
