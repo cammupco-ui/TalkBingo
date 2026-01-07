@@ -1,0 +1,199 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:talkbingo_app/models/game_session.dart';
+
+class AppLocalizations {
+  static const Map<String, Map<String, String>> _localizedValues = {
+    'en': {
+      'new_game': 'NEW\nGAME',
+      'resume_game': 'RESUME\nGAME',
+      'find_players': 'FIND\nPLAYERS',
+      'welcome_back': 'Welcome Back,',
+      'vp_label': 'VP',
+      'manage_points': 'Manage Points',
+      'account_email': 'Account Email',
+      'nickname': 'Nickname',
+      'gender': 'Gender',
+      'birth_date': 'Birth Date',
+      'sns': 'SNS / Instagram',
+      'address': 'Address',
+      'phone_number': 'Phone Number',
+      'allow_region': 'Allow Region Access',
+      'agree_retention': 'Agree to Personal Information Retention',
+      'retention_sub': 'Your data will be stored locally and securely.',
+      'save_changes': 'Save Changes',
+      'sign_out': 'Sign Out',
+      'cancel': 'Cancel',
+      'male': 'Male',
+      'female': 'Female',
+      'app_settings': 'App Settings',
+      'profile_settings': 'Profile Settings',
+      'language': 'Language',
+      'invite_code_title': 'INVITE CODE',
+      'next': 'NEXT',
+      'error_invalid_code': 'Please enter a valid 6-character code.',
+      'error_prefix': 'Error: ',
+      'join': 'JOIN',
+      'bingo_history': 'BINGO HISTORY',
+      'view_all': 'VIEW ALL',
+      'start_game': 'Start Game',
+      'relationship': 'Relationship',
+      'intimacy_level': 'Intimacy Level',
+      'guest_settings': 'Guest Settings',
+      'select_relation': 'Select specific relationship',
+      'preparing_game': 'Preparing Game...',
+      'gen_codename': 'Generating CodeName...',
+      'sync_info': 'Syncing Host & Guest Info...',
+      'load_questions': 'Loading Questions...',
+      // Relations
+      'Friend': 'Friend',
+      'Family': 'Family',
+      'Lover': 'Lover',
+      // Intimacy Titles
+      'level_1_title': 'First Meeting',
+      'level_2_title': 'Getting to Know',
+      'level_3_title': 'Close Friends',
+      'level_4_title': 'Consulting',
+      'level_5_title': 'Deep Trust',
+      'settings_saved': 'Settings Saved!',
+      'start_new_game': 'Start New Game?',
+      'start_new_warning': 'Current progress will be lost.',
+      'start_new': 'Start New',
+      'coming_soon': 'Coming Soon',
+      'service_unavailable': 'This service is not yet available.',
+      'sign_up_google': 'SIGN UP GOOGLE',
+      'enter_invite_code': 'INVITE CODE',
+      'already_account': 'Already have an account? ',
+      'log_in': 'Log in',
+      'continue_google': 'Continue with Google',
+      'quick_secure_login': 'Quick & Secure Login without Passwords',
+      'verification_expired': 'Verification link expired. Please send email again.',
+      'verification_timeout': 'Verification timed out. Try refreshing or use the manual link.',
+      'invalid_link': 'Invalid link: No code found',
+      'error_occurred': 'Error occurred',
+      'verify': 'Verify',
+      'enter_link_title': 'Enter Verification Link',
+      'menu_resume': 'Resume',
+      'menu_pause': 'Pause',
+      'menu_restart': 'Restart Game',
+      'menu_end': 'End Game',
+      'menu_save': 'Save Game',
+      'menu_load': 'Load Game',
+    },
+    'ko': {
+      'new_game': '새 게임',
+      'resume_game': '이어하기',
+      'find_players': '친구 찾기',
+      'welcome_back': '환영합니다,',
+      'vp_label': 'VP',
+      'manage_points': '포인트 관리',
+      'account_email': '계정 이메일',
+      'nickname': '닉네임',
+      'gender': '성별',
+      'birth_date': '생년월일',
+      'sns': 'SNS / 인스타그램',
+      'address': '주소 (시/도)',
+      'phone_number': '휴대폰 번호',
+      'allow_region': '지역 정보 접근 허용',
+      'agree_retention': '개인정보 보관 동의',
+      'retention_sub': '데이터는 안전하게 로컬에 저장됩니다.',
+      'save_changes': '변경사항 저장',
+      'sign_out': '로그아웃',
+      'cancel': '취소',
+      'male': '남성',
+      'female': '여성',
+      'app_settings': '앱 설정',
+      'profile_settings': '프로필 설정',
+      'language': '언어',
+      'invite_code_title': '초대 코드',
+      'next': '다음',
+      'error_invalid_code': '유효한 6자리 코드를 입력해주세요.',
+      'error_prefix': '오류: ',
+      'join': '참여',
+      'bingo_history': '빙고 기록',
+      'view_all': '전체 보기',
+      'start_game': '게임 시작',
+      'relationship': '관계',
+      'intimacy_level': '친밀도',
+      'guest_settings': '게스트 설정',
+      'select_relation': '세부 관계 선택',
+      'preparing_game': '게임 준비 중...',
+      'gen_codename': '코드네임 생성 중...',
+      'sync_info': '호스트 & 게스트 동기화...',
+      'load_questions': '질문지 불러오는 중...',
+      // Relations
+      'Friend': '친구',
+      'Family': '가족',
+      'Lover': '연인',
+      // Intimacy Titles (Simplified for mapping, real data is in list)
+      'level_1_title': '첫 만남 (어색한 사이)',
+      'level_2_title': '알아가는 단계',
+      'level_3_title': '친한 사이',
+      'level_4_title': '고민 상담 가능',
+      'level_5_title': '깊은 신뢰',
+      'settings_saved': '설정이 저장되었습니다!',
+       'start_new_game': '새 게임을 시작하시겠습니까?',
+      'start_new_warning': '현재 진행 중인 게임 기록은 저장되지 않습니다.',
+      'start_new': '새로 시작',
+      'coming_soon': '준비 중',
+      'service_unavailable': '아직 이용할 수 없는 서비스입니다.',
+      'sign_up_google': 'Google로 시작하기',
+      'enter_invite_code': '초대 코드 입력하기',
+      'already_account': '이미 계정이 있으신가요? ',
+      'log_in': '로그인',
+      'continue_google': 'Google로 계속하기',
+      'quick_secure_login': '비밀번호 없이 빠르고 안전하게 로그인하세요',
+      'verification_expired': '인증 링크가 만료되었습니다. 다시 시도해주세요.',
+      'verification_timeout': '인증 시간이 초과되었습니다. 다시 시도해주세요.',
+      'invalid_link': '유효하지 않은 링크입니다.',
+      'error_occurred': '오류가 발생했습니다.',
+      'verify': '인증하기',
+      'enter_link_title': '인증 링크 입력',
+      'menu_resume': '재개',
+      'menu_pause': '일시정지',
+      'menu_restart': '게임 재시작',
+      'menu_end': '게임 종료',
+      'menu_save': '게임 저장',
+      'menu_load': '게임 불러오기',
+    },
+  };
+
+  static String get(String key) {
+    final lang = GameSession().language; // 'en' or 'ko'
+    return _localizedValues[lang]?[key] ?? _localizedValues['en']?[key] ?? key;
+  }
+
+  // Font Switcher
+  static TextStyle getTextStyle({
+    required TextStyle baseStyle, 
+    FontWeight? fontWeight, 
+    double? fontSize,
+    Color? color,
+  }) {
+    final lang = GameSession().language;
+    final size = fontSize ?? baseStyle.fontSize;
+    final weight = fontWeight ?? baseStyle.fontWeight;
+    final col = color ?? baseStyle.color;
+
+    if (lang == 'ko') {
+       // Korean Font
+       // Use secondary font if needed, but primary is fine for consistency
+       // Assuming 'EliceDigitalBaeum_Regular.ttf' is registered as 'EliceDigitalBaeum'
+       return TextStyle(
+         fontFamily: 'EliceDigitalBaeum', 
+         fontSize: size,
+         fontWeight: weight,
+         color: col,
+         height: baseStyle.height,
+       );
+    } else {
+       // English Font (Alexandria)
+       return GoogleFonts.alexandria(
+         fontSize: size,
+         fontWeight: weight,
+         color: col,
+         height: baseStyle.height,
+       );
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -16,10 +17,11 @@ Future<void> main() async {
   await AdState.initialize(); // Initialize Ads
   await dotenv.load(fileName: ".env");
   
-  // Enable Immersive Sticky Mode (Hides Status Bar, Swiping reveals it transparently)
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  // Enable Edge-to-Edge (Status Bar visible but transparent, App draws behind it)
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent, // Transparent status bar
+    statusBarIconBrightness: Brightness.light, // White icons for dark background
     systemNavigationBarColor: Colors.transparent, // Transparent nav bar
   ));
   
@@ -49,32 +51,6 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
   @override
   void initState() {
     super.initState();
-    
-    // Listen to auth state changes for Magic Link redirection
-    // Commented out to let LoginScreen handle the flow for now
-    // Listen to auth state changes for Magic Link redirection and Realtime Login
-    // Listen to auth state changes for Magic Link redirection and Realtime Login
-    /* 
-    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      final session = data.session;
-      final event = data.event;
-      
-      // If we are signed in...
-      if (session != null && (event == AuthChangeEvent.signedIn || event == AuthChangeEvent.passwordRecovery)) {
-         // IGNORE Anonymous users (Guests) - let them stay on their flow (Invite/GuestInfo)
-         if (session.user.isAnonymous == true) {
-            debugPrint('Auth State Change: $event (Anonymous). No global redirect.');
-            return;
-         }
-
-         // For verified users (Host), redirect to Home
-         // NOTE: Disabled global redirect because it forces Home even for new users who need HostInfo Setup.
-         // Let SignupScreen/SplashScreen handle the routing.
-         debugPrint('Auth State Change: $event. Global redirect DISABLED.');
-         // navigatorKey.currentState?.pushNamedAndRemoveUntil('/home', (route) => false);
-      }
-    }); 
-    */
   }
 
   @override
@@ -82,14 +58,16 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
     final session = Supabase.instance.client.auth.currentSession;
     
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       title: 'TalkBingo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.hostPrimary),
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.hostPrimary, brightness: Brightness.dark), // Force Dark Theme base?
+        scaffoldBackgroundColor: const Color(0xFF121212), // Ensure global dark background
         useMaterial3: true,
         // Set Alexandria as the default font, with EliceDigitalBaeum as fallback for Korean
         textTheme: GoogleFonts.alexandriaTextTheme().apply(
-          fontFamilyFallback: ['EliceDigitalBaeum'],
+          fontFamilyFallback: ['EliceDigitalBaeum', 'EliceDigitalCodingverH'],
         ),
       ),
       initialRoute: '/',
@@ -110,7 +88,7 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
                 ),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Colors.black, // Changed from white to black for dark theme background compatibility
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1),
@@ -122,7 +100,12 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
                   child: ClipRect(
                     child: ValueListenableBuilder<bool>(
                       valueListenable: AdState.showAd,
-                      builder: (context, showAd, _) {
+                      builder: (context, showAdValue, _) {
+                        // Check if keyboard is open
+                        final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+                        // Hide Ad if keyboard is open
+                        final showAd = showAdValue && !isKeyboardOpen;
+                        
                         final bottomPadding = showAd ? 94.0 : 0.0;
                         
                         return Stack(
@@ -131,7 +114,7 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
                             Padding(
                               padding: EdgeInsets.only(
                                 bottom: bottomPadding,
-                                top: 32.0, 
+                                top: 0, // Removed hardcoded padding to fill screen
                               ),
                               child: child ?? const SizedBox.shrink(),
                             ),
@@ -144,7 +127,7 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
                                 right: 0,
                                 height: 94,
                                 child: Container(
-                                  color: Colors.grey[200],
+                                  color: Colors.transparent,
                                   alignment: Alignment.topCenter,
                                   padding: const EdgeInsets.only(top: 10),
                                   child: Column(
@@ -174,50 +157,51 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
                                 ),
                               ),
 
-                            // Dev Mode Toggle Button (Hidden, Top-Left)
-                            Positioned(
-                              top: 0,
-                              left: 0,
-                              child: MouseRegion(
-                                onEnter: (_) => setState(() => _isHoveringDev = true),
-                                onExit: (_) => setState(() => _isHoveringDev = false),
-                                child: GestureDetector(
-                                  onTap: DevConfig.toggle,
-                                  child: Container(
-                                    width: 80,
-                                    height: 80,
-                                    alignment: Alignment.topLeft,
-                                    padding: const EdgeInsets.all(16),
-                                    color: Colors.transparent, // Hit test target
-                                    child: AnimatedOpacity(
-                                      duration: const Duration(milliseconds: 200),
-                                      opacity: _isHoveringDev ? 1.0 : 0.0,
-                                      child: Container(
-                                        width: 40,
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          color: isDev ? Colors.red : Colors.grey[700],
-                                          shape: BoxShape.circle,
-                                          boxShadow: [
-                                            if (_isHoveringDev)
-                                              BoxShadow(
-                                                color: Colors.black.withOpacity(0.3),
-                                                blurRadius: 8,
-                                                offset: const Offset(0, 4),
-                                              ),
-                                          ],
-                                        ),
-                                        child: Icon(
-                                          isDev ? Icons.developer_mode : Icons.bug_report,
-                                          color: Colors.white,
-                                          size: 20,
+                            // Dev Mode Toggle Button (Hidden area, visible on hover/active)
+                            if (!kReleaseMode)
+                              Positioned(
+                                bottom: bottomPadding + 100, // Above Ad/Nav bar
+                                left: 0,
+                                child: MouseRegion(
+                                  onEnter: (_) => setState(() => _isHoveringDev = true),
+                                  onExit: (_) => setState(() => _isHoveringDev = false),
+                                  child: GestureDetector(
+                                    onTap: DevConfig.toggle,
+                                    child: Container(
+                                      width: 80,
+                                      height: 80,
+                                      alignment: Alignment.topLeft,
+                                      padding: const EdgeInsets.all(16),
+                                      color: Colors.transparent, // Hit test target
+                                      child: AnimatedOpacity(
+                                        duration: const Duration(milliseconds: 200),
+                                        opacity: _isHoveringDev ? 1.0 : 0.0,
+                                        child: Container(
+                                          width: 40,
+                                          height: 40,
+                                          decoration: BoxDecoration(
+                                            color: isDev ? Colors.red : Colors.grey[700],
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              if (_isHoveringDev)
+                                                BoxShadow(
+                                                  color: Colors.black.withOpacity(0.3),
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0, 4),
+                                                ),
+                                            ],
+                                          ),
+                                          child: Icon(
+                                            isDev ? Icons.developer_mode : Icons.bug_report,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
                           ],
                         );
                       },

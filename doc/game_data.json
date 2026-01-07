@@ -1,0 +1,80 @@
+{
+  "colors": {
+    "darkPurple": "#0C0219",
+    "purple": "#6B14EC",
+    "deepPurple": "#2E0645",
+    "lightPurple": "#FDF9FF"
+  },
+  "canvas": {
+    "width": 380,
+    "height": 693
+  },
+  "goal": {
+    "top": 32,
+    "bottom": 154,
+    "left": 44,
+    "right": 336,
+    "width": 292,
+    "height": 122
+  },
+  "playArea": {
+    "startY": 522,
+    "height": 161
+  },
+  "ball": {
+    "radius": 22.5,
+    "initialX": 202,
+    "initialY": 572
+  },
+  "goalkeeper": {
+    "width": 38,
+    "height": 34,
+    "initialX": 202,
+    "y": 108,
+    "speed": 4
+  },
+  "physics": {
+    "wallBounceEnergyLoss": 0.8,
+    "dragSpeedMultiplier": 0.3,
+    "maxSpeedMultiplier": 3.0,
+    "minDragDistance": 10,
+    "dragPowerDivisor": 30
+  },
+  "rendering": {
+    "borderWidth": 10,
+    "fieldPadding": 5,
+    "touchTolerance": 20,
+    "goalFrameWidth": 12,
+    "netLineOpacity": 0.1
+  },
+  "soccerBallPattern": {
+    "centerPentagon": {
+      "radius": 8
+    },
+    "surroundingPentagons": [
+      {"offsetX": 0, "offsetY": -16, "radius": 7, "rotation": 0},
+      {"offsetX": 14, "offsetY": -8, "radius": 7, "rotation": 1.047},
+      {"offsetX": 14, "offsetY": 8, "radius": 7, "rotation": -1.047},
+      {"offsetX": 0, "offsetY": 16, "radius": 7, "rotation": 3.14159},
+      {"offsetX": -14, "offsetY": 8, "radius": 7, "rotation": 1.047},
+      {"offsetX": -14, "offsetY": -8, "radius": 7, "rotation": -1.047}
+    ]
+  },
+  "svgPath": {
+    "goalkeeperArms": "M236 105C244.201 105 251.249 109.937 254.335 117H276.5C280.642 117 284 120.358 284 124.5C284 128.642 280.642 132 276.5 132H254.739C251.902 139.593 244.583 145 236 145H206C197.417 145 190.098 139.593 187.261 132H164.5C160.358 132 157 128.642 157 124.5C157 120.358 160.358 117 164.5 117H187.665C190.751 109.937 197.799 105 206 105H236Z"
+  },
+  "timing": {
+    "goalResetDelay": 1500,
+    "savedResetDelay": 1000,
+    "missResetDelay": 500,
+    "frameRate": 60
+  },
+  "messages": {
+    "goal": "골!!!",
+    "saved": "막혔다!",
+    "instructions": {
+      "line1": "공을 잡고 드래그하여 슛 방향과 파워를 조정하세요",
+      "line2": "손가락을 떼면 공이 발사됩니다!"
+    }
+  }
+}

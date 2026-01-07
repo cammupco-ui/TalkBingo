@@ -10,9 +10,9 @@
     - Next.js (Admin/Web) 및 API 서버 프로젝트 생성
     - Git 저장소 설정 및 브랜치 전략 수립
 - [x] **데이터베이스 설계 및 구축**
-    - Neo4j 인스턴스 생성 및 연결 설정
-    - 초기 노드(User, GameSession, Question, CodeName) 및 관계(Relationships) 스키마 설계
-    - 테스트용 더미 데이터 생성
+    - Supabase 프로젝트 생성 및 설정
+    - 초기 테이블(profiles, game_sessions, questions) 및 관계(FK) 스키마 설계
+    - 테스트용 더미 데이터 생성 (SQL/Seed)
 - [x] **디자인 시스템 구현**
     - **Logo Assets**: 메인 로고 (24px, 36px, 48px) 리소스 준비
     - Color Palette (Host: Pink, Guest: Purple) 적용
@@ -30,7 +30,7 @@
         - **[MODIFY] LoginScreen**: 이메일 입력란 제거 -> "Google로 계속하기" 버튼 추가
         - **[MODIFY] SignupScreen**: 별도 가입 절차 없이 로그인 화면으로 통합 (소셜 로그인은 가입/로그인 통합)
         - **Google Cloud & Supabase 설정**: `doc/GOOGLE_AUTH_SETUP.md` 가이드에 따라 설정 필요
-        - **데이터 동기화**: 이메일 인증 완료된 유저 정보만 Neo4j 데이터베이스에 저장/동기화 (`auth.users` -> Neo4j `User` node)
+        - **데이터 동기화**: 이메일 인증 완료된 유저 정보만 Supabase `profiles` 테이블에 저장/동기화 (`auth.users` -> `public.profiles`)
     - 호스트 정보 입력 화면 (`/host/setup` -> `/host/info`)
     - 게임 세션 생성 및 초대 코드 발급 로직
     - **호스트 흐름**: Host Setup (Code) -> [Skip InviteCode] -> Host Info -> **Game Setup (Guest Age/Relation)** -> **Waiting (Loading Data)** -> **Game Screen (Immediate Entry)**
@@ -87,10 +87,10 @@
     - 게임 로그(시스템 메시지) 표시
 
 ## 4. AI Agent 및 데이터 연동 (Phase 4: AI & Data)
-**목표**: Neo4j와 AI 로직을 연동하여 지능형 질문 추천 시스템을 구축합니다.
+**목표**: Supabase와 AI 로직을 연동하여 지능형 질문 추천 시스템을 구축합니다.
 
-- [ ] **GraphDB 스키마 구축**
-    - `DATABASE_SCHEMA.md` 기반 노드/관계 생성
+- [ ] **SQL DB 스키마 구축**
+    - `DATABASE_SCHEMA.md` 기반 테이블/FK 생성
     - CodeName, Keyword, Holiday, Trend 테이블 구현
 - [ ] **CodeName & 키워드 시스템 구현**
     - 사용자 정보 기반 CodeName 생성기 개발 (`[MP]-[CP]-[IR]-[SubRel]-[Intimacy]`)

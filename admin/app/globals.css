@@ -1,15 +1,40 @@
 @import "tailwindcss";
 
+@theme {
+  /* Unified Color Palette */
+  --color-host-primary: #BD0558;
+  --color-host-secondary: #FF0077;
+  --color-host-dark: #610C39;
+  --color-host-bg: #F4E7E8; /* Player A Bubble */
+
+  --color-guest-primary: #430887;
+  --color-guest-secondary: #6B14EC;
+  --color-guest-dark: #2E0645;
+  --color-guest-bg: #F0E7F4; /* Player B Bubble */
+
+  --color-bg-dark: #0C0219; /* Main App BG */
+  --color-bg-light: #FFF9FB;
+  --color-input-bg: #F5F5F5; /* Engraved Input */
+
+  --color-text-primary: #3d3528; /* Warm Dark for Light BG */
+  --color-text-secondary: #6b6254;
+
+  /* Typography */
+  --font-title: "NURA", sans-serif;
+  --font-body: "Alexandria", "EliceDigitalBaeum", "EliceDigitalCodingverH", sans-serif;
+  
+  /* Spacing Scale (4px base) */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+}
+
+/* Base Styles */
 :root {
   --background: #ffffff;
   --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +47,24 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
+}
+
+/* Component Utilities */
+@layer utilities {
+  .btn-primary {
+    @apply h-[48px] px-6 rounded-lg font-bold text-base flex items-center justify-center transition-opacity hover:opacity-90;
+  }
+
+  .btn-medium {
+    @apply h-[38px] px-4 rounded-lg font-medium text-sm flex items-center justify-center border border-transparent transition-all;
+  }
+
+  .input-engraved {
+    @apply h-[38px] px-3 py-2 rounded-lg bg-[var(--color-input-bg)] border-none text-sm placeholder-gray-400 focus:ring-1 focus:ring-[var(--color-host-primary)];
+  }
+
+  .card-glass {
+    @apply bg-white/80 backdrop-blur-xl rounded-xl border border-white/20 shadow-sm p-4;
+  }
 }
