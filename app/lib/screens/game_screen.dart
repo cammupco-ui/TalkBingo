@@ -22,6 +22,8 @@ import 'package:talkbingo_app/utils/dev_config.dart';
 import 'package:talkbingo_app/widgets/floating_score.dart';
 import 'package:talkbingo_app/screens/reward_screen.dart';
 import 'package:confetti/confetti.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:animated_flip_counter/animated_flip_counter.dart';
 
 class GameScreen extends StatefulWidget {
   final bool isReviewMode;
@@ -444,6 +446,16 @@ class _GameScreenState extends State<GameScreen> {
                             ),
                           ),
                         ),
+
+                        // Scoreboard (Left)
+                        Positioned(
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          child: Center(
+                            child: _buildScorePill(),
+                          ),
+                        ),
                         
                         // Menu Icon / Host Menu (Right)
                         Positioned(
@@ -468,12 +480,48 @@ class _GameScreenState extends State<GameScreen> {
                                       }
                                     },
                                     itemBuilder: (context) => [
-                                        PopupMenuItem(value: 'Play', child: Text(AppLocalizations.get('menu_resume'))),
-                                        PopupMenuItem(value: 'Pause', child: Text(AppLocalizations.get('menu_pause'))),
-                                        PopupMenuItem(value: 'Restart', child: Text(AppLocalizations.get('menu_restart'))),
-                                        PopupMenuItem(value: 'End', child: Text(AppLocalizations.get('menu_end'))),
-                                        PopupMenuItem(value: 'Save', child: Text(AppLocalizations.get('menu_save'))),
-                                        PopupMenuItem(value: 'Open', child: Text(AppLocalizations.get('menu_load'))),
+                                        PopupMenuItem(
+                                          value: 'Play', 
+                                          child: _HoverMenuItem(
+                                            text: AppLocalizations.get('menu_resume'), 
+                                            hoverColor: _themePrimary,
+                                          )
+                                        ),
+                                        PopupMenuItem(
+                                          value: 'Pause', 
+                                          child: _HoverMenuItem(
+                                            text: AppLocalizations.get('menu_pause'), 
+                                            hoverColor: _themePrimary,
+                                          )
+                                        ),
+                                        PopupMenuItem(
+                                          value: 'Restart', 
+                                          child: _HoverMenuItem(
+                                            text: AppLocalizations.get('menu_restart'), 
+                                            hoverColor: _themePrimary,
+                                          )
+                                        ),
+                                        PopupMenuItem(
+                                          value: 'End', 
+                                          child: _HoverMenuItem(
+                                            text: AppLocalizations.get('menu_end'), 
+                                            hoverColor: _themePrimary,
+                                          )
+                                        ),
+                                        PopupMenuItem(
+                                          value: 'Save', 
+                                          child: _HoverMenuItem(
+                                            text: AppLocalizations.get('menu_save'), 
+                                            hoverColor: _themePrimary,
+                                          )
+                                        ),
+                                        PopupMenuItem(
+                                          value: 'Open', 
+                                          child: _HoverMenuItem(
+                                            text: AppLocalizations.get('menu_load'), 
+                                            hoverColor: _themePrimary,
+                                          )
+                                        ),
                                     ],
                                   )
                                 : const SizedBox.shrink(),
@@ -721,86 +769,127 @@ class _GameScreenState extends State<GameScreen> {
 
 
   Widget _buildMessageTicker() {
-    // Filter for the latest message from the PARTNER
-    final lastPartnerMsg = _session.messages.lastWhere(
-      (m) => m['sender'] != _session.myRole,
+    // 1. Get the absolute latest CHAT message (Sent OR Received)
+    final lastChatMsg = _session.messages.lastWhere(
+      (m) => m['type'] == 'chat',
       orElse: () => {},
     );
     
-    final hasMsg = lastPartnerMsg.isNotEmpty;
-    final displayText = hasMsg ? lastPartnerMsg['text'] : "No messages yet";
+    final bool hasMsg = lastChatMsg.isNotEmpty;
+    final String text = hasMsg ? lastChatMsg['text'] : "대화를 시작해보세요!";
+    
+    // Determine Sender Context
+    final bool isMe = hasMsg && (lastChatMsg['sender'] == _session.myRole);
+    final String senderLabel = isMe ? "나" : (_isHost ? (_session.guestNickname ?? 'Guest') : (_session.hostNickname ?? 'Host')); 
+    
+    // Theme Colors
+    final Color msgColor = isMe ? _themePrimary : (hasMsg ? _themeSecondary : Colors.grey);
+    final Color bubbleColor = isMe ? _themePrimary.withOpacity(0.05) : (hasMsg ? AppColors.playerB.withOpacity(0.1) : Colors.grey[50]!);
+    final IconData icon = isMe ? Icons.check_circle_outline : Icons.chat_bubble_outline;
 
-    return Container(
-      width: double.infinity,
-      // 1. Maximize width excluding page margin (16)
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _themePrimary.withOpacity(0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius: 12,
-            backgroundColor: Colors.grey[200],
-            child: const Icon(Icons.person, size: 16, color: Colors.grey),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: GestureDetector(
-              onTap: () {
-                // Navigate to Chat Board (Page 0)
-                _pageController.animateToPage(
-                  0, 
-                  duration: const Duration(milliseconds: 300), 
-                  curve: Curves.easeInOut
-                );
-              },
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min, // Wrap content vertically
-                children: [
-                   Text(
-                    displayText,
-                    style: GoogleFonts.alexandria(
-                      fontSize: 13,
-                      height: 1.4, // Explicit line height to prevent clipping
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w500,
-                      textStyle: const TextStyle(fontFamilyFallback: ['EliceDigitalBaeum']),
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: _isTickerExpanded ? 4 : 2, // Show 2 lines by default, 4 when expanded
-                    softWrap: true,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Expand Button
-          GestureDetector(
-            onTap: () => setState(() => _isTickerExpanded = !_isTickerExpanded),
-            child: Icon(
-              _isTickerExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-              size: 20,
-              color: Colors.grey,
-            ),
-          ),
-        ],
+    return GestureDetector(
+       onTap: () {
+          _pageController.animateToPage(
+             0, 
+             duration: const Duration(milliseconds: 300), 
+             curve: Curves.easeInOut
+          );
+       },
+       child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        // Increased padding for larger size (approx 2x visual weight)
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        decoration: BoxDecoration(
+          color: bubbleColor,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: msgColor.withOpacity(0.3), width: 1.5),
+          boxShadow: [
+             BoxShadow(
+                color: msgColor.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+             )
+          ]
+        ),
+        child: Row(
+          children: [
+             // Content Area: Flexibly handles Left/Right alignment
+             Expanded(
+               child: Row(
+                 mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+                 crossAxisAlignment: CrossAxisAlignment.start,
+                 children: [
+                   // Partner Avatar (Left)
+                   if (!isMe) ...[
+                     CircleAvatar(
+                       radius: 16, // Slightly larger avatar
+                       backgroundColor: msgColor.withOpacity(0.2),
+                       child: Icon(icon, size: 18, color: msgColor),
+                     ),
+                     const SizedBox(width: 12),
+                   ],
+
+                   // Message Text Column
+                   Flexible(
+                     child: Column(
+                        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                            // Sender Label
+                            if (hasMsg)
+                              Text(
+                                senderLabel,
+                                style: GoogleFonts.alexandria(
+                                   fontSize: 11, 
+                                   color: msgColor, 
+                                   fontWeight: FontWeight.bold
+                                ),
+                              ),
+                            const SizedBox(height: 4),
+                            // Message Text (Max 3 lines)
+                            Text(
+                              text,
+                              maxLines: 3, // Increased lines
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: isMe ? TextAlign.right : TextAlign.left,
+                              style: GoogleFonts.doHyeon(
+                                 fontSize: 16, // Slightly larger font
+                                 color: Colors.black87,
+                                 height: 1.3,
+                              ),
+                            ),
+                        ],
+                     ),
+                   ),
+
+                   // Self Avatar (Right)
+                   if (isMe) ...[
+                     const SizedBox(width: 12),
+                     CircleAvatar(
+                       radius: 16, 
+                       backgroundColor: msgColor.withOpacity(0.2),
+                       child: Icon(icon, size: 18, color: msgColor),
+                     ),
+                   ],
+                 ],
+               ),
+             ),
+             
+             // Fixed "Chat >" Indicator on the far right
+             const SizedBox(width: 12),
+             Column(
+               mainAxisAlignment: MainAxisAlignment.center,
+               children: [
+                 Icon(Icons.chevron_right, color: msgColor.withOpacity(0.4), size: 20),
+               ],
+             )
+          ],
+        ),
       ),
     );
   }
+
 
   Widget _buildChatView() {
     return Container(
@@ -1337,6 +1426,39 @@ class _GameScreenState extends State<GameScreen> {
       );
   }
 
+  Widget _buildScorePill() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _themePrimary.withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))
+        ]
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.stars_rounded, color: const Color(0xFFFFD700), size: 20),
+          const SizedBox(width: 6),
+          // Rolling Counter
+          AnimatedFlipCounter(
+            value: _session.ep,
+            duration: const Duration(milliseconds: 1000), // Slow satisfying roll
+            textStyle: GoogleFonts.alexandria(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text("EP", style: GoogleFonts.alexandria(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
+        ],
+      )
+    ).animate(target: 1).shimmer(delay: 500.ms, duration: 1500.ms, color: Colors.white);
+  }
+
   Widget _buildBingoTile(int index) {
     String owner = _session.tileOwnership[index];
     bool isHovered = _hoveredIndex == index;
@@ -1402,7 +1524,21 @@ class _GameScreenState extends State<GameScreen> {
                       ),
                   ],
                 ),
-                child: Center(child: icon),
+                child: Center(child: icon)
+                     
+                      .animate(key: ValueKey(owner)) // Animate when owner changes
+                      .scale(
+                          duration: 400.ms, 
+                          curve: Curves.elasticOut, 
+                          begin: (owner.isNotEmpty && owner != 'LOCKED' && owner != 'X') ? const Offset(0.8, 0.8) : const Offset(1, 1)
+                       )
+                       .then() // Ensure scale completes or doesn't conflict? Actually just chaining.
+                       .animate(target: (owner == 'A' || owner == 'B') ? 1 : 0) // Conditional target
+                       .shimmer(
+                          delay: 200.ms, 
+                          duration: 1000.ms, 
+                          color: Colors.white.withOpacity(0.8),
+                       ),
               ),
               Positioned.fill(
                 child: Material(
@@ -1628,6 +1764,7 @@ class _GameScreenState extends State<GameScreen> {
           // Note: If both won, My Win logic takes precedence for My Screen.
           int myLines = (_session.myRole == 'A') ? linesA : linesB;
           if (myLines >= 1) {
+              _confettiController.play(); // 🎉 JUICY CONFETTI 🎉
               _showBingoDialog(lines: myLines, isWinner: true);
           }
       } else if (oppWon) {
@@ -2249,6 +2386,36 @@ class _HoverableMenuItemState extends State<_HoverableMenuItem> {
                 height: 24,
                 // Removed colorFilter to show original SVG colors
               ),
+      ),
+    );
+  }
+}
+
+class _HoverMenuItem extends StatefulWidget {
+  final String text;
+  final Color hoverColor;
+
+  const _HoverMenuItem({required this.text, required this.hoverColor});
+
+  @override
+  _HoverMenuItemState createState() => _HoverMenuItemState();
+}
+
+class _HoverMenuItemState extends State<_HoverMenuItem> {
+  // ignore: unused_field
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: Text(
+        widget.text,
+        style: TextStyle(
+          color: _isHovered ? widget.hoverColor : Colors.black87,
+          fontWeight: _isHovered ? FontWeight.bold : FontWeight.normal,
+        ),
       ),
     );
   }

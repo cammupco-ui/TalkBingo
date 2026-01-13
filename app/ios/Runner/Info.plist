@@ -53,8 +53,31 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>io.supabase.talkbingo</string>
+				<string>talkbingo</string>
 			</array>
 		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>kftc-bankpay</string>
+		<string>ispmobile</string>
+		<string>itms-apps</string>
+		<string>hdcardappcardansimclick</string>
+		<string>shinhan-sr-ansimclick</string>
+		<string>kb-acp</string>
+		<string>mpocket.online.ansimclick</string>
+		<string>lottesmartpay</string>
+		<string>lotteappcard</string>
+		<string>cloudpay</string>
+		<string>nhappcardansimclick</string>
+		<string>nhallonepayansimclick</string>
+		<string>citispay</string>
+		<string>citicardappkr</string>
+		<string>payco</string>
+		<string>kakaotalk</string>
+		<string>lpayapp</string>
+		<string>wooripay</string>
+		<string>com.wooricard.wcard</string>
 	</array>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-3940256099942544~1458002511</string>

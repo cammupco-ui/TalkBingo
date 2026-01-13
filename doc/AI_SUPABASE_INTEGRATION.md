@@ -6,6 +6,18 @@ TalkBingo의 AI 에이전트가 Supabase(PostgreSQL)를 활용하여 사용자 �
 
 ---
 
+---
+
+## 🔒 보안 및 개인정보 보호 (Security & Privacy Guardrails)
+
+**[중요]** 본 문서의 모든 AI 기능은 `doc/Security_Plan.md`의 **"4. 서비스 데이터 및 AI 활용 정책"**을 엄격히 준수해야 합니다.
+
+1.  **PII 마스킹 필수**: AI 모델에 데이터를 전송하기 전, 이메일/전화번호/실명 등 식별 가능한 정보는 반드시 **[MASKED]** 처리하거나 해시값으로 변환해야 합니다.
+2.  **가명 처리 (Pseudonymization)**: `user_id` 대신 일회성 `session_id` 또는 `alias_id`를 사용하여 AI가 특정 유저를 식별하지 못하도록 합니다.
+3.  **데이터 격리**: AI 학습용 데이터와 서비스 운영 데이터는 물리적으로 분리됩니다.
+
+---
+
 ## 🧠 AI 에이전트 핵심 기능
 
 ### 1. 사용자 관계 파악 (Relationship Analysis)
@@ -140,6 +152,8 @@ def summarize_game_session(game_id, supabase):
     # 3. Aggregate Scores (from rewards table)
     scores = supabase.table('rewards').select('vp, ap, ep, ts').eq('game_id', game_id).execute()
     
+    # Note: If user migrated account during session, ensure 'user_id' in logs matches the new authenticated ID.
+    
     # AI summary generation
     summary = ai_model.summarize_game({
         'questions': questions,
@@ -191,8 +205,9 @@ class RealTimeDataProcessor:
         # 1. 채팅 메시지를 Supabase에 저장
         self.save_chat_message(user_id, game_id, message_content)
         
-        # 2. 대화 맥락 분석
-        context = self.analyze_conversation_context(game_id)
+        # 2. 대화 맥락 분석 (PII Masking 적용)
+        safe_context = self.mask_pii(message_content) 
+        context = self.analyze_conversation_context(game_id, safe_context)
         
         # 3. AI 모델로 응답 생성
         ai_response = self.ai_model.generate_response(context)

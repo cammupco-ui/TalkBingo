@@ -193,9 +193,10 @@ class GameSession with ChangeNotifier {
        String lvl = parts[4];
        
        // Add Generic Variants
-       candidateCodes.add('$base-*- $lvl'); // Generic SubRel
+       candidateCodes.add('$base-*-$lvl'); // Generic SubRel
        candidateCodes.add('$base-$sub-*');  // Generic Intimacy
-       candidateCodes.add('$base-*-*');     // Broad
+       candidateCodes.add('$base-*-*');     // Broad (Gender-Relation)
+       candidateCodes.add('*-*-*-*-*');     // Universal (Safety Net)
     }
 
     debugPrint('Fetching questions for candidates: $candidateCodes');
@@ -271,22 +272,56 @@ class GameSession with ChangeNotifier {
 
   Future<void> _processQuestionsWithRatioAndUniqueness(List<dynamic> rawQuestions) async {
     final prefs = await SharedPreferences.getInstance();
-    List<String> playedIds = prefs.getStringList('played_questions') ?? [];
+    
+    // Load History Map: {"q_id": "2024-01-01T12:00:00"}
+    Map<String, String> playedDates = {};
+    if (prefs.containsKey('played_questions_dates')) {
+       try {
+         playedDates = Map<String, String>.from(jsonDecode(prefs.getString('played_questions_dates')!));
+       } catch (e) {
+         debugPrint('Error parsing played dates: $e');
+         // Fallback to legacy list if map fails
+         List<String> legacyList = prefs.getStringList('played_questions') ?? [];
+         for (var id in legacyList) {
+            // Treat legacy items as "old" (or recent? Let's say recent to be safe, set to now)
+            // Or better, just ignore legacy if format changes. 
+            // Let's migrate legacy to "today" to prevent immediate repeat.
+            playedDates[id] = DateTime.now().toIso8601String();
+         }
+       }
+    } else {
+       // Legacy Fallback
+       List<String> legacyList = prefs.getStringList('played_questions') ?? [];
+       for (var id in legacyList) {
+          playedDates[id] = DateTime.now().subtract(const Duration(days: 1)).toIso8601String(); // just placeholder
+       }
+    }
 
-    // 1. Filter Uniqueness
+    final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
+
+    // 1. Filter Uniqueness (Exclude if played within 30 days)
     List<dynamic> pool = rawQuestions.where((q) {
-      return !playedIds.contains(q['id'].toString());
+      final qId = q['id'].toString();
+      if (!playedDates.containsKey(qId)) return true; // Never played
+
+      final lastPlayedStr = playedDates[qId];
+      if (lastPlayedStr == null) return true;
+
+      final lastPlayed = DateTime.tryParse(lastPlayedStr);
+      if (lastPlayed == null) return true; // Parse error, treat as play-able
+
+      // If played BEFORE 30 days ago, it is re-usable (return true).
+      // If played AFTER 30 days ago (recent), it is filtered (return false).
+      return lastPlayed.isBefore(thirtyDaysAgo);
     }).toList();
 
     if (pool.length < 25) {
-      debugPrint('⚠️ Not enough new questions (${pool.length}). Resetting played history to usage full pool.');
-      // If we reset, we still prefer unused ones if possible, but for simplicity
-      // we'll just use the full raw list and clear history for next time.
-      // Or better: Use unused + some used. 
-      // Current simplicity: Reset history logic.
-      playedIds = [];
-      await prefs.setStringList('played_questions', []);
+      debugPrint('⚠️ Not enough fresh questions (${pool.length}). dipping into recent history.');
+      // Fallback Strategy: If not enough, include the "oldest" matching items from recent history?
+      // Or just simply use the rawQuestions but prioritize unplayed.
+      // Simple logic: Use rawQuestions, but shuffle to mix.
       pool = List.from(rawQuestions);
+      // Optional: Sort by usage date? For now, random fallback.
     }
     
     // 2. Parse & Segregate
@@ -334,15 +369,20 @@ class GameSession with ChangeNotifier {
     questions = selected.map((s) => s['content'] as String).toList();
     options = selected.map((s) => s['options'] as Map<String, dynamic>).toList();
 
-    // 5. Update Played IDs
-    // We only append new IDs. If we reset above, we start fresh.
-    List<String> newIds = selected.map((s) => s['id'] as String).toList();
+    // 5. Update Played Dates
+    final nowStr = DateTime.now().toIso8601String();
+    for (var s in selected) {
+       playedDates[s['id'].toString()] = nowStr;
+    }
     
-    // Manage size of history? Maybe keep last 1000? For now just append.
-    Set<String> uniqueHistory = {...playedIds, ...newIds};
-    await prefs.setStringList('played_questions', uniqueHistory.toList());
+    // Clean up very old entries? (Optional optimization)
+    // playedDates.removeWhere((k, v) => DateTime.parse(v).isBefore(olderThan60Days));
+    
+    await prefs.setString('played_questions_dates', jsonEncode(playedDates));
+    // Legacy support (optional, maybe clear it to save space)
+    // await prefs.setStringList('played_questions', playedDates.keys.toList());
 
-    debugPrint('✅ Balanced Selection: ${questions.length} questions. (History Size: ${uniqueHistory.length})');
+    debugPrint('✅ Balanced Selection: ${questions.length} questions. (History Size: ${playedDates.length})');
 
     gameStatus = 'playing';
     await _syncGameState();
@@ -723,6 +763,11 @@ class GameSession with ChangeNotifier {
     // Broadcast Stream
   final _gameEventController = StreamController<Map<String, dynamic>>.broadcast();
   Stream<Map<String, dynamic>> get gameEvents => _gameEventController.stream;
+  
+  // TEST HARNESS ONLY: Inject simulated network event
+  void injectTestEvent(Map<String, dynamic> event) {
+     _gameEventController.add(event);
+  }
 
   Future<void> sendGameEvent(Map<String, dynamic> payload) async {
     if (_gameChannel == null) {
@@ -1071,6 +1116,27 @@ class GameSession with ChangeNotifier {
      addPoints(v: v, a: a, e: e);
   }
   
+  Future<void> chargePointsSecurely(int amount) async {
+    try {
+      // Securely increment on server
+      final res = await _supabase.rpc('charge_vp', params: {'amount': amount});
+      
+      // Update local state with server response (new total) if returned, or just increment
+      if (res != null) {
+        vp = res as int;
+      } else {
+        vp += amount;
+      }
+      saveHostInfoToPrefs();
+      notifyListeners();
+      debugPrint("Charged $amount VP. New Balance: $vp");
+    } catch (e) {
+      debugPrint("Error charging VP: $e");
+      // Fallback? Or throw? For now just log.
+      throw e;
+    }
+  }
+
   void addPoints({int v = 0, int a = 0, int e = 0}) {
     vp += v;
     ap += a;
@@ -1084,6 +1150,7 @@ class GameSession with ChangeNotifier {
       'sender': myRole,
       'text': text,
       'timestamp': DateTime.now().toIso8601String(),
+      'type': 'chat',
     };
     messages.add(newMessage);
     notifyListeners();
@@ -1199,6 +1266,12 @@ class GameSession with ChangeNotifier {
       if (state['relationSub'] != null) relationSub = state['relationSub'];
       if (state['intimacyLevel'] != null) intimacyLevel = state['intimacyLevel'];
       if (state['guestGender'] != null) guestGender = state['guestGender'];
+      
+      // Check for Trust Score Update (Host Side)
+      if (state['guestRating'] != null && !hostRatingProcessed) {
+         double rating = (state['guestRating'] as num).toDouble();
+         _processTrustScoreUpdate(rating);
+      }
     }
     notifyListeners();
   }
@@ -1377,9 +1450,16 @@ class GameSession with ChangeNotifier {
     messages = [];
     currentTurn = 'A';
     myRole = '';
+    hostRatingProcessed = false; // Reset flag
     // do not reset Host info or points
     notifyListeners();
   }
+
+  // ... (previous methods)
+
+  // In _loadFromMap (partial update shown here for context, but I need to target the actual method body or end of it)
+  // Since replace_file_content targets specific lines, I'll target the end of _loadFromMap which is around line 1224.
+
 
   int _calculateLines(String role) {
     int count = 0;
@@ -1429,9 +1509,50 @@ class GameSession with ChangeNotifier {
      notifyListeners();
   }
 
+  bool hostRatingProcessed = false;
+
+  void _processTrustScoreUpdate(double newRating) async {
+    if (hostId == null) return;
+    
+    // 1. Calculate New Weighted Average
+    double currentScore = hostTrustScore; 
+    int currentCount = hostTrustCount;
+    
+    double newScore = ((currentScore * currentCount) + newRating) / (currentCount + 1);
+    int newCount = currentCount + 1;
+    
+    // 2. Update Local State
+    hostTrustScore = newScore;
+    hostTrustCount = newCount;
+    hostRatingProcessed = true; // Mark as processed for this session
+    
+    // 3. Persist Local
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('hostTrustScore', hostTrustScore);
+    await prefs.setInt('hostTrustCount', hostTrustCount);
+    
+    // 4. Update Remote (Profiles Table)
+    // Note: Assuming RLS allows Host to update OWN profile
+    try {
+      await _supabase.from('profiles').update({
+        'trust_score': hostTrustScore,
+        'trust_count': hostTrustCount,
+      }).eq('id', hostId!);
+      
+      debugPrint("✅ Trust Score Updated: $newScore ($newCount ratings)");
+      notifyListeners();
+      
+      // Optional: Show Toast/Snack via Service or Listener? 
+      // Since this is Model, we just notify.
+    } catch (e) {
+      debugPrint("Error updating Trust Score: $e");
+    }
+  }
+
   @override
   void dispose() {
     _gameChannel?.unsubscribe();
     super.dispose();
   }
 }
+

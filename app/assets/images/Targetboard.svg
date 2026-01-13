@@ -1,5 +1,10 @@
-<svg width="112" height="34" viewBox="0 0 112 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M0 5C0 2.23858 2.23858 0 5 0H107C109.761 0 112 2.23858 112 5C112 7.76142 109.761 10 107 10H5C2.23858 10 0 7.76142 0 5Z" fill="#2E0645"/>
-<path d="M17 17C17 14.2386 19.2386 12 22 12H90.4C93.1614 12 95.4 14.2386 95.4 17C95.4 19.7614 93.1614 22 90.4 22H22C19.2386 22 17 19.7614 17 17Z" fill="#430887"/>
-<path d="M34 29C34 26.2386 36.2386 24 39 24H73.8C76.5614 24 78.8 26.2386 78.8 29C78.8 31.7614 76.5614 34 73.8 34H39C36.2386 34 34 31.7614 34 29Z" fill="#6B14EC"/>
+<svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Tier 1: Top (Back) - Widest, Darkest -->
+  <rect x="10" y="0" width="180" height="30" rx="15" fill="#2A103E" />
+  
+  <!-- Tier 2: Middle - Medium -->
+  <rect x="40" y="35" width="120" height="30" rx="15" fill="#4B0082" />
+  
+  <!-- Tier 3: Bottom (Front) - Smallest, Brightest -->
+  <rect x="70" y="70" width="60" height="30" rx="15" fill="#8A2BE2" />
 </svg>

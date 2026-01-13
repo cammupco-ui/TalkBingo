@@ -6,6 +6,7 @@ import 'package:talkbingo_app/games/physics/game_engine.dart';
 import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/foundation.dart'; // For kIsWeb, defaultTargetPlatform
 import 'dart:async'; // For StreamSubscription
 
 class TargetShooterGame extends StatefulWidget {
@@ -37,9 +38,16 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
   final List<GameEntity> _bullets = [];
   final List<Map<String, dynamic>> _stuckArrows = []; // {x, y, angle} relative to Target
   
-  // Constants
-  static const double kArrowW = 18.0;
-  static const double kArrowH = 100.0;
+  // Platform & Responsive Config
+  bool get _isMobile => !kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android);
+
+  // Constants (Relative)
+  // Constants (Top-Down Perspective)
+  double get kArrowW => _gameSize.width * 0.05; // 5% width (Slim)
+  double get kArrowH => _gameSize.width * 0.25; // 25% width (Long)
+  double get kTargetW => _gameSize.width * 0.40; // 40% width (Wide Bar)
+  double get kTargetH => _gameSize.width * 0.20; // 20% width (Approx 2:1 Ratio)
+  double get kPlayerS => _gameSize.width * 0.35; // Bow Size
   
   // Game State
   int _score = 0;
@@ -50,7 +58,8 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
 
   // Sync
   DateTime _lastSync = DateTime.now();
-  DateTime _lastAimSync = DateTime.now(); // For aim throttling
+  DateTime _lastAimSync = DateTime.now();
+  DateTime _lastTimeSync = DateTime.now(); // For timer sync
   StreamSubscription? _eventSub;
   int _lastKnownRound = 0;
   bool _isWaitingForStart = true;
@@ -58,6 +67,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
   // Spectator State
   double _remoteAimAngle = 0;
   double _remoteDrawAmt = 0;
+  int _remoteScore = 0; // Track opponent score locally
   
   // Size
   Size _gameSize = Size.zero;
@@ -65,9 +75,10 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
   @override
   void initState() {
     super.initState();
-    // Initialize Defaults
-    _target = GameEntity(x: 0, y: 0, width: 160, height: 40, color: Colors.orange);
-    _player = GameEntity(x: 0, y: 0, width: 160, height: 160, color: AppColors.hostPrimary);
+    super.initState();
+    // Initialize Defaults (Sizes will be updated in LayoutBuilder)
+    _target = GameEntity(x: 0, y: 0, width: 100, height: 30, color: Colors.orange);
+    _player = GameEntity(x: 0, y: 0, width: 100, height: 100, color: AppColors.hostPrimary);
     
     // Setup Vibration Animation
     _vibController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
@@ -102,65 +113,94 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
           _isRoundActive = true;
           setState(() {});
        }
-    } else if (payload['eventType'] == 'target_move') {
-       if (!isShooter) {
-          final double normX = (payload['x'] as num).toDouble();
-          final double normVX = (payload.containsKey('vx')) ? (payload['vx'] as num).toDouble() : 0.0;
-          double newX = normX * (_gameSize.width - _target.width);
-          if ((_target.x - newX).abs() > 20) {
-             _target.x = newX;
-          } else {
-             _target.x = _target.x * 0.8 + newX * 0.2;
-          }
-          _target.vx = normVX * _gameSize.width;
-       }
-    } else if (payload['eventType'] == 'aim') {
-       if (!isShooter) {
-          setState(() {
-             _remoteAimAngle = (payload['angle'] as num).toDouble();
-             _remoteDrawAmt = (payload['draw'] as num).toDouble();
-          });
-          // If released (draw goes to 0 from high), trigger vibe?
-          // Simplification: Just sync state. If draw resets to 0, visually it snaps back.
-       }
-    } else if (payload['eventType'] == 'shot') {
-       if (!isShooter) {
-          final double normX = (payload['x'] as num).toDouble();
-          final double normY = (payload['y'] as num).toDouble();
-          final double normVX = (payload['vx'] as num).toDouble();
-          final double normVY = (payload['vy'] as num).toDouble();
-          final b = GameEntity(
-            x: normX * _gameSize.width,
-            y: normY * _gameSize.height,
+     } else if (payload['eventType'] == 'score_update') {
+         // Real-time Score Sync
+         if (payload.containsKey('score')) {
+            setState(() {
+               // Update the score of the player who sent this
+               // If I am shooter, opponent sent it? No, Shooter sends their score.
+               // If I am spectator, Shooter sent it.
+               if (!isShooter) {
+                  // I am Spectator, update Shooter's score (which is 'activePlayer')
+                  _remoteScore = (payload['score'] as num).toInt();
+                  // Also update local score tracker for UI if needed
+               }
+            });
+         }
+     } else if (payload['eventType'] == 'time_sync') {
+         if (!isShooter && payload.containsKey('time')) {
+             double serverTime = (payload['time'] as num).toDouble();
+             // Soft sync: if difference is large, snap. Else lerp?
+             // For simplicity, just snap for now, or use as authoritative
+             if ((_timeLeft - serverTime).abs() > 2.0) {
+                 _timeLeft = serverTime;
+             }
+         }
+     } else if (payload['eventType'] == 'target_move') {
+        if (!isShooter) {
+           final double normX = (payload['x'] as num).toDouble();
+           final double normVX = (payload.containsKey('vx')) ? (payload['vx'] as num).toDouble() : 0.0;
+           double newX = normX * (_gameSize.width - _target.width);
+           if ((_target.x - newX).abs() > 20) {
+              _target.x = newX;
+           } else {
+              _target.x = _target.x * 0.8 + newX * 0.2;
+           }
+           _target.vx = normVX * _gameSize.width;
+        }
+     } else if (payload['eventType'] == 'aim') {
+        if (!isShooter) {
+           setState(() {
+              _remoteAimAngle = (payload['angle'] as num).toDouble();
+              _remoteDrawAmt = (payload['draw'] as num).toDouble();
+           });
+           // If released (draw goes to 0 from high), trigger vibe?
+           // Simplification: Just sync state. If draw resets to 0, visually it snaps back.
+        }
+     } else if (payload['eventType'] == 'shot') {
+        if (!isShooter) {
+           final double normX = (payload['x'] as num).toDouble();
+           final double normY = (payload['y'] as num).toDouble();
+           final double normVX = (payload['vx'] as num).toDouble();
+           final double normVY = (payload['vy'] as num).toDouble();
+           final b = GameEntity(
+             x: normX * _gameSize.width,
+             y: normY * _gameSize.height,
 
-            width: kArrowW,
-            height: kArrowH,
-            color: Colors.redAccent,
-            vx: normVX * _gameSize.width,
-            vy: normVY * _gameSize.height,
-          );
-          _bullets.add(b);
-          // Trigger vibration on remote shot to feel alive
-          _vibController.forward(from: 0);
-          _remoteDrawAmt = 0; // Reset remote draw
-          if (mounted) setState(() {});
-       }
-    }
+             width: kArrowW,
+             height: kArrowH,
+             color: Colors.redAccent,
+             vx: normVX * _gameSize.width,
+             vy: normVY * _gameSize.height,
+           );
+           _bullets.add(b);
+           // Trigger vibration on remote shot to feel alive
+           _vibController.forward(from: 0);
+           _remoteDrawAmt = 0; // Reset remote draw
+           if (mounted) setState(() {});
+        }
+     }
   }
   
   void _repositionEntities() {
+      // Recalculate sizes
+      _target.width = kTargetW;
+      _target.height = kTargetH;
+      _player.width = kPlayerS;
+      _player.height = kPlayerS;
+
       // Fix Player at Bottom, Target at Top
       _player.x = _gameSize.width / 2 - _player.width / 2;
-      _player.y = _gameSize.height - 180; // Bottom with margin
+      _player.y = _gameSize.height - (_gameSize.height * 0.2); // Relative bottom
       
-      _target.y = 20; // Explicit Top Position
+      _target.y = _gameSize.height * 0.05; // Relative Top
       
       final activePlayer = _session.interactionState?['activePlayer'];
       final isShooter = activePlayer == _session.myRole;
 
       if (isShooter) {
          _target.x = _gameSize.width / 2 - _target.width/2;
-         _target.vx = 200; 
+         _target.vx = _gameSize.width * 0.5; // Speed relative to width
       } else {
          // Spectator might lag, but reset to center for safety
          _target.x = _gameSize.width / 2 - _target.width/2; 
@@ -212,9 +252,11 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
     _stuckArrows.clear();
     _remoteAimAngle = 0;
     _remoteDrawAmt = 0;
+    _remoteScore = 0;
     
-    _target = GameEntity(x: 0, y: 0, width: 160, height: 40, color: Colors.orange);
-    _player = GameEntity(x: 0, y: 0, width: 160, height: 160, color: AppColors.hostPrimary);
+    // Initialize with placeholders, repositionEntities will set correct sizes
+    _target = GameEntity(x: 0, y: 0, width: 100, height: 30, color: Colors.orange);
+    _player = GameEntity(x: 0, y: 0, width: 100, height: 100, color: AppColors.hostPrimary);
     
     if (_gameSize != Size.zero) {
        _repositionEntities();
@@ -240,19 +282,27 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
 
     if (_gameSize == Size.zero) return;
     
-    // Timer
-    _timeLeft -= dt;
-    if (_timeLeft <= 0) {
-       _timeLeft = 0;
+    // Timer (Authoritative for Shooter)
+    final activePlayer = _session.interactionState?['activePlayer'];
+    if (activePlayer == _session.myRole) {
+       _timeLeft -= dt;
        
-       // Only Shooter submits score
-       final activePlayer = _session.interactionState?['activePlayer'];
-       if (activePlayer == _session.myRole) {
-          _finishRound();
-       } else {
-          // Defender just ends visually? Waiting for sync round update
+       // Sync Time occasionally
+       if (DateTime.now().difference(_lastTimeSync).inSeconds >= 2) {
+           _session.sendGameEvent({'eventType': 'time_sync', 'time': _timeLeft});
+           _lastTimeSync = DateTime.now();
        }
-       return;
+
+       if (_timeLeft <= 0) {
+          _timeLeft = 0;
+          _finishRound();
+          return;
+       }
+    } else {
+       // Spectator just visual decrease, loosely sync via 'time_sync'
+       // Don't finish locally, wait for Shooter to finish (via session update or event)
+       _timeLeft -= dt;
+       if (_timeLeft < 0) _timeLeft = 0;
     }
 
     _updateGame(dt);
@@ -406,6 +456,10 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
   
   void _handleHit() {
     _score++;
+    
+    // Real-time Score Sync
+    _session.sendGameEvent({'eventType': 'score_update', 'score': _score});
+    
     if (mounted) setState(() {});
     // Feedback
   }
@@ -537,252 +591,233 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
         child: Column(
           children: [
             // 1. DISTINCT HEADER (HUD)
+            // 1. DISTINCT COMPACT HEADER (HUD)
             Container(
-              height: 140, // Fixed Header Height
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              height: 80, // Reduced from 140
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.black,
                 border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.1)))
               ),
-              child: Column(
-                children: [
-                   // Top Row: Title + Timer + Connection
-                   Row(
-                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                     children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              isShooter ? "SHOOTER" : "SPECTATOR",
-                              style: GoogleFonts.alexandria(color: Colors.grey, fontSize: 12),
-                            ),
-                            Text(
-                               isShooter ? "SHOOT!" : "DODGE!",
-                               style: GoogleFonts.alexandria(
-                                   color: isShooter ? Colors.greenAccent : Colors.orangeAccent, 
-                                   fontSize: 20, 
-                                   fontWeight: FontWeight.bold
-                               ),
-                            ),
-                          ],
+              child: Row(
+                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                 children: [
+                    // Role & Action
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isShooter ? "SHOOTER" : "SPECTATOR",
+                          style: GoogleFonts.alexandria(color: Colors.grey, fontSize: 10),
                         ),
-                        
-                        if (isShooter)
-                          Text(
+                        Text(
+                           isShooter ? "SHOOT!" : "DODGE!",
+                           style: GoogleFonts.alexandria(
+                               color: isShooter ? Colors.greenAccent : Colors.orangeAccent, 
+                               fontSize: 16, 
+                               fontWeight: FontWeight.bold
+                           ),
+                        ),
+                      ],
+                    ),
+                    
+                    // Score Center
+                    Row(
+                      children: [
+                         _buildScoreBadge("YOU", isShooter ? _score : (scores[_session.myRole] ?? 0), isShooter),
+                         const SizedBox(width: 12),
+                         Text(":", style: GoogleFonts.alexandria(color: Colors.white30, fontSize: 16)),
+                         const SizedBox(width: 12),
+                         // Shows remote score if spectator, or remote score if shooter
+                         // Actually scores in 'state' might be lagged. 
+                         // Use _remoteScore for opponent if I am spectator and opponent is shooter?
+                         // If I am Shooter, opponent is dodging (score 0 normally or existing score?)
+                         // Simplification: Just show valid scores.
+                         _buildScoreBadge("OPP", isShooter ? (scores[(_session.myRole == 'A' ? 'B' : 'A')] ?? 0) : _remoteScore, !isShooter),
+                      ],
+                    ),
+                    
+                    // Timer & Close
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
                             "${_timeLeft.toStringAsFixed(1)}s", 
                             style: GoogleFonts.alexandria(
                                 color: _timeLeft < 5 ? Colors.red : Colors.white, 
-                                fontSize: 32, // Reduced from 40
+                                fontSize: 24, 
                                 fontWeight: FontWeight.bold
                             ),
                           ),
-
-                        // Connection Status
-                        Row(
-                          children: [
-                             Icon(
-                                _session.isRealtimeConnected ? Icons.wifi : Icons.wifi_off, 
-                                color: _session.isRealtimeConnected ? Colors.greenAccent : Colors.red, 
-                                size: 16
-                             ),
-                             const SizedBox(width: 10),
-                             IconButton(
-                               icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                               onPressed: widget.onClose,
-                               padding: EdgeInsets.zero,
-                               constraints: const BoxConstraints(),
-                             ),
-                          ],
-                        )
-                     ],
-                   ),
-                   const Spacer(),
-                   // Scoreboard
-                   Row(
-                     mainAxisAlignment: MainAxisAlignment.center,
-                     children: [
-                        _buildScoreBadge("YOU", isShooter ? _score : (scores[_session.myRole] ?? 0), isShooter),
-                        const SizedBox(width: 20),
-                        Text("-", style: GoogleFonts.alexandria(color: Colors.white30, fontSize: 20)),
-                        const SizedBox(width: 20),
-                        _buildScoreBadge("OPPONENT", scores[isShooter ? (_session.myRole == 'A' ? 'B' : 'A') : activePlayer] ?? 0, !isShooter),
-                     ],
-                   ),
-                ],
+                          InkWell(
+                             onTap: widget.onClose,
+                             child: const Icon(Icons.close, color: Colors.white54, size: 18),
+                          )
+                      ]
+                    )
+                 ],
               ),
             ),
 
-            // 2. GAME AREA (Expanded)
+            // 2. GAME AREA (Draggable)
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  // Update Game Size ONLY if changed significantly
-                  if (_gameSize.width != constraints.maxWidth || _gameSize.height != constraints.maxHeight) {
-                     _gameSize = Size(constraints.maxWidth, constraints.maxHeight);
+                  // Init Game Size once
+                  if (_gameSize != constraints.biggest) {
+                     _gameSize = constraints.biggest;
                      _repositionEntities();
                   }
-                  
-                  return Stack(
-                    children: [
-                      // GAME LAYER
-                      GestureDetector(
-                          onPanStart: _onPanStart, 
-                          onPanUpdate: _onPanUpdate,
-                          onPanEnd: _onPanEnd,
-                          behavior: HitTestBehavior.opaque,
-                          child: Container(
-                              color: Colors.transparent, // Inputs capture
-                              width: double.infinity,
-                              height: double.infinity,
-                              child: ClipRect(
-                                child: Transform.rotate(
-                                  angle: isShooter ? 0 : pi, 
-                                  child: Stack(
-                                     children: [
-                                        // A. Target & Stuck Arrows
-                                        Positioned(
-                                          left: _target.x, top: _target.y,
-                                          width: _target.width, height: _target.height,
-                                          child: Stack(
-                                              clipBehavior: Clip.none,
-                                              children: [
-                                                  SvgPicture.asset('assets/images/Targetboard.svg', fit: BoxFit.fill),
-                                                  
-                                                  // Stuck Arrows (Relative)
-                                                  ..._stuckArrows.map((a) => Positioned(
-                                                      left: (a['x'] as num).toDouble(),
-                                                      top: (a['y'] as num).toDouble(),
-                                                      width: kArrowW,
-                                                      height: kArrowH,
-                                                      child: Transform.rotate(
-                                                         angle: (a['angle'] as num).toDouble(),
-                                                         child: SvgPicture.asset('assets/images/arrow.svg', fit: BoxFit.fill)
-                                                      )
-                                                  )),
-                                              ]
-                                          )
-                                        ),
-                                        
-                                        // B. Bullets
-                                        ..._bullets.map((b) => Positioned(
-                                           left: b.x, top: b.y, width: b.width, height: b.height,
-                                           child: Transform.rotate(
-                                              angle: (b.vx != 0 || b.vy != 0) ? atan2(b.vy, b.vx) + pi/2 : 0,
-                                              child: SvgPicture.asset('assets/images/arrow.svg', fit: BoxFit.fill)
-                                           )
-                                        )),
-                                        
-                                        // C. Player (Bow) - Remote or Local
-                                        Positioned(
-                                          left: _player.x, top: _player.y,
-                                          width: _player.width, height: _player.height,
-                                          child: AnimatedBuilder(
-                                              animation: _vibAnimation,
-                                              builder: (context, child) {
-                                                // Vibration Offset: only when drawAmt is mainly 0 (idle/post-shot)
-                                                double vib = (drawAmt == 0) ? sin(_vibAnimation.value * pi * 4) * 5 : 0;
-                                                
-                                                return Transform.rotate(
-                                                   angle: bowAngle, 
-                                                   child: Stack(
-                                                      alignment: Alignment.center,
-                                                      clipBehavior: Clip.none,
-                                                      children: [
-                                                         // 1. String (Behind)
-                                                         CustomPaint(
-                                                            size: Size(_player.width, _player.height),
-                                                            painter: _BowStringPainter(
-                                                                drawAmt: drawAmt,
-                                                                vibration: vib
-                                                            ),
-                                                         ),
-                                                         // 2. Bow Body
-                                                         SvgPicture.asset('assets/images/Bow.svg'),
-                                                         // 3. Arrow Preview
-                                                         if (drawAmt > 0)
-                                                           Positioned(
-                                                              top: 40 + drawAmt - kArrowH, // Align Arrow length
-                                                              child: SizedBox(
-                                                                 width: kArrowW, height: kArrowH,
-                                                                 child: SvgPicture.asset('assets/images/arrow.svg', fit: BoxFit.fill),
-                                                              )
-                                                           )
-                                                      ]
-                                                   )
-                                                );
-                                              }
-                                          )
-                                        )
-                                     ]
-                                  )
-                                )
-                              )
+
+                  return GestureDetector(
+                    onPanStart: _onPanStart,
+                    onPanUpdate: _onPanUpdate,
+                    onPanEnd: _onPanEnd,
+                    behavior: HitTestBehavior.opaque,
+                    child: Stack(
+                      children: [
+                        // Background Grid/Grass (Optional)
+                        
+                        // TARGET (Top) - 3-Tier Bar
+                        if (_gameSize.width > 0)
+                        Positioned(
+                          left: _target.x,
+                          top: _target.y,
+                          width: _target.width,
+                          height: _target.height,
+                          child: SvgPicture.asset(
+                             'assets/images/Targetboard.svg',
+                             fit: BoxFit.contain, 
                           ),
-                      ),
+                        ),
 
+                        // STUCK ARROWS (Attached to Target)
+                        ..._stuckArrows.map((a) => Positioned(
+                            left: _target.x + (a['x'] as num).toDouble(), // Relative offset applied to Target X
+                            top: _target.y + (a['y'] as num).toDouble(),
+                            width: kArrowW,
+                            height: kArrowH,
+                            child: Transform.rotate(
+                                angle: (a['angle'] as num).toDouble(),
+                                child: SvgPicture.asset('assets/images/arrow.svg', fit: BoxFit.contain)
+                            )
+                        )),
 
-                      // OVERLAYS (Centered in Game Area)
-                      
-                      // MANUAL START OVERLAY
-                      if (_isWaitingForStart && !_showRoundOverlay && state['step'] != 'finished')
-                         Container(
-                            color: Colors.black.withOpacity(0.8),
-                            alignment: Alignment.center,
-                            child: Column(
-                               mainAxisSize: MainAxisSize.min,
+                        // ARROWS (Projectiles)
+                        ..._bullets.map((b) {
+                           // Calculate Angle from velocity
+                           double angle = atan2(b.vy, b.vx) + pi/2; 
+                           return Positioned(
+                              left: b.x,
+                              top: b.y,
+                              width: b.width,
+                              height: b.height,
+                              child: Transform.rotate(
+                                angle: angle,
+                                child: SvgPicture.asset(
+                                   'assets/images/arrow.svg',
+                                   fit: BoxFit.contain,
+                                ),
+                              )
+                           );
+                        }),
+                        
+                        // PLAYER (Bow) - Bottom
+                        if (_gameSize.width > 0)
+                        Positioned(
+                           left: _player.x,
+                           top: _player.y,
+                           width: _player.width,
+                           height: _player.height,
+                           child: Transform.rotate(
+                             angle: bowAngle, 
+                             child: Stack(
+                               alignment: Alignment.center,
                                children: [
-                                  Text(
-                                     isShooter ? "YOU ARE SHOOTER" : "SPECTATOR MODE",
-                                     style: GoogleFonts.alexandria(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold)
+                                  // Bow
+                                  Transform.rotate(
+                                    angle: -pi / 2, // Fix: Align Bow (Native Right) to Up
+                                    child: SvgPicture.asset(
+                                      drawAmt > 10 ? 'assets/images/Bow_2.svg' : 'assets/images/Bow.svg',
+                                      fit: BoxFit.contain,
+                                    ),
                                   ),
-                                  const SizedBox(height: 20),
-                                  if (isShooter)
-                                    ElevatedButton.icon(
-                                       onPressed: _startRoundManually,
-                                       icon: const Icon(Icons.play_arrow, color: Colors.white),
-                                       label: Text("START GAME", style: GoogleFonts.alexandria(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                                       style: ElevatedButton.styleFrom(
-                                          backgroundColor: AppColors.hostPrimary,
-                                          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                       ),
+                                  // Arrow on Bow (if aiming)
+                                  if (drawAmt > 5)
+                                    Positioned( // Adjust arrow visual offset on bow string
+                                      top: 20 + drawAmt/2, // Pull back visual
+                                      child: SvgPicture.asset(
+                                        'assets/images/arrow.svg', 
+                                        height: kArrowH, 
+                                        fit: BoxFit.fitHeight
+                                      )
                                     )
-                                  else
-                                    Column(
-                                      children: [
-                                         const CircularProgressIndicator(color: Colors.white),
-                                         const SizedBox(height: 20),
-                                         Text("Waiting for Shooter...", style: GoogleFonts.alexandria(color: Colors.white70, fontSize: 14)),
-                                      ],
-                                    )
-                               ],
-                            ),
-                         ),
-
-                      // ROUND CHANGE OVERLAY
-                      if (_showRoundOverlay)
-                         Container(
-                            color: Colors.black.withOpacity(0.8),
-                            alignment: Alignment.center,
-                            child: Column(
-                               mainAxisSize: MainAxisSize.min,
-                               children: [
-                                  Text(
-                                     "ROUND $round", 
-                                     style: GoogleFonts.alexandria(color: Colors.greenAccent, fontSize: 24, fontWeight: FontWeight.bold)
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                     isShooter ? "SHOOT!" : "DODGE!", 
-                                     style: GoogleFonts.alexandria(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold)
-                                  ),
-                               ],
-                            ),
-                         ),
-
-                      // GAME RESULT OVERLAY
-                     ],
+                               ]
+                             )
+                           ),
+                        ),
+                        
+                        // MANUAL START OVERLAY
+                        if (_isWaitingForStart && !_showRoundOverlay && state['step'] != 'finished')
+                           Container(
+                              color: Colors.black.withOpacity(0.8),
+                              alignment: Alignment.center,
+                              child: Column(
+                                 mainAxisSize: MainAxisSize.min,
+                                 children: [
+                                    Text(
+                                       isShooter ? "YOU ARE SHOOTER" : "SPECTATOR MODE",
+                                       style: GoogleFonts.alexandria(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold)
+                                    ),
+                                    const SizedBox(height: 20),
+                                    if (isShooter)
+                                      ElevatedButton.icon(
+                                         onPressed: _startRoundManually,
+                                         icon: const Icon(Icons.play_arrow, color: Colors.white),
+                                         label: Text("START GAME", style: GoogleFonts.alexandria(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                                         style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.hostPrimary,
+                                            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                         ),
+                                      )
+                                    else
+                                      Column(
+                                        children: [
+                                           const CircularProgressIndicator(color: Colors.white),
+                                           const SizedBox(height: 20),
+                                           Text("Waiting for Shooter...", style: GoogleFonts.alexandria(color: Colors.white70, fontSize: 14)),
+                                        ],
+                                      )
+                                 ],
+                              ),
+                           ),
+  
+                        // ROUND CHANGE OVERLAY
+                        if (_showRoundOverlay)
+                           Container(
+                              color: Colors.black.withOpacity(0.8),
+                              alignment: Alignment.center,
+                              child: Column(
+                                 mainAxisSize: MainAxisSize.min,
+                                 children: [
+                                    Text(
+                                       "ROUND $round", 
+                                       style: GoogleFonts.alexandria(color: Colors.greenAccent, fontSize: 24, fontWeight: FontWeight.bold)
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                       isShooter ? "SHOOT!" : "DODGE!", 
+                                       style: GoogleFonts.alexandria(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold)
+                                    ),
+                                 ],
+                              ),
+                           ),
+  
+                      ],
+                    ),
                   );
                 }
               ),

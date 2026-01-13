@@ -96,6 +96,7 @@ This document serves as the **Single Source of Truth** for the TalkBingo UI/UX a
     - Default: Body 1 (14px, Medium)
 - **Primary Style**: Filled Color (Host Pink / Guest Purple) + White Text
 - **Secondary Style**: Outlined (1px solid Theme Color) or Soft Tint + Theme Text
+- **Auth/Link Button**: Prominent "Sign Up / Link Account" button in Settings for converting anonymous users.
 
 ### 5.3 Cards & Containers
 - **Radius**: `12px` (Standard), `16px` (Large Modal)
@@ -124,6 +125,44 @@ This document serves as the **Single Source of Truth** for the TalkBingo UI/UX a
 
 ---
 
-## 7. Version Control
-- **Ref**: `UI_Logic_Style.md` (Game Specifics), `UI_Rules.md` (Chat Alignment)
-- **Last Updated**: 2025-12-27
+---
+
+## 8. Payment & Shop UI Specification
+
+Defined for the Hybrid Payment Model (`Payment_System_Plan.md`) and recent mockups.
+
+### 8.1 Method Selector (Web Only)
+*   **Style**: Segmented Control / Toggle Switch.
+*   **Appearance**:
+    *   Container: rounded-xl, light grey background (`#F5F5F5`).
+    *   Selected: White shadow card, Bold text.
+    *   Unselected: Transparent, Medium text, Muted color.
+*   **Content**: `🇰🇷 Korea Card` vs `🌏 Global Card`.
+
+### 8.2 Product Cards (Point Packs)
+*   **Layout**: Vertical Stack (Icon -> Amount -> Price Button).
+*   **Visual**:
+    *   **Border**: `1px solid primary-color` (Host: Pink, Guest: Purple).
+    *   **Background**: Glass-white gradient.
+    *   **Price Button**: Full width, bottom rounded.
+*   **Responsive**:
+    *   **Mobile**: 2 columns grid.
+    *   **Web**: 3 or 4 columns grid.
+
+### 8.3 Transaction History
+*   **List Item**:
+    *   **Left**: Transaction Date & Type (Buy/Refund).
+    *   **Right**: Amount (+1000 VP) & Status Badge.
+*   **Status Badges**:
+    *   `Success`: Green text / light green bg.
+    *   `Refunded`: Red text / light red bg.
+    *   `Pending`: Orange text.
+
+### 8.4 Add Payment Method Button (Web)
+*   **Style**: Large Outline Button with Request Icon.
+*   **Border**: 1.5px solid Primary Color.
+*   **Icon**: Credit Card / Plus symbol.
+*   **Usage**: "Add Payment Method" or "Select Card".
+
+---
+

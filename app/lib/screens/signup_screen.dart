@@ -88,8 +88,11 @@ class _SignupScreenState extends State<SignupScreen> with WidgetsBindingObserver
 
     final session = Supabase.instance.client.auth.currentSession;
     
-    // Check Dev Mode or Session
-    if (DevConfig.isDevMode.value || session != null) {
+    // Check Session (Ignore Anonymous users, they should see the Signup/Link UI)
+    bool isRealUser = session != null && !session.user.isAnonymous;
+
+    // Check Dev Mode or Real Session
+    if (DevConfig.isDevMode.value || isRealUser) {
       if (mounted) {
         // Navigate to Home Screen (User requested Host Setup, but Home is the dashboard)
         // Using HomeScreen as it's the main entry point for logged-in users
@@ -181,8 +184,14 @@ class _SignupScreenState extends State<SignupScreen> with WidgetsBindingObserver
     });
   }
 
-  void _checkSession(Session? session) {
+  Future<void> _checkSession(Session? session) async {
     if (session != null && mounted) {
+      // Ignore Anonymous sessions to allow Account Linking/Signup
+      if (session.user.isAnonymous) {
+        debugPrint("SignupScreen: Ignoring Anonymous Session during check");
+        return;
+      }
+
       // 1. Stop Loading / Timers
       _pollingTimer?.cancel();
       setState(() {
@@ -190,12 +199,34 @@ class _SignupScreenState extends State<SignupScreen> with WidgetsBindingObserver
          _isVerified = true;
       });
 
-      // 2. Navigate to Host Setup
-      // Use pushAndRemoveUntil to clear back stack (can't go back to signup)
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const HostInfoScreen()),
-        (route) => false,
-      );
+      // 2. Check Role/Profile to decide destination
+      // If user already has a profile (e.g. linked account or returning user), go to Home directly
+      // instead of forcing HostInfoScreen (onboarding).
+      bool hasProfile = false;
+      try {
+        final profile = await Supabase.instance.client
+            .from('profiles')
+            .select()
+            .eq('id', session.user.id)
+            .maybeSingle();
+        hasProfile = profile != null;
+      } catch (e) {
+        debugPrint("SignupScreen: Error checking profile: $e");
+      }
+
+      if (!mounted) return;
+
+      if (hasProfile) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          (route) => false,
+        );
+      } else {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HostInfoScreen()),
+          (route) => false,
+        );
+      }
     }
   }
 
@@ -373,7 +404,8 @@ class _SignupScreenState extends State<SignupScreen> with WidgetsBindingObserver
                 
                 const SizedBox(height: 24), // Increased spacing
 
-                // Manual Code Entry (Guest)
+                // Manual Code Entry (Guest) - Hide if already anonymous (Converting Account)
+                if ((Supabase.instance.client.auth.currentSession?.user.isAnonymous ?? false) == false)
                 OutlinedButton(
                   onPressed: () {
                     Navigator.of(context).pushReplacement(
@@ -421,6 +453,7 @@ class _SignupScreenState extends State<SignupScreen> with WidgetsBindingObserver
                   ),
                 ),
               ],
+              
             ],
           ),
         ),
@@ -435,7 +468,9 @@ class _SignupScreenState extends State<SignupScreen> with WidgetsBindingObserver
     try {
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: kIsWeb ? Uri.base.origin : 'io.supabase.talkbingo://login-callback',
+        redirectTo: kIsWeb 
+          ? (kReleaseMode ? 'https://talkbingo-web.web.app/' : Uri.base.origin) 
+          : 'io.supabase.talkbingo://login-callback',
       );
     } on AuthException catch (e) {
       if (mounted) {

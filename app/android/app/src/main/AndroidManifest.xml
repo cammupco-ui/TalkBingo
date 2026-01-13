@@ -38,6 +38,13 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="talkbingo" android:host="join" />
             </intent-filter>
+            <!-- Payment Generic Deep Link -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="talkbingo" />
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
@@ -64,5 +71,14 @@
             <action android:name="android.intent.action.SEND" />
             <data android:mimeType="text/plain" />
         </intent>
+        <!-- Payment Apps -->
+        <package android:name="com.kakao.talk" />
+        <package android:name="net.minium.kidhy.iec" />
+        <package android:name="kr.co.samsungcard.mpocket" />
+        <package android:name="com.shcard.smartpay" />
+        <package android:name="com.kbcard.cxh.appcard.connector" />
+        <package android:name="com.lotte.lottesmartpay" />
+        <package android:name="com.nhn.android.search" />
+        <package android:name="kvp.jjy.MispAndroid320" />
     </queries>
 </manifest>

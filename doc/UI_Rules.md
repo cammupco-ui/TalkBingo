@@ -47,3 +47,11 @@
 *   **Guest (CP)의 턴:**
     *   **배경 (Background):** `--primary-darkpurple` (#2E0645)
     *   **글자 (Text):** `--text-secondary-b` (#FDF9FF)
+
+### 게임 종료 및 이탈 (Safe Exit)
+
+#### 1. 종료 확인 팝업 (Exit Dialog)
+게임 진행 중(Playing 상태) 뒤로가기 또는 종료 버튼을 누를 경우, 데이터 유실 방지를 위한 팝업을 표시합니다.
+
+*   **Host (Member):** "게임을 저장하고 종료하시겠습니까?" (옵션: 저장 후 종료 / 그냥 종료 / 취소)
+*   **Guest (Anonymous):** "로그인하지 않으면 게임 기록이 사라질 수 있습니다. 종료하시겠습니까?" (옵션: 종료 / 취소)

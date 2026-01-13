@@ -79,6 +79,9 @@ class AppLocalizations {
       'menu_end': 'End Game',
       'menu_save': 'Save Game',
       'menu_load': 'Load Game',
+      'trust_score_title': 'Trust Score',
+      'trust_score_desc': 'Build trust with mannerly conversation.',
+      'close': 'Close',
     },
     'ko': {
       'new_game': '새 게임',
@@ -155,6 +158,9 @@ class AppLocalizations {
       'menu_end': '게임 종료',
       'menu_save': '게임 저장',
       'menu_load': '게임 불러오기',
+      'trust_score_title': '신뢰 점수',
+      'trust_score_desc': '매너있는 대화로 신뢰를 얻으세요',
+      'close': '닫기',
     },
   };
 

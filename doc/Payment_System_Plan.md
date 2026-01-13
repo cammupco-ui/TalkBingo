@@ -1,75 +1,144 @@
-# Payment System Strategy: Failure Handling & Refunds
+# 결제 시스템 전략: 하이브리드 모델 및 환불 정책
 
-This document outlines the proposed strategy for handling payment failures and implementing a refund system for TalkBingo.
-
-## 1. Payment Failure Handling System
-
-The goal allows for graceful degradation when payments fail, ensuring user trust and data integrity.
-
-### Client-Side Handling (Flutter App)
-- **Pre-Validation:**
-  - Validate Card Number (Luhn Algorithm), Expiry Date (Future), and CVV format *before* sending to server.
-  - Check for network connectivity before initiating transaction.
-- **Error Feedback:**
-  - **Network Error:** "Internet connection unstable. Please check and try again."
-  - **Gateway Decline:** "Payment declined by bank. Please check card limits or details." (Do not reveal specific security reasons if sensitive).
-  - **System Error:** "Temporary system error. No charge was made. Please try later."
-- **Retry Mechanism:**
-  - Allow 1 immediate retry for network timeouts.
-  - For declines, prompt user to "Check Details" or "Use Different Card".
-
-### Server-Side Handling (Supabase/Edge Functions)
-- **Atomic Transactions:**
-  - Payment processing and Point allocation MUST occur in a single atomic transaction or handled via idempotent webhooks.
-  - **Flow:**
-    1.  Create `transaction_record` (status: `pending`).
-    2.  Call Payment Gateway (e.g., Stripe/KakaoPay).
-    3.  **If Success:** Update `transaction_record` to `success`, Increment User Points.
-    4.  **If Fail:** Update `transaction_record` to `failed`, store error code. Do NOT allocate points.
-- **Idempotency:**
-  - Use `request_id` to prevent double-charging if the client retrys the same request due to network lag.
+TalkBingo의 수익화 전략은 스토어 정책을 준수하면서도 수익성을 극대화하는 **하이브리드 결제 모델**을 따르며, 결제 실패 및 환불에 대한 안전장치를 마련합니다.
 
 ---
 
-## 2. Refund System Plan
+## 1. 하이브리드 결제 전략 (Hybrid Monetization Strategy)
 
-The goal is to provide a fair and compliant refund process while simulating or implementing real admin controls.
+**핵심 개념: "시스템은 둘이지만, 유저는 하나만 본다"**
 
-### Refund Policy (Draft)
-- **Eligibility:**
-  - Refund requests must be made within **7 days** of purchase.
-  - Only **unused** points can be refunded. If a user buys 1000 VP and uses 200 VP, the remaining 800 VP is eligible (partial) or non-refundable (full, depending on strictness).
-  - *Recommendation:* "Full refund only if ZERO points from the pack were used."
+결제 시스템은 기술적으로 두 가지(IAP, Web PG)를 모두 구축하지만, 유저의 접속 환경에 따라 시스템이 결제 수단을 강제로 지정합니다.
 
-### Implementation Flow
-1.  **User Request:**
-    - In `Settings` -> `Purchase History` (to be added).
-    - User clicks "Request Refund" on a specific transaction.
-    - System checks eligibility (Date < 7 days, Current Points >= Purchased Amount).
-2.  **Processing:**
-    - **Auto-Refund (Low Risk):** If within 24 hours and untouched, system auto-reverses.
-    - **Manual Review (Standard):** Request logs to `refund_requests` table. Admin approves via Admin Panel.
-3.  **Completion:**
-    - Gateway processes refund.
-    - Supabase deducts points from User.
-    - Notification sent to User.
+### 1-1. 플랫폼별 유저 경험 (UX)
+유저는 고민할 필요 없이, 현재 접속한 환경에 맞는 **단 하나의 결제 버튼**만 보게 됩니다.
 
-### Database Requirements
+| 접속 환경 | URL / 앱 실행 | 유저가 보는 화면 | 실제 결제 시스템 | 수수료 |
+|---|---|---|---|---|
+| **웹 (Web)** | `talkbingo.com` | **"포인트 충전" (PG)** | 포트원 (PG) | ~3% (저렴) |
+| **앱 (App)** | iOS / Android 앱 | **"포인트 충전" (IAP)** | 애플/구글 인앱결제 | ~30% (높음) |
+
+> **⚠️ 앱 내 UX 주의사항 (App Store 정책)**
+> *   앱 내에서는 웹 결제 버튼을 절대 노출하지 않습니다.
+> *   "웹이 더 싸요" 같은 문구나 외부 링크를 포함하지 않습니다. (Anti-Streeing 위반)
+> *   오직 스토어 공식 인앱 결제(IAP)만 보여줍니다.
+
+### 1-2. 수익 최적화 전략 (Marketing)
+수수료가 저렴한 웹 결제로 유도하는 것은 **앱 밖(Outside App)**에서만 진행합니다.
+
+*   ✅ **허용된 유도 방식**: 이메일 뉴스레터, SNS(인스타/블로그), 커뮤니티 공지, 고객센터 FAQ.
+*   ❌ **금지된 유도 방식**: 앱 내 팝업, 앱 내 공지사항 링크.
+
+### 1-3. 데이터 동기화 (Data Sync)
+*   **원장 관리**: 결제 방식은 다르지만, 구매한 포인트(VP/AP)는 모두 **Supabase**의 동일한 `profiles` 테이블에 저장됩니다.
+*   **유저 혜택**: 유저가 이메일을 보고 웹에서 싸게 충전하더라도, 앱에 들어오면 즉시 해당 포인트가 반영되어 있습니다. 이 학습 과정을 통해 충성 유저는 자연스럽게 웹 충전을 선호하게 됩니다.
+
+### 1-4. TalkBingo 플랫폼 전략 (Store Deployment + Web Parallel)
+**✅ "옵션 C: 스토어 배포 + 웹 병행" (정답 구조)**
+TalkBingo는 **앱(신뢰, 유입)**과 **웹(수익 최적화)**의 역할을 철저히 분리하여 운영합니다.
+
+#### 📱 앱 (iOS / Android)
+*   **구조**: App Store / Play Store 등록 (Flutter로 래핑)
+*   **역할**:
+    *   **유입**: 스토어 검색을 통한 신규 유저 확보.
+    *   **신뢰**: 공식 스토어 입점으로 인한 신뢰도 상승.
+    *   **기능**: 게임 플레이, 광고 노출, 푸시 알림.
+    *   **결제**: IAP (인앱 결제) - 수수료는 높지만 접근성이 좋음.
+*   **결론**: **유입·신뢰·확장 담당**
+
+#### 🌐 웹앱 (모바일 최적화)
+*   **구조**: 동일한 서비스를 모바일 브라우저에서 제공 (`talkbingo.com`).
+*   **역할**:
+    *   **수익**: 저수수료(PG) 결제를 통한 마진 극대화.
+    *   **마케팅**: 이메일, SNS 링크를 통한 랜딩 페이지 역할.
+    *   **접근성**: 설치 없이 바로 접속 가능 (SEO).
+*   **결론**: **수익 최적화 담당**
+
+### 1-5. 유저 행동 시나리오 (Reality Scenario)
+
+#### 1) 신규 유저 (New User)
+1.  앱스토어에서 `TalkBingo` 검색 후 설치.
+2.  앱을 실행하여 게임을 즐김 (광고 시청).
+3.  포인트가 필요해지면, **앱 내 상점**에서 고민 없이 IAP로 결제. (수수료 발생하지만 유입 성공 비용으로 간주)
+
+#### 2) 충성 유저 (Loyal User)
+1.  TalkBingo로부터 "이벤트 알림" 이메일 수신. (예: "공식 웹사이트에서 포인트 10% 더 드려요")
+2.  이메일 링크를 통해 **모바일 브라우저**로 웹앱 접속.
+3.  저렴한 수수료의 **PG 결제(카드/카카오페이)**로 포인트 충전.
+4.  다시 **앱**을 켜면, 방금 충전한 포인트가 그대로 들어와 있음.
+5.  이후부터는 "충전은 웹, 플레이는 앱" 패턴으로 정착.
+
+👉 **결론**: 다운로드 경로는 스토어 그대로 유지하되, 충성 유저의 결제 경로만 웹으로 영리하게 분리합니다.
+
+---
+
+## 2. 결제 실패 처리 시스템 (Failure Handling)
+
+결제가 실패하더라도 사용자 경험을 해치지 않고, 데이터 무결성을 보장하기 위한 시스템입니다.
+
+### 클라이언트 측 처리 (Flutter App)
+- **사전 검증 (Pre-Validation):**
+  - 네트워크 연결 상태 확인.
+- **에러 피드백:**
+  - **네트워크 오류:** "인터넷 연결이 불안정합니다. 잠시 후 다시 시도해주세요."
+  - **승인 거절:** "결제가 거절되었습니다. 잔액이나 카드 정보를 확인해주세요."
+  - **시스템 오류:** "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+- **재시도 메커니즘:**
+  - 네트워크 타임아웃 시 1회 즉시 재시도 허용.
+
+### 서버 측 처리 (Supabase Edge Functions)
+- **원자적 트랜잭션 (Atomic Transactions):**
+  - 결제 승인과 포인트 지급은 반드시 하나의 트랜잭션으로 처리되어야 합니다.
+  - **프로세스 흐름**:
+    1.  `payment_transactions` 레코드 생성 (상태: `pending`).
+    2.  PG사 결제 요청 (검증).
+    3.  **성공 시**: 상태를 `success`로 변경 후 User 포인트 증가 (`charge_vp` RPC).
+    4.  **실패 시**: 상태를 `failed`로 변경하고 에러 코드 저장 (포인트 지급 안 함).
+- **중복 방지 (Idempotency):**
+  - 클라이언트가 네트워크 지연으로 같은 요청을 여러 번 보내더라도 중복 결제가 되지 않도록 `request_id`를 확인합니다.
+
+---
+
+## 3. 환불 시스템 계획 (Refund System)
+
+### 환불 정책 (Draft)
+- **가능 기간**: 구매 후 **7일 이내** 요청 시.
+- **조건**: 구매한 포인트를 **전혀 사용하지 않은 경우**에만 전액 환불 가능.
+  - *Recommendation*: 부분 환불은 복잡하므로, "미사용분 전액 환불" 정책을 권장합니다.
+
+### 구현 프로세스
+1.  **환불 요청**:
+    - 앱 내 설정 -> `구매 내역(Purchase History)` 메뉴.
+    - 특정 결제 건에 대해 [환불 요청] 버튼 클릭.
+    - 시스템이 자동 검증 (7일 이내 & 보유 포인트 >= 구매 포인트).
+2.  **처리 방식**:
+    - **자동 환불 (저위험군)**: 구매 후 24시간 이내이며 미사용 시 시스템이 즉시 자동 취소 처리.
+    - **수동 검토 (표준)**: `refund_requests` 테이블에 기록되며, 관리자(Admin)가 승인 후 처리.
+3.  **완료 처리**:
+    - PG사 취소 API 호출.
+    - Supabase에서 사용자 포인트 차감.
+    - 사용자에게 알림 발송.
+
+### 데이터베이스 요구사항
 - **Table: `payment_transactions`**
-  - `id`: UUID
-  - `user_id`: UUID
-  - `amount`: Integer (Currency)
-  - `points`: Integer
-  - `status`: `success`, `failed`, `refunded`, `pending`
-  - `gateway_id`: String
+  - `id`: UUID (PK)
+  - `user_id`: UUID (FK)
+  - `amount`: Integer (금액)
+  - `points`: Integer (지급 포인트)
+  - `status`: `success` / `failed` / `refunded`
+  - `gateway`: `iap_apple` / `iap_google` / `pg_portone`
   - `created_at`: Timestamp
 - **Table: `refund_requests`**
   - `id`: UUID
   - `transaction_id`: UUID
-  - `reason`: String
-  - `status`: `pending`, `approved`, `rejected`
+  - `reason`: Text (사유)
+  - `status`: `pending` / `approved` / `rejected`
 
-## 3. Next Steps
-1.  **Frontend:** Update `PointPurchaseScreen` to show "History" and potentially "Refund" button (future).
-2.  **Backend:** Design `payment_transactions` table in Supabase.
-3.  **Gateway:** Select and integrate test mode of a Payment Gateway (Stripe Test Mode recommended).
+---
+
+## 4. 향후 실행 단계 (Next Steps)
+1.  **Frontend**: `PointPurchaseScreen`에 결제 수단 붙이기 (초기에는 테스트 모드).
+2.  **Backend**: Supabase에 `payment_transactions` 테이블 설계 및 생성.
+3.  **Integration**:
+    - 앱: `in_app_purchase` 플러터 패키지 연동.
+    - 웹: 포트원(PortOne) 연동.

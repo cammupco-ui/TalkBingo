@@ -76,31 +76,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
             ),
           ),
 
-          // Close Button (Top Right)
-          // Hide close button during active interaction unless necessary
-          if (widget.interactionStep == 'answering' && GameSession().myRole == widget.answeringPlayer)
-            Positioned(
-              top: 16,
-              right: 16,
-              child: IconButton(
-                onPressed: widget.onClose,
-                icon: const Icon(Icons.close, color: Colors.grey, size: 30),
-              ),
-            ),
-          // Pause Button (Top Left - Opposite Close)
-          if (widget.interactionStep == 'answering')
-            Positioned(
-              top: 16,
-              left: 16,
-              child: IconButton(
-                onPressed: () => GameSession().togglePause(),
-                icon: Icon(
-                  widget.isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded, 
-                  color: Colors.grey, 
-                  size: 30
-                ),
-              ),
-            ),
+          // Icons Removed as requested
 
           // Paused Overlay
           if (widget.isPaused)
@@ -150,25 +126,23 @@ class _QuizOverlayState extends State<QuizOverlay> {
     final bool amIAnswering = GameSession().myRole == widget.answeringPlayer;
     final bool isReviewing = widget.interactionStep == 'reviewing';
     
-    // Case 1: Reviewing Phase
+    String mode;
     if (isReviewing) {
        if (amIAnswering) {
-         // I answered, waiting for approval
-         return _buildWaitingForApprovalView();
+         mode = 'waiting_approval';
        } else {
-         // Partner answered, I need to approve/reject
-         return _buildApprovalView();
+         mode = 'reviewing';
        }
+    } else {
+      // Answering Phase
+      if (amIAnswering) {
+        mode = 'answering';
+      } else {
+        mode = 'partner_answering';
+      }
     }
 
-    // Case 2: Answering Phase
-    if (amIAnswering) {
-      // My turn to answer
-      return _buildAnsweringView(); 
-    } else {
-      // Partner is answering
-      return _buildPartnerAnsweringView();
-    }
+    return _buildAnsweringView(mode: mode);
   }
 
   Widget _buildMiniGameView() {
@@ -193,83 +167,14 @@ class _QuizOverlayState extends State<QuizOverlay> {
     return safeType == 'balance' || (safeType.isEmpty && widget.optionA.isNotEmpty);
   }
 
-  Widget _buildWaitingForApprovalView() {
-    String displayAnswer;
-    if (_isBalanceGame) {
-      if (widget.submittedAnswer == 'A' || widget.submittedAnswer == widget.optionA) {
-        displayAnswer = 'A: ${widget.optionA}';
-      } else if (widget.submittedAnswer == 'B' || widget.submittedAnswer == widget.optionB) {
-        displayAnswer = 'B: ${widget.optionB}';
-      } else {
-        displayAnswer = widget.submittedAnswer ?? '-';
-      }
-    } else {
-      displayAnswer = '"${widget.submittedAnswer ?? _selectedChoice}"';
-    }
+  // Old views removed: _buildWaitingForApprovalView, _buildApprovalView, _buildPartnerAnsweringView
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.hourglass_bottom, size: 50, color: AppColors.hostPrimary),
-        const SizedBox(height: 20),
-        Text(
-          '상대방이 공감 할수 있게 설명해 주세요', 
-          style: GoogleFonts.alexandria(fontSize: 18, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
-        // Removed 'Please wait' subtitle as requested for cleaner UI
-         const SizedBox(height: 20),
-         // Show what I submitted
-        Container(
-          padding: const EdgeInsets.all(16),
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            '나의 답변: $displayAnswer',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16, color: Colors.black87),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPartnerAnsweringView() {
-    return SizedBox(
-      width: double.infinity, // Ensure full width for centering
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(color: AppColors.hostPrimary),
-          const SizedBox(height: 30),
-          Text(
-            '상대방이 답변 중입니다', // "Partner is answering"
-            style: GoogleFonts.alexandria(fontSize: 18, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text(
-              widget.question,
-              style: GoogleFonts.doHyeon(fontSize: 16, color: Colors.grey[700]),
-              textAlign: TextAlign.center,
-              maxLines: 4,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAnsweringView() {
+  Widget _buildAnsweringView({required String mode}) {
     final bool isTruthGame = !_isBalanceGame;
     final String title = isTruthGame ? 'TRUTH' : 'BALANCE';
+    
+    // Determine Read Only Status
+    final bool readOnly = mode != 'answering';
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -278,12 +183,27 @@ class _QuizOverlayState extends State<QuizOverlay> {
         Text(
           title,
           style: GoogleFonts.alexandria(
-            fontSize: 10, // Adjusted to 10pt as requested
+            fontSize: 10,
             fontWeight: FontWeight.bold,
             color: AppColors.hostPrimary,
           ),
         ),
         const SizedBox(height: 16),
+
+        // Optional: Show "Partner's Turn" banner
+        if (mode == 'partner_answering')
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              "상대방이 선택 중입니다...",
+              style: TextStyle(fontSize: 12, color: Colors.grey[700], fontWeight: FontWeight.bold),
+            ),
+          ),
 
         // Question
         Padding(
@@ -291,7 +211,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
           child: Text(
             widget.question,
             style: GoogleFonts.doHyeon(
-              fontSize: 16, // Reverted to 16pt as requested
+              fontSize: 16,
               fontWeight: FontWeight.w500,
               color: Colors.black87,
               height: 1.3,
@@ -301,135 +221,99 @@ class _QuizOverlayState extends State<QuizOverlay> {
         ),
         const SizedBox(height: 24),
 
-        // Dynamic Content
+        // Dynamic Content (Inputs)
         if (isTruthGame)
-          _buildTruthContent()
+          _buildTruthContent(readOnly: readOnly, highlightAnswer: widget.submittedAnswer)
         else
-          _buildBalanceContent(),
+          _buildBalanceContent(readOnly: readOnly, highlightAnswer: widget.submittedAnswer),
+
+        const SizedBox(height: 32),
+
+        // Bottom Actions based on Mode
+        if (mode == 'waiting_approval')
+          Text(
+            "공감 할수 있게 대화 해 보세요",
+            style: GoogleFonts.alexandria(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.hostPrimary),
+            textAlign: TextAlign.center,
+          ),
+
+        if (mode == 'reviewing')
+            Row(
+              children: [
+                // Reject Button
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: OutlinedButton(
+                      onPressed: () => widget.onOptionSelected('REJECT'),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.grey, width: 2),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('비공감', style: TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Approve Button
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () => widget.onOptionSelected(widget.submittedAnswer ?? 'APPROVED'), 
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.hostPrimary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('공감', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
       ],
     );
   }
 
-  Widget _buildApprovalView() {
-    // This view is for the Reviewer (who is NOT answering)
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.gavel, size: 50, color: AppColors.hostPrimary),
-        const SizedBox(height: 20),
-        Text(
-           '상대방의 의견에 공감하나요?', // Simplified Instruction
-           style: GoogleFonts.alexandria(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 30),
-        
-        // Display User's Selection/Answer
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24), // Increased vertical padding
-          width: double.infinity,
-          constraints: const BoxConstraints(minHeight: 100), // Ensure space
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[300]!),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min, // Wrap content
-            children: [
-              Text(
-                '제출된 답변:',
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 12), // More gap
-              // Determine type robustly
-              if (_isBalanceGame) 
-                 Text(
-                   widget.submittedAnswer == 'A' 
-                       ? 'A: ${widget.optionA}' 
-                       : (widget.submittedAnswer == 'B' 
-                           ? 'B: ${widget.optionB}' 
-                           : (widget.submittedAnswer == widget.optionA 
-                               ? 'A: ${widget.optionA}'
-                               : (widget.submittedAnswer == widget.optionB 
-                                   ? 'B: ${widget.optionB}'
-                                   : widget.submittedAnswer.toString()))),
-                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textDark),
-                   textAlign: TextAlign.center,
-                   maxLines: 2,
-                   overflow: TextOverflow.ellipsis,
-                 )
-              else // Truth Game
-                 Text(
-                   '"${widget.submittedAnswer}"',
-                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: AppColors.textDark),
-                   textAlign: TextAlign.center,
-                   maxLines: 2,
-                   overflow: TextOverflow.ellipsis,
-                 ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 30),
+  Widget _buildBalanceContent({required bool readOnly, String? highlightAnswer}) {
+    // Determine selection state
+    final bool isASelected = highlightAnswer == 'A' || highlightAnswer == widget.optionA;
+    final bool isBSelected = highlightAnswer == 'B' || highlightAnswer == widget.optionB;
+    
+    // If highlighting, dim the unselected one
+    final double aOpacity = (highlightAnswer != null && !isASelected) ? 0.3 : 1.0;
+    final double bOpacity = (highlightAnswer != null && !isBSelected) ? 0.3 : 1.0;
 
-        Row(
-          children: [
-            // Reject Button
-            Expanded(
-              child: SizedBox(
-                height: 50,
-                child: OutlinedButton(
-                  onPressed: () => widget.onOptionSelected('REJECT'),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.grey, width: 2),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  ),
-                  child: const Text('비공감', style: TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            // Approve Button
-            Expanded(
-              child: SizedBox(
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () => widget.onOptionSelected(widget.submittedAnswer ?? 'APPROVED'), 
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.hostPrimary, // Brand Color
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  ),
-                  child: const Text('공감', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-
-  Widget _buildBalanceContent() {
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: _buildOptionButton(
-              context,
-              label: widget.optionA,
-              color: const Color(0xFF7DD3FC), // Sky Blue
-              value: 'A',
+            child: Opacity(
+              opacity: aOpacity,
+              child: _buildOptionButton(
+                context,
+                label: widget.optionA,
+                color: const Color(0xFF7DD3FC), // Sky Blue
+                value: 'A',
+                enabled: !readOnly,
+                isSelected: isASelected,
+              ),
             ),
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: _buildOptionButton(
-              context,
-              label: widget.optionB,
-              color: const Color(0xFFFBCFE8), // Pink
-              value: 'B',
+            child: Opacity(
+              opacity: bOpacity,
+              child: _buildOptionButton(
+                context,
+                label: widget.optionB,
+                color: const Color(0xFFFBCFE8), // Pink
+                value: 'B',
+                enabled: !readOnly,
+                isSelected: isBSelected,
+              ),
             ),
           ),
         ],
@@ -445,10 +329,15 @@ class _QuizOverlayState extends State<QuizOverlay> {
     super.dispose();
   }
 
-  Widget _buildTruthContent() {
-    // Parse answers directly from comma-separated string if simple
-    // Or just use the whole string as one suggestion if no commas?
-    // Assuming backend sends answers like "Yes, No, I don't know" or "Option1, Option2"
+  Widget _buildTruthContent({required bool readOnly, String? highlightAnswer}) {
+    // If reviewing/waiting, show the submitted answer instead of input if possible, 
+    // or just populate the controller with the answer.
+    
+    // Check if we need to update controller for display
+    if (readOnly && highlightAnswer != null && _answerController.text != highlightAnswer) {
+        _answerController.text = highlightAnswer;
+    }
+
     final List<String> suggestions = widget.answer?.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList() ?? [];
 
     return Column(
@@ -456,26 +345,33 @@ class _QuizOverlayState extends State<QuizOverlay> {
         // Input Field
         TextField(
           controller: _answerController,
-          maxLength: 20, // Enforce 20 chars limit
-          style: const TextStyle(fontSize: 14),
+          maxLength: 20, 
+          enabled: true, // Keep enabled for vivid text color
+          readOnly: readOnly, // Prevent editing if readOnly
+          style: const TextStyle(
+            fontSize: 16, // Increased size for better visibility
+            fontWeight: FontWeight.bold, // Bold for emphasis
+            color: Colors.black, // Vivid Black
+          ),
+          textAlign: TextAlign.center, // Center text for truth answer presentation
           decoration: InputDecoration(
-            isDense: true, // Reduces height
-            hintText: '답변을 입력하거나 선택하세요', 
+            isDense: true, 
+            hintText: readOnly ? '상대방이 답변 중입니다...' : '답변을 입력하거나 선택하세요', 
             hintStyle: const TextStyle(fontSize: 12),
             filled: true,
             fillColor: Colors.grey[100],
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
+              borderSide: highlightAnswer != null ? const BorderSide(color: AppColors.hostPrimary, width: 2) : BorderSide.none, // Highlight border
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8), // Minimal padding
+            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12), 
             counterText: "",
           ),
         ),
         const SizedBox(height: 20),
 
-        // Suggestions Chips (Horizontal Scroll, Max 4)
-        if (suggestions.isNotEmpty) ...[
+        // Suggestions Chips (Only show if answering)
+        if (suggestions.isNotEmpty && !readOnly) ...[
           Container(
             padding: const EdgeInsets.symmetric(vertical: 0),
             child: SingleChildScrollView(
@@ -501,7 +397,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
                            ),
                            child: Text(
                              suggestion,
-                             style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12), // Caption size
+                             style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 12), 
                              overflow: TextOverflow.ellipsis,
                            ),
                          ),
@@ -515,26 +411,27 @@ class _QuizOverlayState extends State<QuizOverlay> {
           const SizedBox(height: 20),
         ],
 
-        SizedBox(
-          width: double.infinity,
-          height: 32, // Drastically reduced from 60 to ~24-32 range as requested
-          child: ElevatedButton(
-            onPressed: () {
-               if (_answerController.text.isEmpty) return;
-               widget.onOptionSelected(_answerController.text);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.hostPrimary,
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.zero, // Remove internal padding
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+        if (!readOnly)
+          SizedBox(
+            width: double.infinity,
+            height: 32, 
+            child: ElevatedButton(
+              onPressed: () {
+                 if (_answerController.text.isEmpty) return;
+                 widget.onOptionSelected(_answerController.text);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.hostPrimary,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 0,
               ),
-              elevation: 0,
+              child: const Text('확인', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)), 
             ),
-            child: const Text('확인', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)), // Smaller font
           ),
-        ),
       ],
     );
   }
@@ -544,28 +441,56 @@ class _QuizOverlayState extends State<QuizOverlay> {
     required String label,
     required Color color,
     required String value,
+    bool enabled = true,
+    bool isSelected = false,
   }) {
-    return ElevatedButton(
-      onPressed: () => widget.onOptionSelected(value),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color.withOpacity(0.2),
-        foregroundColor: Colors.black87,
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20), // More vertical padding for multi-line
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: color, width: 2),
+    // Fix: Remove Opacity widget here. Controlled by parent or disabledStyle.
+    // If disabled but selected, we want it full vivid color, not greyed out.
+    // If disabled and NOT selected, it will be dimmed by parent Opacity (0.6 * 0.3 = 0.18 roughly).
+    
+    // We need to apply the opacity for "disabled but no selection yet" case?
+    // Parent _buildBalanceContent logic:
+    // aOpacity = (highlightAnswer != null && !isASelected) ? 0.3 : 1.0;
+    // So if no selection, 1.0.
+    // If we are readOnly and no selection (Partner Thinking), we want Dimmed?
+    // Old code: 0.6.
+    
+    // Let's implement the 0.6 opacity via color alpha interaction if needed, or re-add Opacity simplified.
+    // But crucial fix is `disabledBackgroundColor` matching active color.
+
+    final double contentOpacity = (enabled || isSelected) ? 1.0 : 0.6;
+
+    return Opacity(
+      opacity: contentOpacity,
+      child: ElevatedButton(
+        onPressed: enabled ? () => widget.onOptionSelected(value) : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color.withOpacity(0.2),
+          foregroundColor: Colors.black87,
+          // FIX: Override disabled colors to prevent greying out when selected
+          disabledBackgroundColor: isSelected ? color.withOpacity(0.2) : color.withOpacity(0.1), 
+          disabledForegroundColor: Colors.black87,
+          
+          elevation: isSelected ? 4 : 0, 
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+                color: isSelected ? AppColors.hostPrimary : color, 
+                width: isSelected ? 4 : 2 
+            ), 
+          ),
         ),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 16, 
-          fontWeight: FontWeight.bold,
-          height: 1.3, // Better line spacing
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 16, 
+            fontWeight: FontWeight.bold,
+            height: 1.3, 
+          ),
+          textAlign: TextAlign.center,
+          softWrap: true, 
         ),
-        textAlign: TextAlign.center,
-        softWrap: true, // Enable word wrap
       ),
     );
   }

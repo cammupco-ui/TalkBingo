@@ -38,6 +38,11 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
   // Sync Smoothing
   double? _remoteGoalieTargetX;
   
+  // Constants (Responsive)
+  double get kBallS => _gameSize.width * 0.15; // 15% width
+  double get kGoalieW => _gameSize.width * 0.40; // 40% width (Wider Paddle)
+  double get kGoalieH => _gameSize.width * 0.40 * 0.5; // Aspect Ratio 2:1 (120x60)
+
   // State
   int _score = 0;
   bool _shotTaken = false;
@@ -54,6 +59,8 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
   
   // Sync
   DateTime _lastSync = DateTime.now();
+  DateTime _lastTimeSync = DateTime.now(); // For timer sync
+  int _remoteScore = 0; // Spectator tracks opponent score
 
   double _lastTime = 0;
   Size _gameSize = Size.zero;
@@ -197,14 +204,17 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
   void _resetGame() {
     _score = 0;
     _shotTaken = false;
+    _isBlocked = false;
     _isRoundOver = false;
     _timeLeft = 15.0;
     _dragStart = null;
     _dragCurrent = null;
     _remoteGoalieTargetX = null;
+    _remoteScore = 0;
     
-    _ball = GameEntity(x: 0, y: 0, width: 80, height: 80, color: Colors.white);
-    _goalie = GameEntity(x: 0, y: 0, width: 160, height: 120, color: Colors.blueAccent);
+    // Initial sizes 0, will be set in LayoutBuilder
+    _ball = GameEntity(x: 0, y: 0, width: 0, height: 0, color: Colors.white);
+    _goalie = GameEntity(x: 0, y: 0, width: 0, height: 0, color: Colors.blueAccent);
   }
 
   @override
@@ -227,19 +237,27 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
     if (_gameSize == Size.zero) return;
     
     // Timer (Controlled by Kicker)
-    // If I am Goalie, I just follow state or loose sync timer?
-    // Let's rely on Session Round Change for tight sync, or just run timer locally.
-    // Local timer OK for 15s.
-    _timeLeft -= dt;
-    if (_timeLeft <= 0) {
-       _timeLeft = 0;
+    final activePlayer = _session.interactionState?['activePlayer'];
+    final isKicker = activePlayer == _session.myRole;
+
+    if (isKicker) {
+       _timeLeft -= dt;
        
-       // Only Kicker submits
-       final activePlayer = _session.interactionState?['activePlayer'];
-       if (activePlayer == _session.myRole) {
-          _finishRound();
+       // Sync Time
+       if (DateTime.now().difference(_lastTimeSync).inSeconds >= 2) {
+           _session.sendGameEvent({'eventType': 'time_sync', 'time': _timeLeft});
+           _lastTimeSync = DateTime.now();
        }
-       return;
+
+       if (_timeLeft <= 0) {
+          _timeLeft = 0;
+          _finishRound();
+          return;
+       }
+    } else {
+       // Spectator follow
+       _timeLeft -= dt;
+       if (_timeLeft < 0) _timeLeft = 0;
     }
 
     _updateGame(dt);
@@ -318,12 +336,12 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
               
               // 1. HITBOX: Center-based & Shrunk (Visual Body Only)
               Rect goalieRect = Rect.fromCenter(
-                 center: Offset(
-                    _goalie.x + _goalie.width / 2, 
-                    _goalie.y + _goalie.height / 2 + 10 // Shift down slightly to cover body/legs
-                 ), 
-                 width: _goalie.width * 0.5, // 50% width
-                 height: _goalie.height * 0.6 // 60% height
+                  center: Offset(
+                     _goalie.x + _goalie.width / 2, 
+                     _goalie.y + _goalie.height / 2 
+                  ), 
+                  width: _goalie.width * 0.9, // 90% width (Full Paddle)
+                  height: _goalie.height * 0.8 // 80% height
               );
               
               // 2. BALL: Circular Collision
@@ -366,12 +384,13 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
               // 3. GOAL CONDITION: Dynamic & Forgiving
               // If NOT hits goalie and reaches deep into goal (e.g. top 10% of zone)
               final double goalLineY = zoneHeight * 0.1;
-              
-              if (!_isBlocked && _ball.y < goalLineY) { 
-                 _score++;
-                 // Force goal sound or effect here if needed
-                 _resetBall();
-              }
+                            if (!_isBlocked && _ball.y < goalLineY) { 
+                  _score++;
+                  // Sync Score
+                  _session.sendGameEvent({'eventType': 'score_update', 'score': _score});
+                  // Force goal sound or effect here if needed
+                  _resetBall();
+               }
               
               // Wall Bounce
               if (_ball.x <= 0) {
@@ -514,75 +533,65 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
       body: SafeArea(
         child: Column(
           children: [
-             // 1. HEADER (HUD)
+             // 1. DISTINCT COMPACT HEADER (HUD)
              Container(
-                height: 140,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                height: 80, // Reduced from 140
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                    color: colBg,
                    border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.1)))
                 ),
-                child: Column(
+                child: Row(
+                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                    children: [
-                       Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                             Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                   Text(
-                                      isKicker ? "ATTACKER" : "GOALKEEPER",
-                                      style: GoogleFonts.alexandria(color: Colors.grey, fontSize: 12),
-                                   ),
-                                   Text(
-                                      isKicker ? "SCORE!" : "DEFEND!",
-                                      style: GoogleFonts.alexandria(
-                                         color: isKicker ? Colors.greenAccent : Colors.orangeAccent, 
-                                         fontSize: 20, fontWeight: FontWeight.bold
-                                      ),
-                                   ),
-                                ],
-                             ),
-                             
-                             if (isKicker)
-                               Text(
-                                  "${_timeLeft.toStringAsFixed(1)}s", 
-                                  style: GoogleFonts.alexandria(
-                                     color: _timeLeft < 5 ? Colors.red : Colors.white, 
-                                     fontSize: 32, fontWeight: FontWeight.bold
-                                  ),
+                      // Role & Status
+                      Column(
+                         mainAxisAlignment: MainAxisAlignment.center,
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+                            Text(
+                               isKicker ? "ATTACKER" : "GOALKEEPER",
+                               style: GoogleFonts.alexandria(color: Colors.grey, fontSize: 10),
+                            ),
+                            Text(
+                               isKicker ? "SCORE!" : "DEFEND!",
+                               style: GoogleFonts.alexandria(
+                                  color: isKicker ? Colors.greenAccent : Colors.orangeAccent, 
+                                  fontSize: 16, fontWeight: FontWeight.bold
                                ),
-
-                             Row(
-                                children: [
-                                   Icon(
-                                      _session.isRealtimeConnected ? Icons.wifi : Icons.wifi_off, 
-                                      color: _session.isRealtimeConnected ? Colors.greenAccent : Colors.red, 
-                                      size: 16
-                                   ),
-                                   const SizedBox(width: 10),
-                                   IconButton(
-                                      icon: const Icon(Icons.close, color: Colors.white, size: 20),
-                                      onPressed: widget.onClose,
-                                      padding: EdgeInsets.zero,
-                                      constraints: const BoxConstraints(),
-                                   ),
-                                ],
-                             )
-                          ],
-                       ),
-                       const Spacer(),
-                       // Scoreboard
-                       Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                             _buildScoreBadge("YOU", isKicker ? _score : (scores[_session.myRole] ?? 0), isKicker),
-                             const SizedBox(width: 20),
-                             Text("-", style: GoogleFonts.alexandria(color: Colors.white30, fontSize: 20)),
-                             const SizedBox(width: 20),
-                             _buildScoreBadge("OPPONENT", scores[isKicker ? (_session.myRole == 'A' ? 'B' : 'A') : activePlayer] ?? 0, !isKicker),
-                          ],
-                       ),
+                            ),
+                         ],
+                      ),
+                      
+                      // Scores
+                      Row(
+                         children: [
+                            _buildScoreBadge("YOU", isKicker ? _score : (scores[_session.myRole] ?? 0), isKicker),
+                            const SizedBox(width: 12),
+                            Text(":", style: GoogleFonts.alexandria(color: Colors.white30, fontSize: 16)),
+                            const SizedBox(width: 12),
+                            _buildScoreBadge("OPP", isKicker ? (scores[(_session.myRole == 'A' ? 'B' : 'A')] ?? 0) : _remoteScore, !isKicker),
+                         ],
+                      ),
+                      
+                      // Timer & Close
+                      Column(
+                         mainAxisAlignment: MainAxisAlignment.center,
+                         crossAxisAlignment: CrossAxisAlignment.end,
+                         children: [
+                           Text(
+                              "${_timeLeft.toStringAsFixed(1)}s", 
+                              style: GoogleFonts.alexandria(
+                                 color: _timeLeft < 5 ? Colors.red : Colors.white, 
+                                 fontSize: 24, fontWeight: FontWeight.bold
+                              ),
+                           ),
+                           InkWell(
+                              onTap: widget.onClose,
+                              child: const Icon(Icons.close, color: Colors.white54, size: 18),
+                           )
+                         ],
+                      )
                    ],
                 ),
              ),
@@ -594,23 +603,29 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                    child: LayoutBuilder(
                       builder: (context, constraints) {
                          // Update Game Size
-                         if (_gameSize.width != constraints.maxWidth || _gameSize.height != constraints.maxHeight) {
                             _gameSize = Size(constraints.maxWidth, constraints.maxHeight);
                             
-                            // Recalculate Logic based on new size
+                            // 1. Recalculate Logic based on new size
                             final double zoneHeight = _gameSize.height / 3;
 
+                            // Update Entity Sizes Dynamic
+                            _ball.width = kBallS;
+                            _ball.height = kBallS;
+                            _goalie.width = kGoalieW;
+                            _goalie.height = kGoalieH;
+
                             // Kicker Ball Pos: Bottom Zone Center
-                            _ball.x = _gameSize.width / 2 - _ball.width / 2;
-                            _ball.y = zoneHeight * 2 + (zoneHeight / 2) - (_ball.height / 2); 
+                            if (_ball.vx == 0 && _ball.vy == 0 && !_shotTaken && !_isDraggingBall) {
+                               _ball.x = _gameSize.width / 2 - _ball.width / 2;
+                               _ball.y = zoneHeight * 2 + (zoneHeight / 2) - (_ball.height / 2); 
+                            }
                             
                             // Goalie Pos: Top Zone (Goal)
-                            _goalie.x = _gameSize.width / 2 - _goalie.width / 2;
-                            _goalie.y = (zoneHeight / 2) - (_goalie.height / 2); // Center of Top Zone
-                         }
+                            // If just moving left/right, keep Y constant
+                            _goalie.y = (zoneHeight / 2) - (_goalie.height / 2); 
+                            // Ensure x is within bounds if resized
+                            if (_goalie.x == 0) _goalie.x = _gameSize.width/2 - kGoalieW/2;
                          
-                         final double zoneHeight = _gameSize.height / 3;
-
                          return Container(
                             width: double.infinity,
                             height: double.infinity,

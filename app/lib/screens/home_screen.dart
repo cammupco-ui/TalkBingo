@@ -106,10 +106,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         showDialog(
                           context: context,
                           builder: (context) => AlertDialog(
-                            title: Text(AppLocalizations.get('start_new_game'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold))),
-                            content: Text(AppLocalizations.get('start_new_warning'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle())),
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            title: Text(AppLocalizations.get('start_new_game'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black))),
+                            content: Text(AppLocalizations.get('start_new_warning'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(color: Colors.black87))),
                             actions: [
-                              TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.get('cancel'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle()))),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context), 
+                                child: Text(AppLocalizations.get('cancel'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(color: Colors.black54)))
+                              ),
                               TextButton(
                                 onPressed: () {
                                   GameSession().reset();
@@ -172,9 +177,16 @@ class _HomeScreenState extends State<HomeScreen> {
                      showDialog(
                        context: context,
                        builder: (context) => AlertDialog(
-                          title: Text(AppLocalizations.get('coming_soon')),
-                          content: Text(AppLocalizations.get('service_unavailable')),
-                          actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK"))],
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          title: Text(AppLocalizations.get('coming_soon'), style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                          content: Text(AppLocalizations.get('service_unavailable'), style: const TextStyle(color: Colors.black87)),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context), 
+                              child: const Text("OK", style: TextStyle(color: AppColors.hostPrimary, fontWeight: FontWeight.bold))
+                            )
+                          ],
                        ),
                      );
                   },
@@ -747,42 +759,116 @@ class _WelcomeMessageState extends State<_WelcomeMessage> with SingleTickerProvi
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(height: 8), // Spacing between name and stars
+                const SizedBox(height: 8), // Spacing
                 const SizedBox(height: 8), 
                 Align(
-                  alignment: Alignment.centerRight, // 1. Align Right
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min, 
-                    crossAxisAlignment: CrossAxisAlignment.center, 
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: List.generate(5, (index) {
-                           IconData icon = Icons.star_border;
-                           if (score >= index + 1) {
-                              icon = Icons.star;
-                           } else if (score > index) {
-                              icon = Icons.star_half;
-                           }
-                           
-                           return Icon(
-                             icon, 
-                             size: 22, 
-                             color: const Color(0xB268CDFF), // 70% Opacity
-                           );
-                        }),
-                      ),
-                      const SizedBox(width: 8), 
-                      Text(
-                        score.toStringAsFixed(1),
-                        style: const TextStyle(
-                          color: Color(0xB268CDFF), // 70% Opacity
-                          fontSize: 22, 
-                          fontWeight: FontWeight.bold,
-                          height: 1.0, 
+                  alignment: Alignment.centerRight,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () {
+                         showDialog(
+                           context: context,
+                           builder: (context) => AlertDialog(
+                             backgroundColor: Colors.white,
+                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                             title: Row(
+                               children: [
+                                 const Icon(Icons.verified, color: Colors.blueAccent),
+                                 const SizedBox(width: 8),
+                                 Text(
+                                   AppLocalizations.get('trust_score_title'), 
+                                   style: const TextStyle(
+                                     fontFamily: 'NURA', 
+                                     fontWeight: FontWeight.bold, 
+                                     fontSize: 20,
+                                     color: Colors.black,
+                                   )
+                                 ),
+                               ],
+                             ),
+                             content: Column(
+                               mainAxisSize: MainAxisSize.min,
+                               children: [
+                                 Text(
+                                   score.toStringAsFixed(1),
+                                   style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w900, color: Colors.blueAccent),
+                                 ),
+                                 Row(
+                                   mainAxisAlignment: MainAxisAlignment.center,
+                                   children: List.generate(5, (index) {
+                                      IconData icon = Icons.star_border;
+                                      if (score >= index + 1) icon = Icons.star;
+                                      else if (score > index) icon = Icons.star_half;
+                                      return Icon(icon, color: Colors.amber, size: 32);
+                                   }),
+                                 ),
+                                 const SizedBox(height: 16),
+                                 // Removed "Based on evaluations" as per request
+                                 Text(
+                                   AppLocalizations.get('trust_score_desc'),
+                                   textAlign: TextAlign.center,
+                                   style: AppLocalizations.getTextStyle(
+                                      baseStyle: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic, color: Colors.black87)
+                                   ),
+                                 ),
+                               ],
+                             ),
+                             actions: [
+                               TextButton(
+                                 onPressed: () => Navigator.pop(context), 
+                                 child: Text(
+                                   AppLocalizations.get('close'), 
+                                   style: AppLocalizations.getTextStyle(
+                                      baseStyle: const TextStyle(
+                                        color: AppColors.hostPrimary, 
+                                        fontWeight: FontWeight.bold
+                                      )
+                                   )
+                                 )
+                               )
+                             ],
+                           ),
+                         );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min, 
+                          crossAxisAlignment: CrossAxisAlignment.center, 
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: List.generate(5, (index) {
+                                 IconData icon = Icons.star_border;
+                                 if (score >= index + 1) {
+                                     icon = Icons.star;
+                                 } else if (score > index) {
+                                     icon = Icons.star_half;
+                                 }
+                                 
+                                 return Icon(
+                                   icon, 
+                                   size: 22, 
+                                   color: const Color(0xB268CDFF), 
+                                 );
+                              }),
+                            ),
+                            const SizedBox(width: 8), 
+                            Text(
+                              score.toStringAsFixed(1),
+                              style: const TextStyle(
+                                color: Color(0xB268CDFF), 
+                                fontSize: 22, 
+                                fontWeight: FontWeight.bold,
+                                height: 1.0, 
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ],

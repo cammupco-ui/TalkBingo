@@ -23,6 +23,8 @@
 
 **게스트 정보 구분:**
 - `gender`: Guest Gender로 표시
+- **익명 유저 (Anonymous)**: `email` is null, `role` can be guest or host. `is_anonymous` flag via Supabase Auth.
+- **계정 전환**: 익명 유저가 Google 로그인 시, 기존 `user_id`가 유지되거나(Supabase Linking), `migrate_user_history` RPC를 통해 새 `user_id`로 데이터가 이관됩니다.
 
 ### Game Table (게임 정보)
 | 컬럼명 | 타입 | 설명 |

@@ -9,6 +9,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:talkbingo_app/screens/home_screen.dart';
 import 'package:talkbingo_app/screens/point_purchase_screen.dart';
+import 'package:talkbingo_app/utils/migration_manager.dart';
 // import 'package:talkbingo_app/screens/splash_screen.dart'; // Removed to avoid circular dependency
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/utils/localization.dart';
@@ -205,7 +206,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 12),
             
             // Language Selection
-            _buildLabel(AppLocalizations.get('language')),
+            _buildLabel(AppLocalizations.get('language'), isRequired: true),
             Row(
               children: [
                 _buildLanguageChip('English', 'en'),
@@ -222,7 +223,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 12),
             
             // Registered Email (Read Only)
-            _buildLabel(AppLocalizations.get('account_email')),
+            _buildLabel(AppLocalizations.get('account_email'), isRequired: true),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -239,7 +240,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 8),
 
             // Nickname
-            _buildLabel(AppLocalizations.get('nickname')),
+            _buildLabel(AppLocalizations.get('nickname'), isRequired: true),
             TextField(
               controller: _nicknameController,
               decoration: _inputDecoration('Nickname'),
@@ -248,7 +249,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 8),
 
             // Gender
-            _buildLabel(AppLocalizations.get('gender')),
+            _buildLabel(AppLocalizations.get('gender'), isRequired: true),
             Row(
               children: [
                 _buildGenderChip(AppLocalizations.get('male'), 'Male'),
@@ -259,7 +260,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 8),
             
             // Birth Date
-            _buildLabel(AppLocalizations.get('birth_date')),
+            _buildLabel(AppLocalizations.get('birth_date'), isRequired: true),
             TextField(
               controller: _birthDateController,
               decoration: _inputDecoration('YYYY-MM-DD'),
@@ -371,14 +372,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => SignupScreen()),
-                    );
+                  onPressed: () async {
+                    // Capture current guest ID before going to Sign Up / Log In
+                    await MigrationManager().prepareForMigration();
+                    
+                    if (context.mounted) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => SignupScreen()),
+                      );
+                    }
                   },
                   icon: const Icon(Icons.login, color: Colors.white),
                   label: Text(
-                    "Log In / Sign Up", // Localization key recommended but hardcoding for quick fix as per request
+                    "Sign Up / Link Account", // Matches PageFlow doc
                     style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -426,16 +432,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
   );
   }
 
-  Widget _buildLabel(String text) {
+  Widget _buildLabel(String text, {bool isRequired = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
-        ),
+      child: Row(
+        children: [
+          Text(
+            text,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          if (isRequired)
+            const Padding(
+              padding: EdgeInsets.only(left: 4.0),
+              child: Text(
+                '*',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.hostPrimary, // Match primary color (Pink) for required mark
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

@@ -15,19 +15,25 @@ import 'package:flutter/services.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AdState.initialize(); // Initialize Ads
-  await dotenv.load(fileName: ".env");
-  
-  // Enable Edge-to-Edge (Status Bar visible but transparent, App draws behind it)
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent, // Transparent status bar
-    statusBarIconBrightness: Brightness.light, // White icons for dark background
-    systemNavigationBarColor: Colors.transparent, // Transparent nav bar
-  ));
-  
+  // Hybrid Config: Check build-time args first (Web Release), then .env (Local Dev)
+  String supabaseUrl = const String.fromEnvironment('SUPABASE_URL');
+  String supabaseAnonKey = const String.fromEnvironment('SUPABASE_ANON_KEY');
+
+  if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
+    try {
+      // Fallback for local development (VS Code debug, etc)
+      // Note: On Web Release, this file is typically not bundled, so this block helps Dev only.
+      await dotenv.load(fileName: ".env");
+      supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
+      supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+    } catch (e) {
+      debugPrint("Warning: No .env found and no --dart-define args provided.");
+    }
+  }
+
   await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL'] ?? '',
-    anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+    url: supabaseUrl,
+    anonKey: supabaseAnonKey,
     authOptions: const FlutterAuthClientOptions(
       authFlowType: AuthFlowType.pkce,
     ),

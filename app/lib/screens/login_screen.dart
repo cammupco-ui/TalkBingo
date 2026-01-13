@@ -222,7 +222,9 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     try {
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: kIsWeb ? Uri.base.origin : 'io.supabase.talkbingo://login-callback',
+        redirectTo: kIsWeb 
+          ? (kReleaseMode ? 'https://talkbingo-web.web.app/' : Uri.base.origin) 
+          : 'io.supabase.talkbingo://login-callback',
       );
       // OAuth flow redirects away, so loading state stays until return
     } on AuthException catch (e) {

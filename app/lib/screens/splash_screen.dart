@@ -10,6 +10,7 @@ import 'package:talkbingo_app/screens/host_info_screen.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 
 import 'package:talkbingo_app/models/game_session.dart';
+import 'package:talkbingo_app/utils/migration_manager.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,235 +21,190 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   double _progress = 0.0;
+  String? _initialInviteCode;
+  StreamSubscription<AuthState>? _authSubscription;
+  
+  // Single Random Text State
+  late int _randomIndex;
+
+  final List<String> _koreanTexts = [
+    "스스로를 사랑하세요",
+    "여기서는 너 그대로면 충분해",
+    "지금의 너로 시작하면 돼",
+    "정답은 없어 네 이야기면 돼",
+    "천천히 가도 방향은 맞아",
+    // "잘하려 하지 않아도 괜찮아", // Typo fix or keep as is? User provided list has it.
+    "잘하려 하지 않아도 괜찮아",
+    "이 순간은 너를 위한 시간이야",
+    "비교하지 않아도 빛나",
+    "솔직해질 준비만 있으면 돼",
+    "너의 속도를 존중해",
+    "시작하기에 이미 충분해",
+  ];
+
+  final List<String> _englishTexts = [
+    "Love yourself",
+    "You are enough just as you are here",
+    "You can start as you are now",
+    "There is no right answer, your story is enough",
+    "Even if slow, the direction is right",
+    "It's okay not to be perfect",
+    "This moment is for you",
+    "You shine without comparing",
+    "Just be ready to be honest",
+    "Respect your own pace",
+    "You are already enough to start",
+  ];
 
   @override
   void initState() {
     super.initState();
-    print('SplashScreen: initState'); // Debug
-    _checkSession();
+    // 1. Capture URL state IMMEDIATELY
+    final uri = Uri.base;
+    _initialInviteCode = uri.queryParameters['code']?.trim();
+    debugPrint("SplashScreen: InitState captured code: $_initialInviteCode");
+
+    // Select random index once
+    _randomIndex = DateTime.now().millisecondsSinceEpoch % _koreanTexts.length;
+
+    _setupAuthListener();
+    
+    // Explicitly check session immediately to prevent waiting if already logged in
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+       _checkExistingSession();
+    });
   }
 
-  Future<void> _checkSession() async {
-    try {
-      print('SplashScreen: _checkSession started');
-      
-      // Simulate loading progress
-      for (var i = 0; i <= 100; i += 20) {
-        await Future.delayed(const Duration(milliseconds: 50));
-        if (mounted) {
-          setState(() {
-            _progress = i / 100;
-          });
-        }
-      }
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
+  }
 
-      if (!mounted) return;
-
-      // Robust URL Parsing
-      final uri = Uri.base;
-      print('SplashScreen: Uri.base = $uri');
-      
-      String? inviteCode = uri.queryParameters['code'];
-      
-      // Fallback 1: Fragment
-      if (inviteCode == null && uri.hasFragment && uri.fragment.contains('code=')) {
-         final fragmentUri = Uri.parse(uri.fragment.replaceFirst('#', '?'));
-         if (fragmentUri.queryParameters.containsKey('code')) {
-           inviteCode = fragmentUri.queryParameters['code'];
-         }
-      }
-      
-      // Fallback 2: Raw String Parsing (for root query params before hash)
-      if (inviteCode == null) {
-        final urlString = uri.toString();
-        if (urlString.contains('?code=')) {
-           final parts = urlString.split('?code=');
-           if (parts.length > 1) {
-             final potentialCode = parts[1].split('&').first.split('#').first;
-             if (potentialCode.length == 6) {
-               inviteCode = potentialCode;
-               print('SplashScreen: Found code via raw string parsing: $inviteCode');
-             }
-           }
-        }
-      }
-
-      print('SplashScreen: Final Detected Code = $inviteCode');
-
-      // 0. Detect Auth Callback (Magic Link)
-      bool isAuthCallback = uri.queryParameters.containsKey('code') || 
-                            uri.fragment.contains('access_token') ||
-                            uri.fragment.contains('type=recovery');
-
-      if (isAuthCallback) {
-        print('SplashScreen: Auth Callback Detected. Waiting for Session...');
-        if (mounted) setState(() => _progress = 0.8); // Visual Feedback
-        
-        // Attempt Manual Exchange immediately if code is present (Robustness for Web)
-        if (kIsWeb && inviteCode != null && inviteCode.length > 20) { // Long code = Auth Code
-           try {
-             print('SplashScreen: Attempting Manual Code Exchange for $inviteCode');
-             await Supabase.instance.client.auth.exchangeCodeForSession(inviteCode);
-           } catch (e) {
-             print('SplashScreen: Manual Exchange Error (might be auto-handled): $e');
-           }
-        }
-
-        // Wait for session with a timeout (e.g., 5 seconds)
-        final completer = Completer<Session?>();
-        final subscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-           if (data.session != null) {
-              if (!completer.isCompleted) completer.complete(data.session);
-           }
-        });
-
-        // Try getting session immediately just in case
-        final currentSession = Supabase.instance.client.auth.currentSession;
-        if (currentSession != null && !completer.isCompleted) {
-           completer.complete(currentSession);
-        }
-
-        // Wait
-        final sessionOrNull = await completer.future.timeout(
-           const Duration(seconds: 5),
-           onTimeout: () => null,
-        );
-        
-        subscription.cancel();
-
-        if (sessionOrNull != null) {
-           print('SplashScreen: Session Established via Callback.');
-           // Proceed with this session
-           _handleNavigation(sessionOrNull, inviteCode);
-           return;
-        } else {
-           print('SplashScreen: Auth Callback Timeout or Failed.');
-           // Fallthrough to normal check logic (which will likely go to Signup/Login)
-        }
-      }
-
-      print('SplashScreen: Final Detected Code = $inviteCode');
-
+  Future<void> _checkExistingSession() async {
       final session = Supabase.instance.client.auth.currentSession;
-      _handleNavigation(session, inviteCode);
-
-    } catch (e, stack) {
-      print('SplashScreen Error: $e\n$stack');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
+      if (session != null) {
+          debugPrint("SplashScreen: Immediate Session Found. Navigating.");
+          await _handleAuthenticatedUser(session);
       }
-    }
   }
 
-  Future<void> _handleNavigation(Session? session, String? inviteCode) async {
-      // 1-A. Validate Invite Code
-       if (inviteCode != null && inviteCode.length != 6) {
-        print('SplashScreen: Code "$inviteCode" looks like an Auth Code or invalid. Ignoring as Invite Code.');
-        inviteCode = null; 
+  void _setupAuthListener() {
+    // 1. Listen to Auth State Changes
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      if (!mounted) return;
+      
+      final session = data.session;
+      final event = data.event;
+      debugPrint("SplashScreen: Auth Event: $event, Session: ${session != null}");
+
+      // Use _initialInviteCode if present, or check current URI
+      final uri = Uri.base; 
+      final currentCode = uri.queryParameters['code']?.trim();
+      final effectiveCode = _initialInviteCode ?? currentCode;
+
+      // Handle Invite Code (Deep Link / URL Param)
+      if (effectiveCode != null && effectiveCode.length == 6) {
+           debugPrint("SplashScreen: Listener - Invite Code Found: $effectiveCode");
+           GameSession().pendingInviteCode = effectiveCode;
+           Navigator.of(context).pushReplacement(
+             MaterialPageRoute(builder: (_) => InviteCodeScreen(initialCode: effectiveCode)),
+           );
+           return;
       }
 
-      // [WEB-SPECIFIC] Force Guest Flow (SignupScreen) by default for Web Clients
-      // unless it's a deep link with a specific invite code.
-      if (kIsWeb && inviteCode == null && session == null) {
-         print('SplashScreen: [Web] Force Fresh Start -> SignupScreen');
-         // If a session existed from cache but we want to force guest flow? 
-         // Actually, let's just proceed to Signup if inviteCode is null.
-         // But wait, if they are logged in as Host on Web, do we want to kick them out?
-         // User said: "Web initialization value always Guest Flow".
-         // This implies we should ignore the cached session for Web unless explicit.
+      // Handle Auth Session
+      if (session != null) {
+           debugPrint("SplashScreen: Listener - Session Found. Handling User.");
+           _handleAuthenticatedUser(session);
       }
-      
-      // If Web and we have a session but it might be a stale Host session...
-      // The user specially asked for "Web case... always start with Guest Flow".
-      // We will implement a check: If Web, and not a Redirect Callback, Force Logout/Guest Mode?
-      // Or just navigate to SignupScreen even if Session exists?
-      
-      if (kIsWeb) {
-         // Check if this is a "Zombie Session" or unwanted Host session
-         if (session != null && inviteCode == null) {
-            print('[Web Override] Clearing session to enforce Guest Flow default.');
-            await Supabase.instance.client.auth.signOut();
-            session = null;
-         }
-      }
+    });
 
-      // 1. Host (Logged In) -> Home or Host Setup
-      if (session != null && session.user.isAnonymous != true) {
-         if (mounted) {
-            print('SplashScreen: Authenticated Host.');
-            
-            // Check if Profile is set
-            final gs = GameSession();
-            await gs.loadHostInfoFromPrefs(); // Ensure loaded
-            
-            if (gs.hostNickname == null) {
-               print('SplashScreen: Host Profile Missing. Going to HostInfoScreen.');
-               Navigator.of(context).pushReplacement(
-                 MaterialPageRoute(builder: (_) => HostInfoScreen()), 
-               );
-            } else {
-               print('SplashScreen: Host Profile Found. Going to Home.');
-               gs.myRole = 'A';
-               Navigator.of(context).pushReplacementNamed('/home');
-            }
-         }
+    // 2. Initial Checks (Timeouts)
+    // Extended timeout to 4.0s for Mobile Web latency
+    Future.delayed(const Duration(milliseconds: 4000), () async {
+      if (!mounted) return;
+      
+      final session = Supabase.instance.client.auth.currentSession;
+      String? inviteCode = _initialInviteCode; 
+      
+      bool isAuthCode = inviteCode != null && inviteCode.length > 6;
+      bool isInviteCode = inviteCode != null && inviteCode.length == 6;
+
+      if (isInviteCode) {
+         debugPrint("SplashScreen: Timeout Force-Navigating to InviteCodeScreen with $inviteCode");
+         GameSession().pendingInviteCode = inviteCode;
+         Navigator.of(context).pushReplacement(
+           MaterialPageRoute(builder: (_) => InviteCodeScreen(initialCode: inviteCode)),
+         );
          return;
       }
 
-      // 2. Guest with Code -> InviteCodeScreen OR Home if logged in
-      if (inviteCode != null) {
-          // Store locally
-          GameSession().pendingInviteCode = inviteCode;
-          print('SplashScreen: Stored Pending Code: $inviteCode');
-
-          if (session != null && session.user.isAnonymous != true) {
-             print('SplashScreen: Authenticated Member with Code. Going to Home.');
+      if (session == null && !isAuthCode) {
+         debugPrint("SplashScreen: No Session. Attempting Anonymous Sign-In...");
+         try {
+             await Supabase.instance.client.auth.signInAnonymously();
+             // The auth listener will catch the new session and navigate.
+         } catch (e) {
+             debugPrint("SplashScreen: Anonymous Auth Failed: $e");
+             // Fallback to Signup if anonymous auth fails (critical error)
              if (mounted) {
-               Navigator.of(context).pushReplacementNamed('/home');
+                 Navigator.of(context).pushReplacement(
+                   MaterialPageRoute(builder: (_) => const SignupScreen()),
+                 );
              }
-             return;
-          }
-        
-        if (mounted) {
-          print('SplashScreen: Guest with Code ($inviteCode). Going to InviteCodeScreen.');
-          GameSession().myRole = 'B';
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => InviteCodeScreen(initialCode: inviteCode)),
-          );
-        }
-        return;
+         }
+      } else if (isAuthCode) {
+         debugPrint("SplashScreen: Detected Auth Code ($inviteCode). Waiting for session exchange...");
       }
+    });
+
+    // Check 2: Safety Net (10s)
+    Future.delayed(const Duration(seconds: 10), () {
+        if (!mounted) return;
+        // If we are STILL here, something went wrong with Auth Exchange
+        debugPrint("SplashScreen: Safety Timeout (10s). Forcing unexpected state resolution.");
+        
+        final session = Supabase.instance.client.auth.currentSession;
+        if (session == null) {
+            Navigator.of(context).pushReplacement(
+               MaterialPageRoute(builder: (_) => const SignupScreen()),
+            );
+        }
+    });
+  }
+
+  Future<void> _handleAuthenticatedUser(Session session) async {
+    // 1. Attempt Migration (Guest -> Host) if pending
+    await MigrationManager().attemptMigration();
+
+    if (!mounted) return;
+
+    // 2. Load Host Info to check if profile exists
+    final gameSession = GameSession();
+    await gameSession.loadHostInfoFromPrefs();
       
-      // 3. Anonymous/Returning -> Signup or Home
-      if (session != null) {
-        if (session.user.isAnonymous == true) {
-           print('SplashScreen: Anonymous User. Going to Signup.');
-           if (mounted) {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const SignupScreen()),
-              );
-           }
-        } else {
-           print('SplashScreen: Host Session Found. Going to Home.');
-           if (mounted) {
-            GameSession().myRole = 'A';
-            Navigator.of(context).pushReplacementNamed('/home');
-           }
-        }
+      if (gameSession.hostNickname == null) {
+         // Profile missing? Go to HostInfo to set it up.
+         Navigator.of(context).pushReplacement(
+           MaterialPageRoute(builder: (_) => HostInfoScreen()), 
+         );
       } else {
-        print('SplashScreen: No Session. Going to Signup.');
-        if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const SignupScreen()),
-          );
-        }
+         gameSession.myRole = 'A';
+         Navigator.of(context).pushReplacementNamed('/home');
       }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Detect Language
+    final Locale appLocale = Localizations.localeOf(context);
+    final bool isKorean = appLocale.languageCode == 'ko';
+    final List<String> texts = isKorean ? _koreanTexts : _englishTexts;
+    
+    // Show Single Random Text
+    final String displayText = texts[_randomIndex % texts.length];
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -277,16 +233,31 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            Text(
-              '${(_progress * 100).toInt()}%',
-              style: const TextStyle(
-                color: AppColors.hostPrimary,
-                fontWeight: FontWeight.bold,
+            if (_progress > 0)
+              Text(
+                '${(_progress * 100).toInt()}%',
+                style: const TextStyle(
+                  color: AppColors.hostPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+             const SizedBox(height: 20),
+            
+            // Static Random Text
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                displayText,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.black54, 
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  height: 1.5,
+                  fontFamily: 'NanumSquareRound', // Optional: Use a nice font if available, else default
+                ),
               ),
             ),
-             const SizedBox(height: 20),
-            // Debug Text to confirm Rendering
-            const Text("Initializing...", style: TextStyle(color: Colors.grey)),
           ],
         ),
       ),

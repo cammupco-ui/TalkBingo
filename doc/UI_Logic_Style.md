@@ -18,9 +18,9 @@
 
 **A. Host Flows**
 1.  **New User (Onboarding):**
-    `Splash` → `Signup` (Google Auth) → `HostInfo` (Profile) → `HostSetup` (Create Game) → `GameSetup` → `Waiting` → `Game`
-2.  **Existing User (Returning):**
-    `Splash` → `Home` (Auto-login) OR `Signup` → `Home` (Google Login)
+    `Splash` (Anonymous Auth) → `HostInfo` (Profile) → `HostSetup` (Create Game) → `GameSetup` → `Waiting` → `Game`
+2.  **Existing User (Returning/Conversion):**
+    `Splash` → `Home` (Anonymous or Auth) → `Settings` (Link Account) → `Home`
 3.  **Game Creation:**
     `Home` → `HostSetup` → `GameSetup` → `Waiting` (Questions Loading) → `Game` → `Reward` → `Home`
 4.  **Joining as Guest (Host playing as Guest):**
@@ -28,7 +28,7 @@
 
 **B. Guest Flows**
 1.  **General Guest (Anonymous/New):**
-    `Splash` → `Signup` (Select "Enter Invite Code") → `InviteCode` → `GuestInfo` → `Waiting` → `Game` → `Reward` → `Signup`/`Exit`
+    `Splash` (Anonymous) → `Signup` (Select "Enter Invite Code" or Link) → `InviteCode` → `GuestInfo` → `Waiting` → `Game` → `Reward` → `Settings` (Link Account)
 2.  **Member Guest (Registered User):**
     `Link` → `Home` (Auto-fill Code) → `InviteCode` → `Waiting` → `Game` → `Reward` → `Home`
 
@@ -394,3 +394,38 @@ function syncToGuest(action: string, data?: any) {
 - **ChipPadding**: 12px horizontal, 6px vertical
 - **ChipHeight**: 28–32px
   
+---
+
+## 15) Point Shop & Payment (Platform Specific)
+
+This screen handles VP/AP purchases and strictly adapts its UI based on the running platform to comply with store policies.
+
+### 15.1 Logic & Conditions
+*   **Web (`kIsWeb`)**:
+    *   Show "Method Selector" (Korea/Global Cards).
+    *   Use PortOne SDK for PG Payment.
+*   **App (iOS/Android)**:
+    *   **Hide** "Method Selector".
+    *   **Hide** any reference to Web/External payment.
+    *   Use `in_app_purchase` package strictly.
+
+### 15.2 State Management
+```dart
+enum PaymentProvider { iap, pg_korea, pg_global }
+
+class ShopState {
+  final bool isWeb;
+  PaymentProvider selectedProvider; // Default: 'iap' on App, 'pg_global' on Web
+  
+  // Products are fetched from different sources
+  List<Product> products; // IAP StoreProduct OR Supabase Table Row
+}
+```
+
+### 15.3 Flow
+1.  **Init**: Check Platform → Fetch Products (App Store API or Supabase DB).
+2.  **User Action**: Select Item → Click "Purchase".
+3.  **Process**:
+    *   **App**: Trigger `InAppPurchase.instance.buyConsumable()`.
+    *   **Web**: Open PortOne Modal / Window.
+4.  **Verification**: Send `token` or `imp_uid` to Supabase Edge Function to verify & charge points.

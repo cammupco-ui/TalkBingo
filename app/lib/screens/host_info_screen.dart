@@ -71,43 +71,47 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
            print('Warning: Failed to sign in, saving locally only.');
         }
       } catch (e) {
-        print('Error saving profile to Supabase: $e');
-
-        // Handle "Zombie Session" (User deleted from DB but App has Token)
-        // Error 23503: insert or update on table "profiles" violates foreign key constraint "profiles_id_fkey"
-        if (e.toString().contains('23503') || e.toString().contains('Key is not present in table "users"')) {
-            if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Session expired (User deleted). Signing out...'),
-                        backgroundColor: Colors.red,
-                        duration: Duration(seconds: 2),
-                    ),
-                );
-            }
-            await Supabase.instance.client.auth.signOut();
-            if (mounted) {
-                 Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (_) => const SignupScreen()),
-                    (route) => false,
-                 );
-            }
-            return;
-        }
+        debugPrint('Error saving profile to Supabase: $e');
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error saving profile: $e')),
-          );
+           showDialog(
+             context: context,
+             builder: (ctx) => AlertDialog(
+               title: const Text("Profile Save Error"),
+               content: SingleChildScrollView(
+                 child: Text("Details: $e\n\nUser ID: ${Supabase.instance.client.auth.currentUser?.id}"),
+               ),
+               actions: [
+                 TextButton(
+                   onPressed: () => Navigator.of(ctx).pop(),
+                   child: const Text("OK"),
+                 ),
+                 // Temporary Bypass Button for testing
+                 TextButton(
+                   onPressed: () async {
+                      Navigator.of(ctx).pop();
+                      await session.saveHostInfoToPrefs();
+                      if (mounted) {
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(builder: (_) => const HomeScreen()),
+                            (route) => false,
+                          );
+                      }
+                   },
+                   child: const Text("Force Skip (Local Only)", style: TextStyle(color: Colors.red)),
+                 )
+               ],
+             ),
+           );
         }
-        return; // STOP HERE if save fails
+        return; 
       }
 
       await session.saveHostInfoToPrefs(); // Persist locally
 
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => HostSetupScreen()),
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
           (route) => false,
         );
       }
