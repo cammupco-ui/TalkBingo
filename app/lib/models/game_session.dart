@@ -61,7 +61,15 @@ class GameSession with ChangeNotifier {
   
   String? relationMain = 'Friend';
   String? relationSub;
-  int intimacyLevel = 3;
+  int _intimacyLevel = 3;
+  int get intimacyLevel => _intimacyLevel;
+  set intimacyLevel(int value) {
+    if (value > 5) {
+       debugPrint("⚠️ WARNING: Suspicious Intimacy Level set: $value");
+       debugPrint(StackTrace.current.toString());
+    }
+    _intimacyLevel = value;
+  }
 
   // Targeting Info (Persisted for Rematch)
   String? persistedHostGender;

@@ -599,7 +599,7 @@ class _GameScreenState extends State<GameScreen> {
                     offset: const Offset(0, 40),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     tooltip: '포인트 보기',
-                    child: _buildFloatingText("포인트 ${_session.ep}"),
+                    child: _buildFloatingText("빙고 ${_session.ep}"),
                      itemBuilder: (context) {
                          // Calculate Real-time Stats
                          int filledCells = _session.tileOwnership.where((o) => o == _session.myRole).length;
