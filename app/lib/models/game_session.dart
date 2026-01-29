@@ -33,6 +33,7 @@ class GameSession with ChangeNotifier {
   void restoreSession(String id, String? code) {
     _sessionId = id;
     inviteCode = code;
+    _setupRealtimeHover();
   }
   
   // Host Info
@@ -137,6 +138,10 @@ class GameSession with ChangeNotifier {
   List<Map<String, dynamic>> messages = [];
   RealtimeChannel? _gameChannel;
   bool isGameActive = false;
+  
+  // Hover Sync (Real-time Broadcast)
+  ValueNotifier<int?> remoteHoverIndex = ValueNotifier(null);
+  Timer? _hoverDebounce;
 
   
   // --- Methods ---
@@ -1540,13 +1545,6 @@ class GameSession with ChangeNotifier {
     // do not reset Host info or points
     notifyListeners();
   }
-
-  // ... (previous methods)
-
-  // In _loadFromMap (partial update shown here for context, but I need to target the actual method body or end of it)
-  // Since replace_file_content targets specific lines, I'll target the end of _loadFromMap which is around line 1224.
-
-
   int _calculateLines(String role) {
     int count = 0;
     // Rows
@@ -1638,7 +1636,31 @@ class GameSession with ChangeNotifier {
   @override
   void dispose() {
     _gameChannel?.unsubscribe();
+    remoteHoverIndex.dispose();
     super.dispose();
   }
-}
+
+  // --- Realtime Hover Broadcast ---
+  void broadcastHover(int? index) {}
+  void reportContent(String id, String reason) { debugPrint("Reported: $id, $reason"); }
+
+  void _setupRealtimeHover() {
+    /*
+    if (_sessionId == null) return;
+    
+    _gameChannel = _supabase.channel('game_$_sessionId');
+         RealtimeListenTypes.broadcast,
+         ChannelFilter(event: 'hover'),
+         (payload, [ref]) {
+             final data = payload;
+             final senderRole = data['role'];
+             final index = data['index'];
+             
+             if (senderRole != myRole) {
+                remoteHoverIndex.value = index;
+             }
+         }
+      ).subscribe();
+  } */
+  
 

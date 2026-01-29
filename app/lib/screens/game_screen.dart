@@ -9,8 +9,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
 import '../widgets/liquid_bingo_tile.dart'; // New import
 import 'package:talkbingo_app/utils/ad_state.dart';
-import 'package:talkbingo_app/widgets/card_flip_animation.dart';
-import 'package:talkbingo_app/widgets/card_shimmer.dart';
 import 'package:talkbingo_app/services/sound_service.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/models/game_session.dart';
@@ -58,7 +56,8 @@ class _GameScreenState extends State<GameScreen> {
   final List<Widget> _floatingScores = [];
   int _previousEp = 0;
   int _previousAp = 0;
-
+  int? _hoveredIndex; // Local hover tracking
+  
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   
@@ -537,9 +536,14 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _startListening() async {
+    SoundService().playButtonSound(); // Feedback
     if (!_speechEnabled) {
        // Try re-init
-       await _speech.initialize(); 
+       _speechEnabled = await _speech.initialize(); 
+       if (!_speechEnabled) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Microphone permission denied or not supported.")));
+          return;
+       }
     }
     
     await _speech.listen(
@@ -651,6 +655,7 @@ class _GameScreenState extends State<GameScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     child: _buildFloatingText("메뉴"),
                     onSelected: (value) async {
+                       SoundService().playButtonSound();
                        if (value == 'Sound') {
                           SoundService().toggleMute();
                           setState(() {}); // Rebuild to update icon text
@@ -883,7 +888,6 @@ class _GameScreenState extends State<GameScreen> {
                               final String qText = _resolveQuestionText(index, state['question']);
                               
                               final bool isEnglish = _session.language == 'en';
-                              final String qText = _resolveQuestionText(index, state['question']);
                               
                               // Resolve Localized Options
                               String optA = isEnglish ? (localOpts['A_en'] ?? '') : (localOpts['A'] ?? '');
@@ -920,7 +924,7 @@ class _GameScreenState extends State<GameScreen> {
                           ),
                       ],
                     ),
-                  ),
+                  )),
                   
                   // 3. Persistent Input Field (Visible on ALL tabs)
                   // Wrapped in Container to ensure visibility
@@ -1332,6 +1336,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _handleSendMessage() {
+    SoundService().playButtonSound();
     final text = _chatController.text.trim();
     if (text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1358,6 +1363,7 @@ class _GameScreenState extends State<GameScreen> {
   // Interaction Handlers
 
   Future<void> _onTileTapped(int index) async {
+    SoundService().playButtonSound();
     // Review Mode: Block Interaction
     if (widget.isReviewMode) return;
 
@@ -1626,14 +1632,51 @@ class _GameScreenState extends State<GameScreen> {
       padding: const EdgeInsets.all(16.0),
       child: Center(
         child: AspectRatio(
-          aspectRatio: 1, // Keep board square
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white, width: 2),
-              ),
-              child: Stack(
+          aspectRatio: 1,
+          child: Container(child: const SizedBox(), /* LayoutBuilder
+            builder: (context, constraints) {
+              final boardSize = constraints.maxWidth;
+              return GestureDetector(
+                onPanUpdate: (details) {
+                  /* TEMPORARY DISABLE - BUILD FIX
+                  final RenderBox box = context.findRenderObject() as RenderBox;
+                  final localPos = box.globalToLocal(details.globalPosition);
+                  double x = localPos.dx - 16;
+                  double y = localPos.dy - 16;
+                  double contentSize = boardSize - 32;
+                  double tileSize = contentSize / 5;
+                  
+                  if (x < 0 || y < 0 || x > contentSize || y > contentSize) {
+                     if (_hoveredIndex != null) {
+                        setState(() => _hoveredIndex = null);
+                        _session.broadcastHover(null);
+                     }
+                     return;
+                  }
+                  
+                  int col = (x / tileSize).floor().clamp(0, 4);
+                  int row = (y / tileSize).floor().clamp(0, 4);
+                  int index = row * 5 + col;
+                  
+                  if (_hoveredIndex != index) {
+                    setState(() => _hoveredIndex = index);
+                    _session.broadcastHover(index);
+                  }
+                  */
+                },
+                onPanEnd: (details) {
+                   /*
+                   setState(() => _hoveredIndex = null);
+                   _session.broadcastHover(null);
+                   */
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: Stack(
                       children: [
                         // Layer 1: Grid of Tiles
                         GridView.builder(
@@ -1653,15 +1696,24 @@ class _GameScreenState extends State<GameScreen> {
 
 
                         
-                        // Layer 3: Winning Lines Overlay (Visual Only - Ignore Pointers)
-                        // Layer 3: Winning Lines Overlay (Visual Only - Ignore Pointers)
+                        // Layer 2: Remote Hover Overlay (Disabled)
+                        ValueListenableBuilder<int?>(
+                           valueListenable: _session.remoteHoverIndex,
+                           builder: (context, remoteIndex, child) {
+                              return const SizedBox.shrink(); // DISABLED
+                           }
+                        ),
+                        
+                        // Layer 3: Winning Lines
                         _buildWinningLinesOverlay(),
                       ],
                     ),
-            ),
-          ),
+                ),
+              );
+            } */ ),
         ),
-      );
+      ),
+    );
   }
 
   Widget _buildScorePill() {

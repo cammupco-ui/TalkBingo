@@ -476,7 +476,7 @@ class _SignupScreenState extends State<SignupScreen> with WidgetsBindingObserver
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
         redirectTo: kIsWeb 
-          ? (kReleaseMode ? 'https://talkbingo-web.web.app/' : Uri.base.origin) 
+          ? Uri.base.origin 
           : 'io.supabase.talkbingo://login-callback',
       );
     } on AuthException catch (e) {
