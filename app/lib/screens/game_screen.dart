@@ -9,6 +9,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
 import '../widgets/liquid_bingo_tile.dart'; // New import
 import 'package:talkbingo_app/utils/ad_state.dart';
+import 'package:talkbingo_app/widgets/card_flip_animation.dart';
+import 'package:talkbingo_app/widgets/card_shimmer.dart';
+import 'package:talkbingo_app/services/sound_service.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/utils/localization.dart';
@@ -832,6 +835,9 @@ class _GameScreenState extends State<GameScreen> {
                                 localOpts = _session.options[idxSafe];
                               }
                               
+                              // Hide Overlay if on Chat Tab (0)
+                              if (_targetPage == 0) return const SizedBox.shrink();
+                              
                               final String qText = _resolveQuestionText(index, state['question']);
                               
                               final bool isEnglish = _session.language == 'en';
@@ -1211,11 +1217,10 @@ class _GameScreenState extends State<GameScreen> {
         children: [
           Expanded(
             child: TextField(
-              controller: _chatController,
-              enabled: !_isPaused,
-              minLines: 1,
-              maxLines: 4, // Allow it to expand downwards
-              onChanged: (text) => setState(() {}), // Rebuild to toggle icon
+              onChanged: (text) {
+                setState(() {}); // Rebuild to toggle icon
+                SoundService().playTypingSound(); // Typing Sound
+              },
               decoration: InputDecoration(
                 hintText: _isPaused ? 'Game Paused' : 'Type a message...',
                 hintStyle: GoogleFonts.alexandria(

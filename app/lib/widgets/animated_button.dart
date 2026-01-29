@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:talkbingo_app/services/sound_service.dart';
 
 /// Animated button with hover and tap scale effects inspired by Animate UI
 /// 
@@ -67,15 +68,18 @@ class _AnimatedButtonState extends State<AnimatedButton> {
         onTapDown: widget.onPressed != null 
             ? (_) => setState(() => _isTapped = true)
             : null,
-        onTapUp: widget.onPressed != null 
-            ? (_) {
+        onTapUp: (_) {
+            if (widget.onPressed != null) {
                 setState(() => _isTapped = false);
                 if (widget.enableHaptic) {
                   HapticFeedback.mediumImpact();
                 }
+                SoundService().playButtonSound();
                 widget.onPressed?.call();
-              }
-            : null,
+            } else {
+                SoundService().playDisabledSound();
+            }
+        },
         onTapCancel: () => setState(() => _isTapped = false),
         child: AnimatedScale(
           scale: scale,
@@ -152,15 +156,18 @@ class _AnimatedTextButtonState extends State<AnimatedTextButton> {
         onTapDown: widget.onPressed != null 
             ? (_) => setState(() => _isTapped = true)
             : null,
-        onTapUp: widget.onPressed != null 
-            ? (_) {
+        onTapUp: (_) {
+            if (widget.onPressed != null) {
                 setState(() => _isTapped = false);
                 if (widget.enableHaptic) {
                   HapticFeedback.lightImpact();
                 }
+                SoundService().playButtonSound();
                 widget.onPressed?.call();
-              }
-            : null,
+            } else {
+                SoundService().playDisabledSound();
+            }
+        },
         onTapCancel: () => setState(() => _isTapped = false),
         child: AnimatedScale(
           scale: scale,
@@ -236,15 +243,18 @@ class _AnimatedOutlinedButtonState extends State<AnimatedOutlinedButton> {
         onTapDown: widget.onPressed != null 
             ? (_) => setState(() => _isTapped = true)
             : null,
-        onTapUp: widget.onPressed != null 
-            ? (_) {
+        onTapUp: (_) {
+            if (widget.onPressed != null) {
                 setState(() => _isTapped = false);
                 if (widget.enableHaptic) {
                   HapticFeedback.mediumImpact();
                 }
+                SoundService().playButtonSound();
                 widget.onPressed?.call();
-              }
-            : null,
+            } else {
+                SoundService().playDisabledSound();
+            }
+        },
         onTapCancel: () => setState(() => _isTapped = false),
         child: AnimatedScale(
           scale: scale,
@@ -324,15 +334,18 @@ class _AnimatedIconButtonState extends State<AnimatedIconButton> {
         onTapDown: widget.onPressed != null 
             ? (_) => setState(() => _isTapped = true)
             : null,
-        onTapUp: widget.onPressed != null 
-            ? (_) {
+        onTapUp: (_) {
+            if (widget.onPressed != null) {
                 setState(() => _isTapped = false);
                 if (widget.enableHaptic) {
                   HapticFeedback.lightImpact();
                 }
+                SoundService().playButtonSound();
                 widget.onPressed?.call();
-              }
-            : null,
+            } else {
+                SoundService().playDisabledSound();
+            }
+        },
         onTapCancel: () => setState(() => _isTapped = false),
         child: AnimatedScale(
           scale: scale,

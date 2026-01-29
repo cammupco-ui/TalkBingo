@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:talkbingo_app/utils/dev_config.dart';
 import 'package:talkbingo_app/widgets/dev_navigation_bar.dart';
 import 'package:talkbingo_app/utils/ad_state.dart';
+import 'package:talkbingo_app/services/sound_service.dart';
 import 'package:talkbingo_app/screens/splash_screen.dart';
 import 'package:talkbingo_app/screens/home_screen.dart';
 
@@ -16,6 +17,7 @@ import 'package:flutter/services.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AdState.initialize(); // Initialize Ads
+  await SoundService().init(); // Initialize Sound Service
   // Hybrid Config: Check build-time args first (Web Release), then .env (Local Dev)
   String supabaseUrl = const String.fromEnvironment('SUPABASE_URL');
   String supabaseAnonKey = const String.fromEnvironment('SUPABASE_ANON_KEY');
