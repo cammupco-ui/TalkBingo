@@ -119,7 +119,7 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
                         // Hide Ad if keyboard is open OR in landscape mode
                         final showAd = showAdValue && !isKeyboardOpen && !isLandscape;
                         
-                        final bottomPadding = showAd ? 94.0 : 0.0;
+                        final bottomPadding = showAd ? 64.0 : 0.0;
                         
                         return Stack(
                           children: [
@@ -138,11 +138,11 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
                                 bottom: 0,
                                 left: 0,
                                 right: 0,
-                                height: 94,
+                                height: 64,
                                 child: Container(
                                   color: Colors.transparent,
-                                  alignment: Alignment.topCenter,
-                                  padding: const EdgeInsets.only(top: 10),
+                                  alignment: Alignment.center,
+                                  padding: const EdgeInsets.only(top: 4),
                                   child: Column(
                                     children: [
                                       Container(
