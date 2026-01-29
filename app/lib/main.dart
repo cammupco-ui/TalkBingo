@@ -124,8 +124,8 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
                             // Main Content
                             Padding(
                               padding: EdgeInsets.only(
-                                bottom: bottomPadding,
-                                top: 0, // Removed hardcoded padding to fill screen
+                                bottom: 0, // Removed bottomPadding to allow background to fill screen
+                                top: 0, 
                               ),
                               child: child ?? const SizedBox.shrink(),
                             ),

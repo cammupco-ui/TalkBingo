@@ -235,10 +235,10 @@ class _HomeScreenState extends State<HomeScreen> {
           // 1. Animated Aurora Background
           const Positioned.fill(child: _AnimatedAuroraBackground()),
           
-          // 2. Main Content
+           // 2. Main Content
           SafeArea(
              child: SingleChildScrollView(
-               padding: const EdgeInsets.all(12.0),
+               padding: const EdgeInsets.only(left: 12.0, top: 12.0, right: 12.0, bottom: 100.0), // Added bottom padding for Ad
                child: Column(
                  crossAxisAlignment: CrossAxisAlignment.stretch,
                  children: [

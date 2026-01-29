@@ -123,7 +123,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
           // Report Button (Bottom-Left)
           Positioned(
             left: 16,
-            bottom: 16,
+            bottom: 110, // Moved up to avoid Banner Ad (94px + margin)
             child: IconButton(
               icon: const Icon(Icons.flag_rounded, color: Colors.grey, size: 20),
               tooltip: 'Report Content',

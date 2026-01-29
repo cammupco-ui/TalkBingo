@@ -770,8 +770,10 @@ class _GameScreenState extends State<GameScreen> {
 
                   // 2. Main Content
                   Expanded(
-                    child: Stack(
-                      children: [
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 100.0), // Added bottom padding for Ad Overlay
+                      child: Stack(
+                        children: [
                          PageView(
                            // Physics removed to allow swiping
                            controller: _pageController,
