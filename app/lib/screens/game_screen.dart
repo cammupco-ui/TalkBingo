@@ -651,29 +651,71 @@ class _GameScreenState extends State<GameScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     child: _buildFloatingText("메뉴"),
                     onSelected: (value) async {
-                       if (value == 'Save') {
+                       if (value == 'Sound') {
+                          SoundService().toggleMute();
+                          setState(() {}); // Rebuild to update icon text
+                       } else if (value == 'Pause') {
+                          GameSession().togglePause();
+                          setState(() {});
+                       } else if (value == 'Save') {
                           // Implement Save Logic
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("저장되었습니다.")));
                        } else if (value == 'End') {
                           _endGame(); 
                        }
                     },
                     itemBuilder: (context) {
-                         // Dynamically size width to content (approx)
+                         final isMuted = SoundService().isMutedNotifier.value;
+                         final isPaused = _session.isPaused;
+                         
                          return [
+                            PopupMenuItem(
+                              value: 'Sound', 
+                              child: Container(
+                                width: 120,
+                                alignment: Alignment.centerLeft,
+                                child: Row(children: [
+                                  Icon(isMuted ? Icons.volume_off : Icons.volume_up, size: 18, color: Colors.black54),
+                                  const SizedBox(width: 8),
+                                  Text(isMuted ? "소리 켜기" : "소리 끄기", style: GoogleFonts.alexandria(color: Colors.black87))
+                                ])
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 'Pause', 
+                              child: Container(
+                                width: 120,
+                                alignment: Alignment.centerLeft,
+                                child: Row(children: [
+                                  Icon(isPaused ? Icons.play_arrow : Icons.pause, size: 18, color: Colors.black54),
+                                  const SizedBox(width: 8),
+                                  Text(isPaused ? "다시 시작" : "잠시 멈춤", style: GoogleFonts.alexandria(color: Colors.black87))
+                                ])
+                              ),
+                            ),
+                            const PopupMenuDivider(),
                             PopupMenuItem(
                               value: 'Save', 
                               child: Container(
-                                width: 100, // Explicit width control
-                                alignment: Alignment.center,
-                                child: Text("저장하기", style: GoogleFonts.alexandria(color: Colors.black87))
+                                width: 120, 
+                                alignment: Alignment.centerLeft,
+                                child: Row(children: [
+                                  const Icon(Icons.save, size: 18, color: Colors.black54),
+                                  const SizedBox(width: 8),
+                                  Text("저장하기", style: GoogleFonts.alexandria(color: Colors.black87))
+                                ])
                               ),
                             ),
                             PopupMenuItem(
                               value: 'End', 
                               child: Container(
-                                width: 100,
-                                alignment: Alignment.center,
-                                child: Text("종료하기", style: GoogleFonts.alexandria(color: Colors.black87))
+                                width: 120,
+                                alignment: Alignment.centerLeft,
+                                child: Row(children: [
+                                   const Icon(Icons.exit_to_app, size: 18, color: Colors.black54),
+                                   const SizedBox(width: 8),
+                                   Text("종료하기", style: GoogleFonts.alexandria(color: Colors.black87))
+                                ])
                               ),
                             ),
                           ];
