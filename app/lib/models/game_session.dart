@@ -99,6 +99,7 @@ class GameSession with ChangeNotifier {
   String myRole = ''; // 'A' (Host) or 'B' (Guest)
   String gameStatus = 'waiting'; // waiting, playing, paused, finished
   String currentTurn = 'A'; 
+  bool get isPaused => gameStatus == 'paused';
   
   // 5x5 Grid (25 tiles)
   List<String> _tileOwnership = List.filled(25, ''); 
