@@ -1591,26 +1591,7 @@ class _GameScreenState extends State<GameScreen> {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.white, width: 2),
               ),
-              child: _session.questions.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.hourglass_empty, size: 64, color: Colors.grey[400]),
-                          const SizedBox(height: 16),
-                          Text(
-                            "Waiting for Host...",
-                            style: GoogleFonts.alexandria(fontSize: 18, color: Colors.grey[600]),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "Questions are being prepared.",
-                            style: GoogleFonts.alexandria(fontSize: 14, color: Colors.grey[500]),
-                          ),
-                        ],
-                      ),
-                    )
-                  : Stack(
+              child: Stack(
                       children: [
                         // Layer 1: Grid of Tiles
                         GridView.builder(
