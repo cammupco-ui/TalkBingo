@@ -1,0 +1,114 @@
+{
+    "category": "Family",
+    "code_prefix": "Fa",
+    "relationships": [
+        {
+            "type": "SiblingSameGender",
+            "code": [
+                "Fa-Br",
+                "Fa-Si"
+            ],
+            "label": "형제/자매",
+            "description": "부모가 같은 동성 형제자매",
+            "examples": [
+                "형과 남동생",
+                "언니와 여동생",
+                "쌍둥이 형제"
+            ],
+            "recommended_intimacy": {
+                "min": 2,
+                "max": 5
+            },
+            "features": [
+                "shared_upbringing",
+                "lifelong_relationship",
+                "closest_peer_family"
+            ]
+        },
+        {
+            "type": "SiblingDifferentGender",
+            "code": [
+                "Fa-Sb",
+                "Fa-Bs"
+            ],
+            "label": "남매",
+            "description": "부모가 같은 이성 형제자매",
+            "examples": [
+                "오빠와 여동생",
+                "누나와 남동생"
+            ],
+            "recommended_intimacy": {
+                "min": 2,
+                "max": 5
+            },
+            "features": [
+                "gender_difference",
+                "influence_on_relationship_views"
+            ]
+        },
+        {
+            "type": "Cousin",
+            "code": [
+                "Fa-Co"
+            ],
+            "label": "사촌",
+            "description": "부모의 형제자매의 자녀",
+            "examples": [
+                "사촌 형",
+                "사촌 누나",
+                "이종사촌"
+            ],
+            "recommended_intimacy": {
+                "min": 1,
+                "max": 4
+            },
+            "features": [
+                "occasional_meetings",
+                "friend_like_relationship"
+            ]
+        },
+        {
+            "type": "Grandparent",
+            "code": [
+                "Fa-Gp"
+            ],
+            "label": "조부모-손자녀",
+            "description": "2세대 이상 차이의 직계 가족",
+            "examples": [
+                "할아버지와 손자",
+                "외할머니와 손녀"
+            ],
+            "recommended_intimacy": {
+                "min": 2,
+                "max": 5
+            },
+            "features": [
+                "generation_gap",
+                "respect_and_affection"
+            ]
+        },
+        {
+            "type": "ParentChild",
+            "code": [
+                "Fa-Fs",
+                "Fa-Md",
+                "Fa-Ms",
+                "Fa-Fd"
+            ],
+            "label": "부모-자녀",
+            "description": "직계 부모와 자녀 관계",
+            "examples": [
+                "아버지와 아들",
+                "어머니와 딸"
+            ],
+            "recommended_intimacy": {
+                "min": 2,
+                "max": 5
+            },
+            "features": [
+                "primary_family_unit",
+                "care_and_support"
+            ]
+        }
+    ]
+}

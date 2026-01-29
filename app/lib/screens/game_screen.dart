@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
+import '../widgets/liquid_bingo_tile.dart'; // New import
 import 'package:talkbingo_app/utils/ad_state.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/utils/localization.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:talkbingo_app/widgets/quiz_overlay.dart';
+import 'package:talkbingo_app/widgets/bubble_background.dart';
 import 'package:talkbingo_app/games/target_shooter/target_shooter_game.dart';
 import 'package:talkbingo_app/games/penalty_kick/penalty_kick_game.dart';
 import 'package:talkbingo_app/screens/home_screen.dart';
@@ -24,6 +29,7 @@ import 'package:talkbingo_app/screens/reward_screen.dart';
 import 'package:confetti/confetti.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:animated_flip_counter/animated_flip_counter.dart';
+import 'package:talkbingo_app/widgets/draggable_floating_button.dart';
 
 class GameScreen extends StatefulWidget {
   final bool isReviewMode;
@@ -56,6 +62,15 @@ class _GameScreenState extends State<GameScreen> {
   // ignore: unused_field
   bool _isAdWatching = false; // Local flag to prevent double triggers
   bool _isBingoDialogVisible = false; // Track dialog visibility
+  
+  // Floating Button State
+  int _unreadCount = 0;
+  String? _latestChatPreview;
+  Map<String, dynamic>? _lastProcessedMsg;
+
+  // Scroll Controller for Auto-Scroll
+  final ScrollController _chatScrollController = ScrollController();
+  int _previousPage = 1; // Start on Board (1)
 
   void _showFloatingScore(Offset position, int points, String label) {
     if (!mounted) return;
@@ -91,10 +106,22 @@ class _GameScreenState extends State<GameScreen> {
   // Animations State
   late ConfettiController _confettiController;
   Set<int> _winningTiles = {};
+  // Add direct tracker for button sync
+  int _targetPage = 1;
+
+  // State for Entrance Notification
+  bool _hasShownEntranceToast = false;
+  
+  // Speech to Text
+  late stt.SpeechToText _speech;
+  bool _isListening = false;
+  bool _speechEnabled = false;
 
   @override
   void initState() {
     super.initState();
+    _speech = stt.SpeechToText();
+    _initSpeech();
     _confettiController = ConfettiController(duration: const Duration(seconds: 3));
     _pageController = PageController(initialPage: 1); 
     
@@ -110,6 +137,20 @@ class _GameScreenState extends State<GameScreen> {
     
     // Listen to Session
     _session.addListener(_onSessionUpdate);
+    
+    // Listen to PageController for Tab Tracking
+    _pageController.addListener(() {
+       // PageController.page is double, round to check index
+       if (_pageController.hasClients) {
+         final int newPage = _pageController.page?.round() ?? 1;
+         if (_currentPage != newPage) {
+           setState(() {
+             _currentPage = newPage;
+             _targetPage = newPage; // Sync _targetPage with _currentPage on swipe
+           });
+         }
+       }
+    });
 
     // Preload Ad
     AdState.loadInterstitialAd();
@@ -121,6 +162,11 @@ class _GameScreenState extends State<GameScreen> {
     // Check initial state immediately (in case data already loaded)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _onSessionUpdate();
+      // Force initial page sync
+       if (_pageController.hasClients) {
+          _currentPage = _pageController.page?.round() ?? 1;
+          setState(() {});
+       }
     });
 
     // Polling Fallback for Game Screen (Robust Sync)
@@ -134,15 +180,42 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Timer? _pollingTimer;
-
+  
   @override
   void dispose() {
+    AdState.isGameActive.value = false;
     _pollingTimer?.cancel();
     _confettiController.dispose();
     _session.removeListener(_onSessionUpdate);
+    _pageController.removeListener(_onPageChanged);
     _pageController.dispose();
-    _chatController.dispose();
+    _chatScrollController.dispose();
+    _messageController.dispose();
+    _scrollController.dispose();
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
     super.dispose();
+  }
+
+  void _onPageChanged() {
+    final currentPage = _pageController.page?.round() ?? 1;
+    
+    // Switch to Chat Tab (0)
+    if (currentPage == 0 && _previousPage != 0) {
+      // Auto Scroll to Bottom
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Clear unread count when entering chat
+        if (mounted) setState(() => _unreadCount = 0);
+
+        if (_chatScrollController.hasClients) {
+          _chatScrollController.animateTo(
+            _chatScrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    }
+    _previousPage = currentPage;
   }
 
   // State for tracking previous bingo lines to avoid duplicate alerts
@@ -215,6 +288,24 @@ class _GameScreenState extends State<GameScreen> {
     // 1. Check for Bingo State (Triggers Dialogs)
     if (_session.gameStatus == 'playing' || _session.gameStatus == 'waiting') {
        _checkBingoState();
+       
+       // Entrance Notification Logic (One-time)
+       if (!_hasShownEntranceToast) {
+         if (_isHost) {
+            // Host: Wait for Guest Nickname
+            if (_session.guestNickname != null && _session.guestNickname!.isNotEmpty) {
+               _hasShownEntranceToast = true;
+               _showEntranceNotification("${_session.guestNickname} has entered!"); 
+            }
+         } else {
+            // Guest: Host is always present (owner)
+            // Just show immediately if we are connected
+            if (_session.hostNickname != null) {
+               _hasShownEntranceToast = true;
+               _showEntranceNotification("Host has entered!");
+            }
+         }
+       }
     }
 
     // 2. Check for Game Over (Synced)
@@ -297,14 +388,7 @@ class _GameScreenState extends State<GameScreen> {
        // Let's rely on _previousEp matching _session.ep once the update propagates?
        // Actually, safely we can just let it be. If double animation happens, it's rare.
        // But better: Update _previousEp to current _session.ep + gained? No.
-       // Let's just update `_previousEp` to `_session.ep` assuming we handled the visual.
-       // But `_session.ep` hasn't increased yet!
-       // So when `_session` notifies later, `ep` will be higher, `_previousEp` will be low.
-       // WE NEED TO SKIP the generic check for *this specific increase*.
-       // Hack: We can't predict exact timing.
-       // Alternative: Remove generic check? No, we need it for other EP sources (if any).
-       // Limit generic check to non-tile sources? We don't distinguish source.
-       // For now, let's update `_previousEp` to `_session.ep` when checking.
+       // Let's just update `_previousEp` to `_session.ep` when checking.
        // And accept that if `addPoints` is instant, we might duplicate.
        // Actually, `addPoints` calls notifyListeners.
        // So `_onSessionUpdate` runs again.
@@ -323,14 +407,7 @@ class _GameScreenState extends State<GameScreen> {
        // Best bet: Calculate `gainedEpFromTiles` in the generic block by comparing tile counts again?
        // No.
        
-       // Simple Fix: Just remove the generic EP check if we want strict control, OR
-       // Modify generic check:
-       // if (_session.ep > _previousEp) {
-       //    // Only show if NOT just handled by tile?
-       //    // We can't easily know "just handled".
-       // }
-       
-       // Let's just DISABLE the generic EP check for now since the user specifically asked for "Tile Animation".
+       // Simple Fix: Just remove the generic EP check for now since the user specifically asked for "Tile Animation".
        // If there are other EP sources, we'll miss them, but Tile is primary.
        // Or we can keep it but check against tile count diff?
        
@@ -369,7 +446,48 @@ class _GameScreenState extends State<GameScreen> {
     final linesA = _checkForBingo('A');
     final linesB = _checkForBingo('B');
     
-     // 4. Bingo Check & Notification handled in _checkBingoState
+    // 5. Check for New Messages (Unread Count)
+    if (_session.messages.isNotEmpty) {
+      // Filter out system messages for unread count and preview
+      final chatMessages = _session.messages.where((m) => m['type'] == 'chat').toList();
+      if (chatMessages.isNotEmpty) {
+        final lastMsg = chatMessages.last;
+        // Compare by timestamp or content + timestamp to be sure
+        final lastTs = lastMsg['timestamp'];
+        final processedTs = _lastProcessedMsg?['timestamp'];
+        
+        if (lastTs != processedTs) {
+           // Only notify for CHAT messages from OTHERS 
+           // Exclude SYSTEM messages and Self messages
+           final sender = lastMsg['sender'] ?? '';
+           final type = lastMsg['type'];
+           final isSystem = sender.toString().startsWith('SYSTEM');
+           
+           if (type == 'chat' && !isSystem && sender != _session.myRole) {
+               if (_currentPage == 1) { // If on Board
+                   _unreadCount++;
+                   _latestChatPreview = lastMsg['text'];
+               }
+           }
+           _lastProcessedMsg = lastMsg;
+        }
+      }
+    }
+    
+    // Auto Scroll if on Chat Tab and new msg arrives
+    // (Optional: Only if already at bottom? For now force scroll for better visibility)
+    if (_currentPage == 0 && _session.messages.isNotEmpty) {
+       WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_chatScrollController.hasClients) {
+              _chatScrollController.animateTo(
+                _chatScrollController.position.maxScrollExtent,
+                duration: const Duration(milliseconds: 300), 
+                curve: Curves.easeOut
+              );
+          }
+       });
+    }
+
      if (mounted) setState(() {});
   }
 
@@ -395,11 +513,239 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
+  void _initSpeech() async {
+    try {
+       _speechEnabled = await _speech.initialize(
+         onStatus: (val) {
+            debugPrint('onStatus: $val');
+            if (val == 'done' || val == 'notListening') {
+               if (mounted) setState(() => _isListening = false);
+            }
+         },
+         onError: (val) {
+            debugPrint('onError: $val');
+            if (mounted) setState(() => _isListening = false);
+         },
+       );
+       if (mounted) setState(() {});
+    } catch (e) {
+       debugPrint("Speech Init Error: $e");
+    }
+  }
+
+  void _startListening() async {
+    if (!_speechEnabled) {
+       // Try re-init
+       await _speech.initialize(); 
+    }
+    
+    await _speech.listen(
+      onResult: _onSpeechResult,
+      localeId: _session.language == 'ko' ? 'ko_KR' : 'en_US',
+    );
+    setState(() {
+      _isListening = true;
+    });
+  }
+
+  void _stopListening() async {
+    await _speech.stop();
+    setState(() {
+      _isListening = false;
+    });
+  }
+
+  void _onSpeechResult(result) {
+    setState(() {
+      _chatController.text = result.recognizedWords;
+    });
+  }
+
+  // --- New Header Implementation ---
+  // --- Redesigned Header (Transparent + Floating Text) ---
+  Widget _buildHeader() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.only(top: 8, bottom: 8),
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 1. Logo Only
+            SvgPicture.asset(
+              'assets/images/Logo Vector.svg',
+              height: 30,
+            ),
+            
+            const SizedBox(height: 18),
+            
+            // 2. Floating Text Row (POINT | TURN | MENU)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // POINT (Popover Trigger)
+                Theme(
+                  data: Theme.of(context).copyWith(
+                    popupMenuTheme: const PopupMenuThemeData(
+                      color: Colors.white,
+                      surfaceTintColor: Colors.transparent,
+                    ),
+                  ),
+                  child: PopupMenuButton<String>(
+                    offset: const Offset(0, 40),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    tooltip: '포인트 보기',
+                    child: _buildFloatingText("포인트 ${_session.ep}"),
+                     itemBuilder: (context) {
+                         // Calculate Real-time Stats
+                         int filledCells = _session.tileOwnership.where((o) => o == _session.myRole).length;
+                         // A simple line check logic for display (full logic is in session)
+                         // For now, just show EP as Cells and AP as Lines from session if updated,
+                         // OR rename the labels as requested mapping:
+                         // AP -> "빙고줄" (Bingo Lines)
+                         // EP -> "빙고셀" (Bingo Cells)
+                         
+                         return [
+                            PopupMenuItem(
+                              enabled: false, // Info only
+                              child: Container(
+                                constraints: const BoxConstraints(minWidth: 150),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("빙고줄: ${_session.ap ?? 0}", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                                    const SizedBox(height: 4),
+                                    Text("빙고셀: $filledCells", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                                  ],
+                                ),
+                              ),
+                            )
+                         ];
+                    }
+                  ),
+                ),
+                
+                _buildDivider(),
+                
+                // TURN
+                // TURN (Animated & Colored)
+                _buildTurnIndicator(),
+                
+                _buildDivider(),
+                
+                // MENU (Popover Trigger Style)
+                // MENU (Popover Trigger Style)
+                Theme(
+                  data: Theme.of(context).copyWith(
+                    popupMenuTheme: const PopupMenuThemeData(
+                      color: Colors.white,
+                      surfaceTintColor: Colors.transparent,
+                    ),
+                  ),
+                  child: PopupMenuButton<String>(
+                    offset: const Offset(0, 40),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: _buildFloatingText("메뉴"),
+                    onSelected: (value) async {
+                       if (value == 'Save') {
+                          // Implement Save Logic
+                       } else if (value == 'End') {
+                          _endGame(); 
+                       }
+                    },
+                    itemBuilder: (context) {
+                         // Dynamically size width to content (approx)
+                         return [
+                            PopupMenuItem(
+                              value: 'Save', 
+                              child: Container(
+                                width: 100, // Explicit width control
+                                alignment: Alignment.center,
+                                child: Text("저장하기", style: GoogleFonts.alexandria(color: Colors.black87))
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 'End', 
+                              child: Container(
+                                width: 100,
+                                alignment: Alignment.center,
+                                child: Text("종료하기", style: GoogleFonts.alexandria(color: Colors.black87))
+                              ),
+                            ),
+                          ];
+                    }
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFloatingText(String text) {
+    return Text(
+      text,
+      style: GoogleFonts.alexandria(
+        color: Colors.white,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        shadows: [
+          const BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
+        ]
+      ),
+    );
+  }
+
+  Widget _buildTurnIndicator() {
+    final bool isMyTurn = _session.currentTurn == _session.myRole;
+    final String text = isMyTurn ? "나의 턴" : "상대방 턴";
+    final Color color = isMyTurn ? const Color(0xFFFF0077) : const Color(0xFF6B14EC);
+    
+    return Animate(
+      onPlay: (controller) => controller.repeat(reverse: true),
+      effects: [
+         ScaleEffect(
+           begin: const Offset(1.0, 1.0), 
+           end: const Offset(1.1, 1.1),
+           duration: 1000.ms, 
+           curve: Curves.easeInOut
+         )
+      ],
+      child: Text(
+        text,
+        style: GoogleFonts.alexandria(
+          color: color,
+          fontSize: 16, // Larger size
+          fontWeight: FontWeight.w800, // Extra bold
+          shadows: [
+            BoxShadow(
+              color: color.withOpacity(0.5),
+              blurRadius: 8,
+              spreadRadius: 2,
+            )
+          ]
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      width: 1,
+      height: 10,
+      color: Colors.white54,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Show Ad on Game Screen
+    // Hide Ad on Game Screen (Full Immersion)
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      AdState.showAd.value = !_session.adFree;
+      AdState.showAd.value = false;
     });
 
     // Enforce transparent status bar with dark icons for this screen
@@ -409,189 +755,132 @@ class _GameScreenState extends State<GameScreen> {
         statusBarIconBrightness: Brightness.dark, // For light background
         statusBarBrightness: Brightness.light, // For iOS
       ),
+      child: WillPopScope(
+      onWillPop: () async => false, // Prevent back button
       child: Scaffold(
-        backgroundColor: _session.myRole == 'A' ? AppColors.playerA : AppColors.playerB,
-        body: Stack(
-          children: [
-            Column(
-              children: [
-                // Review Mode Banner - Removed as per request
+        resizeToAvoidBottomInset: true, // Allow keyboard
+        body: BubbleBackground(
+          interactive: true,
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  // 1. New Header
+                  _buildHeader(),
 
-                // 1. Header (Fixed Height)
-                Container(
-                    width: double.infinity,
-                    color: Colors.white, // White Background
-                    // Add status bar padding here to ensure background fills the top area
-                    padding: EdgeInsets.only(
-                      left: 16, 
-                      right: 16, 
-                      top: MediaQuery.of(context).padding.top,
-                      bottom: 8, // Add some bottom padding for spacing
-                    ),
+                  // 2. Main Content
+                  Expanded(
                     child: Stack(
                       children: [
-                        // Logo (Centered Symbol)
-                        Align(
-                          alignment: Alignment.center,
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).pushAndRemoveUntil(
-                                MaterialPageRoute(builder: (_) => const HomeScreen()),
-                                (route) => false,
-                              );
-                            },
-                            child: SvgPicture.asset(
-                              'assets/images/Logo Vector.svg', // Use Symbol as requested
-                              height: 30,
-                            ),
-                          ),
+                         PageView(
+                           // Physics removed to allow swiping
+                           controller: _pageController,
+                          // Listener is handled in initState
+                          children: [
+                              _buildChatView(),
+                              _buildBingoBoard(),
+                          ],
                         ),
 
-                        // Scoreboard (Left)
-                        Positioned(
-                          left: 0,
-                          top: 0,
-                          bottom: 0,
-                          child: Center(
-                            child: _buildScorePill(),
+                        // Quiz Overlay (Moved here to cover ONLY the board area)
+                        if (_session.interactionState != null && _targetPage == 1)
+                          Builder(
+                            builder: (context) {
+                              final state = _session.interactionState!;
+                              // Check for Mini Game Types
+                              final String? type = state['type'];
+                              if (type == 'mini_target' || type == 'mini_penalty') {
+                                return const SizedBox.shrink(); // Rendered at Top Level instead
+                              }
+
+                              // Default Quiz Overlay Logic
+                              final int index = (state['index'] as num?)?.toInt() ?? -1;
+                              final bool hasPayloadData = state.containsKey('question');
+                              
+                              if (!hasPayloadData && (index < 0)) {
+                                return Center(
+                                    child: Container(
+                                      padding: const EdgeInsets.all(24),
+                                      margin: const EdgeInsets.all(32),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black87,
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(Icons.sync_problem, color: Colors.amber, size: 48),
+                                            const SizedBox(height: 16),
+                                            Text("Sync Error", style: GoogleFonts.alexandria(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                                            const SizedBox(height: 8),
+                                            ElevatedButton(
+                                                style: ElevatedButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.black),
+                                                onPressed: () { _session.cancelInteraction(); },
+                                                child: const Text("Reset State"),
+                                            )
+                                          ]
+                                      )
+                                    )
+                                );
+                              }
+
+                              Map<String, dynamic> localOpts = {};
+                              if (_session.options.isNotEmpty && index >= 0) {
+                                final idxSafe = index.clamp(0, _session.options.length - 1);
+                                localOpts = _session.options[idxSafe];
+                              }
+                              
+                              final String qText = _resolveQuestionText(index, state['question']);
+                              
+                              final bool isEnglish = _session.language == 'en';
+                              final String qText = _resolveQuestionText(index, state['question']);
+                              
+                              // Resolve Localized Options
+                              String optA = isEnglish ? (localOpts['A_en'] ?? '') : (localOpts['A'] ?? '');
+                              if (optA.isEmpty) optA = state['optionA'] ?? localOpts['A'] ?? ''; // Fallback
+                              
+                              String optB = isEnglish ? (localOpts['B_en'] ?? '') : (localOpts['B'] ?? '');
+                              if (optB.isEmpty) optB = state['optionB'] ?? localOpts['B'] ?? ''; // Fallback
+                              
+                              // Resolve Localized Answer (Truth)
+                              // Prioritize 'truthOptions' from payload as it is the synced truth for this interaction
+                              String answerStr = state['truthOptions'] ?? '';
+                              
+                              if (answerStr.isEmpty) {
+                                 // Fallback to local options
+                                 answerStr = isEnglish ? (localOpts['answer_en'] ?? '') : (localOpts['answer'] ?? '');
+                              }
+
+                              return Positioned.fill(
+                                child: QuizOverlay(
+                                  question: qText,
+                                  optionA: optA,
+                                  optionB: optB,
+                                  type: type ?? localOpts['type'],
+                                  answer: answerStr, 
+                                  interactionStep: state['step'],
+                                  answeringPlayer: state['player'],
+                                  submittedAnswer: state['answer'],
+                                  isPaused: state['isPaused'] ?? false, 
+                                  onOptionSelected: _handleOptionSelected,
+                                  onClose: () {},
+                                ),
+                              );
+                            }
                           ),
-                        ),
-                        
-                        // Menu Icon / Host Menu (Right)
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          bottom: 0,
-                          child: Center(
-                            child: _isHost
-                                ? PopupMenuButton<String>(
-                                    icon: Icon(Icons.grid_view_rounded, color: _themePrimary),
-                                    color: Colors.white,
-                                    elevation: 4,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                    onSelected: (value) {
-                                      switch (value) {
-                                        case 'Play': if (_isPaused) setState(() => _isPaused = false); break;
-                                        case 'Pause': if (!_isPaused) setState(() => _isPaused = true); break;
-                                        case 'Restart': _restartGame(); break;
-                                        case 'End': _endGame(); break;
-                                        case 'Save': _saveGame(); break;
-                                        case 'Open': _loadGame(); break;
-                                      }
-                                    },
-                                    itemBuilder: (context) => [
-                                        PopupMenuItem(
-                                          value: 'Play', 
-                                          child: _HoverMenuItem(
-                                            text: AppLocalizations.get('menu_resume'), 
-                                            hoverColor: _themePrimary,
-                                          )
-                                        ),
-                                        PopupMenuItem(
-                                          value: 'Pause', 
-                                          child: _HoverMenuItem(
-                                            text: AppLocalizations.get('menu_pause'), 
-                                            hoverColor: _themePrimary,
-                                          )
-                                        ),
-                                        PopupMenuItem(
-                                          value: 'Restart', 
-                                          child: _HoverMenuItem(
-                                            text: AppLocalizations.get('menu_restart'), 
-                                            hoverColor: _themePrimary,
-                                          )
-                                        ),
-                                        PopupMenuItem(
-                                          value: 'End', 
-                                          child: _HoverMenuItem(
-                                            text: AppLocalizations.get('menu_end'), 
-                                            hoverColor: _themePrimary,
-                                          )
-                                        ),
-                                        PopupMenuItem(
-                                          value: 'Save', 
-                                          child: _HoverMenuItem(
-                                            text: AppLocalizations.get('menu_save'), 
-                                            hoverColor: _themePrimary,
-                                          )
-                                        ),
-                                        PopupMenuItem(
-                                          value: 'Open', 
-                                          child: _HoverMenuItem(
-                                            text: AppLocalizations.get('menu_load'), 
-                                            hoverColor: _themePrimary,
-                                          )
-                                        ),
-                                    ],
-                                  )
-                                : const SizedBox.shrink(),
-                          ),
-                        ),
                       ],
                     ),
-                ),
-
-                // 2. Message Ticker (Auto Height - Responsive)
-                // Removed Expanded to allow dynamic sizing based on text lines
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0, top: 32.0), // Increased top padding (doubled)
-                  child: _buildMessageTicker(),
-                ),
-
-                // 3. Body Content (Takes remaining space)
-                Expanded(
-                  child: Stack(
-                    children: [
-                      PageView(
-                        controller: _pageController,
-                        onPageChanged: (index) => setState(() => _currentPage = index),
-                        children: [
-                          _buildChatView(), 
-                          _buildBingoBoard(),
-                        ],
-                      ),
-                      
-                      // Left Arrow
-                      if (_currentPage == 1)
-                        Positioned(
-                          left: 0, top: 0, bottom: 0,
-                          width: 60, // Constrain width to prevent blocking board
-                          child: Material(
-                            color: Colors.white.withOpacity(0.8),
-                            shape: const CircleBorder(),
-                            elevation: 2,
-                            child: InkWell(
-                              customBorder: const CircleBorder(),
-                              onTap: () => _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: Icon(Icons.chevron_left, color: _themePrimary),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                      // Right Arrow
-                      if (_currentPage == 0)
-                        Positioned(
-                          right: 0, top: 0, bottom: 0,
-                          width: 60, // Constrain width to prevent blocking board
-                          child: Material(
-                            color: Colors.white.withOpacity(0.8),
-                            shape: const CircleBorder(),
-                            elevation: 2,
-                            child: InkWell(
-                              customBorder: const CircleBorder(),
-                              onTap: () => _pageController.animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: Icon(Icons.chevron_right, color: _themePrimary),
-                              ),
-                            ),
-                          ),
-                        ),
-
+                  ),
                   
+                  // 3. Persistent Input Field (Visible on ALL tabs)
+                  // Wrapped in Container to ensure visibility
+                  Container(
+                     color: Colors.white,
+                     child: _buildBottomControls(),
+                  ),
+                ],
+              ),
+              
                       // Rematch Button (Review Mode Only)
                       if (widget.isReviewMode && _currentPage == 1)
                         Positioned(
@@ -618,118 +907,32 @@ class _GameScreenState extends State<GameScreen> {
                           ),
                         ),
 
-                  // Quiz Overlay (Moved here to cover Board but not Chat)
-                  // Quiz Overlay OR Mini Game Widget
-                  if (_session.interactionState != null)
-                    Builder(
-                      builder: (context) {
-                        final state = _session.interactionState!;
-                        // Check for Mini Game Types
-                        final String? type = state['type'];
-                        if (type == 'mini_target' || type == 'mini_penalty') {
-                           // Render Game Inline
-                           if (type == 'mini_target') {
-                              return TargetShooterGame(
-                                 onWin: () async { await _session.resolveInteraction(true); }, // No Navigator pop needed
-                                 onClose: () { _session.resolveInteraction(false); },
-                              );
-                           } else {
-                              return PenaltyKickGame(
-                                 onWin: () async { await _session.resolveInteraction(true); },
-                                 onClose: () { _session.resolveInteraction(false); },
-                              );
-                           }
-                        }
-
-                        // Default Quiz Overlay Logic
-                        final int index = (state['index'] as num?)?.toInt() ?? -1;
-                        final bool hasPayloadData = state.containsKey('question');
-                        
-                        if (!hasPayloadData && (index < 0)) {
-                          return Center(
-                              child: Container(
-                                padding: const EdgeInsets.all(24),
-                                margin: const EdgeInsets.all(32),
-                                decoration: BoxDecoration(
-                                  color: Colors.black87,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                       const Icon(Icons.sync_problem, color: Colors.amber, size: 48),
-                                       const SizedBox(height: 16),
-                                       Text("Sync Error", style: GoogleFonts.alexandria(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                                       const SizedBox(height: 8),
-                                       ElevatedButton(
-                                          style: ElevatedButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.black),
-                                          onPressed: () { _session.cancelInteraction(); },
-                                          child: const Text("Reset State"),
-                                       )
-                                    ]
-                                )
-                              )
-                          );
-                        }
-
-                        Map<String, dynamic> localOpts = {};
-                        if (_session.options.isNotEmpty && index >= 0) {
-                          final idxSafe = index.clamp(0, _session.options.length - 1);
-                          localOpts = _session.options[idxSafe];
-                        }
-                        
-                        final String qText = state['question'] ?? (index < _session.questions.length ? _session.questions[index] : 'Question Loading...');
-                        final String optA = state['optionA'] ?? localOpts['A'] ?? '';
-                        final String optB = state['optionB'] ?? localOpts['B'] ?? '';
-                        // final String? type = state['type'] ?? localOpts['type']; // Already defined above
-
-                        return Positioned.fill(
-                          child: QuizOverlay(
-                            question: qText,
-                            optionA: optA,
-                            optionB: optB,
-                            type: type ?? localOpts['type'],
-                            answer: state['truthOptions'] ?? localOpts['answer'], 
-                            interactionStep: state['step'],
-                            answeringPlayer: state['player'],
-                            submittedAnswer: state['answer'],
-                            isPaused: state['isPaused'] ?? false, 
-                            onOptionSelected: _handleOptionSelected,
-                            onClose: () {},
-                          ),
-                        );
-                      }
-                    ),
-                  ],
-                ),
-              ),
-
-                // Turn Indicator (Your Turn)
-                if (GameSession().currentTurn == GameSession().myRole)
-                  Container(
-                    width: double.infinity,
-                    height: 24,
-                    color: _themeDark, // primary-darkpink
-                    alignment: Alignment.center,
-                    child: Text(
-                      'YOUR TURN!',
-                      style: TextStyle(
-                        color: _themeSecondary, // primary-secondpink (#FF0077)
-                        fontWeight: FontWeight.w600,
-                        fontSize: 10, // Smaller font
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ),
-
-                // 4. Bottom Controls (Auto Height)
-                // Removed Expanded to allow TextField to grow
-                _buildBottomControls(),
-              ],
-            ),
           
           // 5. Full-size Quiz Overlay (Top Level)
 
+
+
+          // 3. Mini Game Overlay (Full Screen, Covers Header)
+          if (_session.interactionState != null)
+            Builder(
+              builder: (context) {
+                final state = _session.interactionState!;
+                final String? type = state['type'];
+                
+                if (type == 'mini_target') {
+                    return TargetShooterGame(
+                      onWin: () async { await _session.resolveInteraction(true); },
+                      onClose: () { _session.resolveInteraction(false); },
+                    );
+                } else if (type == 'mini_penalty') {
+                    return PenaltyKickGame(
+                      onWin: () async { await _session.resolveInteraction(true); },
+                      onClose: () { _session.resolveInteraction(false); },
+                    );
+                }
+                return const SizedBox.shrink();
+              }
+            ),
 
           // Floating Scores Layer
           ..._floatingScores,
@@ -751,11 +954,34 @@ class _GameScreenState extends State<GameScreen> {
             ),
           ),
           _buildAdWaitOverlay(),
-        ],
-      ),
-    ),
-  );
-}
+          
+          // Draggable Floating Button (Top Layer)
+          DraggableFloatingButton(
+            key: ValueKey('float_btn_$_targetPage'), // Force rebuild on page change state
+            isOnChatTab: _targetPage == 0,
+            unreadCount: _unreadCount,
+            latestMessage: _latestChatPreview,
+            themeColor: _themePrimary,
+            onTap: () {
+               // Toggle Page
+               final nextPage = _targetPage == 0 ? 1 : 0;
+               setState(() {
+                 _targetPage = nextPage;
+               });
+               _pageController.animateToPage(
+                 nextPage, 
+                 duration: const Duration(milliseconds: 400), 
+                 curve: Curves.easeInOutBack
+               );
+            },
+          ),
+        ], // Stack Children
+        ), // Stack
+      ), // Container
+    ), // Scaffold
+    ), // WillPopScope
+    ); // AnnotatedRegion
+  }
 
   // --- Chat & Ticker Logic ---
 
@@ -768,221 +994,189 @@ class _GameScreenState extends State<GameScreen> {
   Color get _themeDark => _session.myRole == 'A' ? AppColors.hostDark : AppColors.guestDark;
 
 
-  Widget _buildMessageTicker() {
-    // 1. Get the absolute latest CHAT message (Sent OR Received)
-    final lastChatMsg = _session.messages.lastWhere(
-      (m) => m['type'] == 'chat',
-      orElse: () => {},
-    );
-    
-    final bool hasMsg = lastChatMsg.isNotEmpty;
-    final String text = hasMsg ? lastChatMsg['text'] : "대화를 시작해보세요!";
-    
-    // Determine Sender Context
-    final bool isMe = hasMsg && (lastChatMsg['sender'] == _session.myRole);
-    final String senderLabel = isMe ? "나" : (_isHost ? (_session.guestNickname ?? 'Guest') : (_session.hostNickname ?? 'Host')); 
-    
-    // Theme Colors
-    final Color msgColor = isMe ? _themePrimary : (hasMsg ? _themeSecondary : Colors.grey);
-    final Color bubbleColor = isMe ? _themePrimary.withOpacity(0.05) : (hasMsg ? AppColors.playerB.withOpacity(0.1) : Colors.grey[50]!);
-    final IconData icon = isMe ? Icons.check_circle_outline : Icons.chat_bubble_outline;
 
-    return GestureDetector(
-       onTap: () {
-          _pageController.animateToPage(
-             0, 
-             duration: const Duration(milliseconds: 300), 
-             curve: Curves.easeInOut
-          );
-       },
-       child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        // Increased padding for larger size (approx 2x visual weight)
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        decoration: BoxDecoration(
-          color: bubbleColor,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: msgColor.withOpacity(0.3), width: 1.5),
-          boxShadow: [
-             BoxShadow(
-                color: msgColor.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-             )
-          ]
-        ),
-        child: Row(
-          children: [
-             // Content Area: Flexibly handles Left/Right alignment
-             Expanded(
-               child: Row(
-                 mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-                 crossAxisAlignment: CrossAxisAlignment.start,
-                 children: [
-                   // Partner Avatar (Left)
-                   if (!isMe) ...[
-                     CircleAvatar(
-                       radius: 16, // Slightly larger avatar
-                       backgroundColor: msgColor.withOpacity(0.2),
-                       child: Icon(icon, size: 18, color: msgColor),
-                     ),
-                     const SizedBox(width: 12),
-                   ],
-
-                   // Message Text Column
-                   Flexible(
-                     child: Column(
-                        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                            // Sender Label
-                            if (hasMsg)
-                              Text(
-                                senderLabel,
-                                style: GoogleFonts.alexandria(
-                                   fontSize: 11, 
-                                   color: msgColor, 
-                                   fontWeight: FontWeight.bold
-                                ),
-                              ),
-                            const SizedBox(height: 4),
-                            // Message Text (Max 3 lines)
-                            Text(
-                              text,
-                              maxLines: 3, // Increased lines
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: isMe ? TextAlign.right : TextAlign.left,
-                              style: GoogleFonts.doHyeon(
-                                 fontSize: 16, // Slightly larger font
-                                 color: Colors.black87,
-                                 height: 1.3,
-                              ),
-                            ),
-                        ],
-                     ),
-                   ),
-
-                   // Self Avatar (Right)
-                   if (isMe) ...[
-                     const SizedBox(width: 12),
-                     CircleAvatar(
-                       radius: 16, 
-                       backgroundColor: msgColor.withOpacity(0.2),
-                       child: Icon(icon, size: 18, color: msgColor),
-                     ),
-                   ],
-                 ],
-               ),
-             ),
-             
-             // Fixed "Chat >" Indicator on the far right
-             const SizedBox(width: 12),
-             Column(
-               mainAxisAlignment: MainAxisAlignment.center,
-               children: [
-                 Icon(Icons.chevron_right, color: msgColor.withOpacity(0.4), size: 20),
-               ],
-             )
-          ],
-        ),
-      ),
-    );
-  }
 
 
   Widget _buildChatView() {
     return Container(
       color: Colors.white.withOpacity(0.5),
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        controller: _chatScrollController, // Connected Controller
+        padding: const EdgeInsets.symmetric(vertical: 16), // Top/Bottom padding
         itemCount: _session.messages.length,
         itemBuilder: (context, index) {
           final msg = _session.messages[index];
           final sender = msg['sender'] ?? '';
           
-          // System Messages (Centered)
-          if (sender.startsWith('SYSTEM')) {
-            final isQuestion = sender == 'SYSTEM_Q';
-            final player = msg['player']; // Check who triggered/owns this (A or B)
-            final outlineColor = (player == 'B') ? AppColors.guestPrimary : AppColors.hostPrimary;
-            
-            return Center(
+          // --- 2.2 SYSTEM MESSAGE ---
+          if (sender == 'SYSTEM') {
+             return Center(
               child: Container(
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width / 3), // Fixed to 1/3 Screen Width
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6), // Compact padding
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100], // Muted Background
+                  color: Colors.grey[100],  // Neutral Background
                   borderRadius: BorderRadius.circular(12),
-                  border: isQuestion ? Border.all(color: outlineColor, width: 1.5) : null,
+                  border: Border.all(
+                    color: Colors.grey[300]!,
+                    width: 1,
+                  ),
                 ),
-                child: Column(
-                  children: [
-                    if (isQuestion)
-                       Text(
-                        _getQuestionLabel(msg['type']),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 6, // Requested size
-                          fontWeight: FontWeight.bold,
-                          color: outlineColor, // Match outline
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    if (isQuestion) const SizedBox(height: 2), // Tiny gap
-                    Text(
-                      msg['text'] ?? '',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 8, // Requested size
-                        fontWeight: isQuestion ? FontWeight.w600 : FontWeight.normal,
-                        color: Colors.black87,
-                        height: 1.2, // Tighter line height for small text
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  msg['text'] ?? '',
+                  style: GoogleFonts.alexandria(
+                    fontSize: 12,        // Caption
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             );
           }
 
+          // --- 2.3 QUESTION / ANSWER SYSTEM MESSAGE ---
+          if (sender == 'SYSTEM_Q' || sender == 'SYSTEM_A') {
+             final player = msg['player']; // Owner of the interaction
+             final Color userColor = (player == 'A') ? AppColors.hostPrimary : AppColors.guestPrimary;
+             
+             return Center(
+              child: Container(
+                margin: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: userColor.withOpacity(0.3), // Light border of user color
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: userColor.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    )
+                  ],
+                ),
+                child: Text(
+                  msg['text'] ?? '', 
+                  style: GoogleFonts.doHyeon(
+                    fontSize: 15, // Prominent text
+                    color: userColor.withOpacity(0.8), // Colored text
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
+
+          // --- 2.1 CHAT MESSAGE ---
           final isMe = sender == _session.myRole;
           final time = DateTime.tryParse(msg['timestamp'] ?? '') ?? DateTime.now();
-          
-          return Align(
-            alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+          final timeStr = DateFormat('h:mm a').format(time);
+
+          if (isMe) {
+            // MY MESSAGE (Right Aligned)
+            return Container(
+              margin: const EdgeInsets.only(
+                left: 60,    // Max width constraint
+                right: 12,   // Screen margin
+                bottom: 8,   // Gap
+              ),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white, 
-                borderRadius: BorderRadius.circular(12).copyWith(
-                  bottomLeft: isMe ? const Radius.circular(12) : const Radius.circular(0),
-                  bottomRight: isMe ? const Radius.circular(0) : const Radius.circular(12),
+                color: _session.myRole == 'A' ? const Color(0xFFF4E7E8) : const Color(0xFFF0E7F4), // Tint based on My Role
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                  bottomLeft: Radius.circular(16),
+                  bottomRight: Radius.circular(4),  // Tail
                 ),
-                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 2, offset: const Offset(0, 1))],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  )
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                   Text(
+                  Text(
                     msg['text'] ?? '',
-                    style: const TextStyle(color: Colors.black87),
+                    style: GoogleFonts.doHyeon(
+                      fontSize: 13,        // Body 2
+                      color: Colors.black87,
+                      height: 1.5,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _formatTime(time),
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 10,
+                    timeStr,
+                    style: GoogleFonts.alexandria(
+                      fontSize: 10,        // Micro
+                      color: Colors.black45,
                     ),
                   ),
                 ],
               ),
-            ),
-          );
+            );
+          } else {
+            // OPPONENT MESSAGE (Left Aligned)
+            // Determine opponent role color for tint
+            final oppRole = _session.myRole == 'A' ? 'B' : 'A';
+            final tintColor = oppRole == 'A' ? const Color(0xFFF4E7E8) : const Color(0xFFF0E7F4);
+
+            return Container(
+              margin: const EdgeInsets.only(
+                left: 12,
+                right: 60,
+                bottom: 8,
+              ),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: tintColor, 
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                  bottomLeft: Radius.circular(4),  // Tail
+                  bottomRight: Radius.circular(16),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  )
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                   Text(
+                    msg['text'] ?? '',
+                    style: GoogleFonts.doHyeon(
+                      fontSize: 13,
+                      color: Colors.black87,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    timeStr,
+                    style: GoogleFonts.alexandria(
+                      fontSize: 10,
+                      color: Colors.black45,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
         },
       ),
     );
@@ -1052,22 +1246,35 @@ class _GameScreenState extends State<GameScreen> {
           const SizedBox(width: 8),
           Padding(
             padding: const EdgeInsets.only(top: 4.0),
-            child: Material(
-              color: _isPaused ? Colors.grey : _themePrimary,
-              shape: const CircleBorder(),
-              elevation: 2,
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: _isPaused ? null : _handleSendMessage,
-                child: Padding(
+            child: AnimatedButton(
+               onPressed: _isPaused ? null : () {
+                  if (_chatController.text.isNotEmpty) {
+                      _handleSendMessage();
+                  } else {
+                      // Toggle Speech
+                      if (_isListening) {
+                         _stopListening();
+                      } else {
+                         _startListening();
+                      }
+                  }
+               },
+               style: ElevatedButton.styleFrom(
+                  shape: const CircleBorder(),
+                  backgroundColor: _isListening ? Colors.redAccent : (_isPaused ? Colors.grey : _themePrimary),
                   padding: const EdgeInsets.all(10),
-                  child: Icon(
-                    _chatController.text.isNotEmpty ? Icons.send : Icons.mic, // Toggle Icon
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ),
+                  foregroundColor: Colors.white,
+                  elevation: 2,
+                  disabledBackgroundColor: Colors.grey,
+                  disabledForegroundColor: Colors.white70,
+               ),
+               child: Icon(
+                  _chatController.text.isNotEmpty 
+                      ? Icons.send 
+                      : (_isListening ? Icons.mic_off : Icons.mic), // Toggle Icon
+                  color: Colors.white,
+                  size: 20,
+               ),
             ),
           ),
         ],
@@ -1235,6 +1442,7 @@ class _GameScreenState extends State<GameScreen> {
        }
      }
   }
+
 
   void _showSnackBar(String msg, {Color color = Colors.red}) {
     if (!mounted) return;
@@ -1459,114 +1667,59 @@ class _GameScreenState extends State<GameScreen> {
     ).animate(target: 1).shimmer(delay: 500.ms, duration: 1500.ms, color: Colors.white);
   }
 
+
+
+  Widget _buildPageIndicator(int pageIndex, String label) {
+    bool isActive = _currentPage == pageIndex;
+    return GestureDetector(
+      onTap: () => _pageController.animateToPage(pageIndex, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: isActive ? _themePrimary : Colors.grey[300],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isActive ? Colors.white : Colors.grey[600],
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.0,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildBingoTile(int index) {
     String owner = _session.tileOwnership[index];
     bool isHovered = _hoveredIndex == index;
-    bool isPressed = _pressedIndex == index;
-    bool isActive = (isHovered || isPressed) && owner.isEmpty;
-    
-    // Base Colors (Glass)
-    Color tileColor = Colors.white.withOpacity(0.3);
-    Color borderColor = Colors.white.withOpacity(0.2);
-    double borderWidth = 1.0;
-    Widget? icon;
-
-    // State Logic
-    if (owner.startsWith('LOCKED') || owner == 'X') { // Normalize 'X' to 'LOCKED' state
-      tileColor = Colors.grey.withOpacity(0.5);
-      borderColor = Colors.grey;
-      borderWidth = 2.0;
-      icon = const Icon(Icons.lock, color: Colors.white70, size: 24);
-    } 
-    else if (owner == 'A') {
-      tileColor = const Color(0xFF7DD3FC).withOpacity(0.4); // Sky Blue
-      borderColor = const Color(0xFF7DD3FC);
-      borderWidth = 2.0;
-      icon = const Icon(Icons.check, color: Color(0xFF0369A1), size: 24);
-    } else if (owner == 'B') {
-      tileColor = const Color(0xFFFBCFE8).withOpacity(0.4); // Pink
-      borderColor = const Color(0xFFFBCFE8);
-      borderWidth = 2.0;
-      icon = const Icon(Icons.check, color: Color(0xFFBE185D), size: 24);
-    }
-    // Active State (Hover or Press) - Only if not owned or locked
-    else if (isActive) { 
-      borderColor = _themePrimary;
-      tileColor = _themePrimary.withOpacity(isPressed ? 0.25 : 0.15); // Darker on press
-      borderWidth = 2.0;
-    }
     
     return MouseRegion(
       onEnter: (_) => setState(() => _hoveredIndex = index),
       onExit: (_) => setState(() => _hoveredIndex = null),
       cursor: (owner == 'X') ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
-      child: AnimatedScale(
-          // Press: Scale Down (0.95), Hover: Scale Up (1.05), Normal: 1.0
-          scale: isActive ? (isPressed ? 0.95 : 1.05) : 1.0, 
-          duration: const Duration(milliseconds: 150), // Fasster response
-          curve: Curves.easeOutCubic,
-          child: Stack(
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                decoration: BoxDecoration(
-                  color: tileColor,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: borderColor, width: borderWidth),
-                  boxShadow: [
-                    if (isActive || owner.isNotEmpty) 
-                      BoxShadow(
-                        color: (owner == 'A' || (_isHost && isActive && owner.isEmpty)) 
-                            ? const Color(0xFF7DD3FC).withOpacity(0.5) 
-                            : const Color(0xFFFBCFE8).withOpacity(0.5),
-                        blurRadius: isActive ? 16 : 12,
-                        spreadRadius: isActive ? 4 : 2,
-                      ),
-                  ],
-                ),
-                child: Center(child: icon)
-                     
-                      .animate(key: ValueKey(owner)) // Animate when owner changes
-                      .scale(
-                          duration: 400.ms, 
-                          curve: Curves.elasticOut, 
-                          begin: (owner.isNotEmpty && owner != 'LOCKED' && owner != 'X') ? const Offset(0.8, 0.8) : const Offset(1, 1)
-                       )
-                       .then() // Ensure scale completes or doesn't conflict? Actually just chaining.
-                       .animate(target: (owner == 'A' || owner == 'B') ? 1 : 0) // Conditional target
-                       .shimmer(
-                          delay: 200.ms, 
-                          duration: 1000.ms, 
-                          color: Colors.white.withOpacity(0.8),
-                       ),
-              ),
-              Positioned.fill(
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(8),
-                    splashColor: _themePrimary.withOpacity(0.2), // More visible splash
-                    highlightColor: _themePrimary.withOpacity(0.1),
-                    onHighlightChanged: (val) {
-                       if (mounted && (owner.isEmpty)) {
-                          setState(() => _pressedIndex = val ? index : null);
-                       }
-                    },
-                    onTap: (owner.startsWith('LOCKED') || owner == 'X')
-                        ? () {
-                            _launchRandomMiniGame(index);
-                          }
-                        : () {
-                            debugPrint('[Tile] Tapped Index: $index');
-                            // Ensure press state is cleared on tap
-                            setState(() => _pressedIndex = null);
-                            _onTileTapped(index);
-                        },
-                  ),
-                ),
-              ),
-            ],
-          ),
+      child: LiquidBingoTile(
+        text: "", // Removed index number as per user request
+        owner: owner,
+        isHost: _isHost, 
+        isHovered: isHovered,
+        isWinningTile: _winningTiles.contains(index),
+        onTap: () {
+        if (!_isHost && !_session.isGameActive) return; 
+        
+        // Restore Mini-Game launch for Locked/X tiles
+        if (owner.startsWith('LOCKED') || owner == 'X') {
+           _launchRandomMiniGame(index);
+           return;
+        }
+        
+        if (_session.myRole == _session.currentTurn && owner.isEmpty) {
+           _onTileTapped(index);
+        }
+      },
       ),
     );
   }
@@ -1622,13 +1775,15 @@ class _GameScreenState extends State<GameScreen> {
           if (!isGameOver)
             ElevatedButton(
               onPressed: () async {
+                  _isBingoDialogVisible = false; // Reset flag first
                   Navigator.pop(context);
+                  
                   // Shared Logic: Continue
                   if (_session.adFree || _session.vp >= 200) {
                       _session.setGameStatus('playing'); // Resume immediately
                   } else {
                       await _session.startAdBreak(); // Trigger Handshake
-                      _showAdOverlay(); // Watch my ad
+                      // _showAdOverlay() handled by listener now to avoid stacking
                   }
               },
               style: ElevatedButton.styleFrom(
@@ -1641,7 +1796,13 @@ class _GameScreenState extends State<GameScreen> {
           
           ElevatedButton(
             onPressed: () {
+                _isBingoDialogVisible = false;
                 Navigator.pop(context);
+                
+                // Set navigating to true to prevent _onSessionUpdate from reacting to 'finished' state
+                // (which would show the 'Game Over' dialog on top of our navigation)
+                _navigating = true;
+
                 _session.endGame(); 
                 _proceedToReward();
             },
@@ -1656,6 +1817,7 @@ class _GameScreenState extends State<GameScreen> {
     ).then((_) {
        _isBingoDialogVisible = false;
     });
+
   }
 
   // Ad Overlay Logic
@@ -1715,7 +1877,7 @@ class _GameScreenState extends State<GameScreen> {
   // Waiting for Opponent Overlay (Handshake)
   Widget _buildAdWaitOverlay() {
       // Logic: Only show if gameStatus == 'paused_ad' AND myAdStatus == false (I finished, they are watching)
-      final showWait = _session.gameStatus == 'paused_ad' && _session.adWatchStatus[_session.myRole] == false;
+      final showWait = _session.gameStatus == 'paused_ad' && (_session.adWatchStatus[_session.myRole] == false);
       
       if (!showWait) return const SizedBox.shrink();
 
@@ -1734,6 +1896,46 @@ class _GameScreenState extends State<GameScreen> {
            ],
         ),
       );
+  }
+
+  void _showEntranceNotification(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        // Auto-close after 2 seconds
+        Future.delayed(const Duration(seconds: 2), () {
+          if (context.mounted && Navigator.canPop(context)) {
+             Navigator.pop(context);
+          }
+        });
+        
+        return Material(
+           color: Colors.transparent,
+           child: Center(
+             child: Container(
+               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+               decoration: BoxDecoration(
+                 color: Colors.black.withOpacity(0.7),
+                 borderRadius: BorderRadius.circular(20),
+                 boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 5))
+                 ]
+               ),
+               child: Text(
+                 message,
+                 style: GoogleFonts.alexandria(
+                   color: Colors.white,
+                   fontSize: 20,
+                   fontWeight: FontWeight.bold,
+                 ),
+                 textAlign: TextAlign.center,
+               ),
+             ),
+           ),
+        );
+      }
+    );
   }
 
   // Refactor _buildBoardFullDialog to use new logic (triggered by 3 lines or explicit logic)
@@ -1813,6 +2015,9 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _proceedToReward() {
+       // Apply Rewards exactly once before navigating
+       _session.applyEndGameRewards();
+       
        if (!_session.adFree) {
           // Mock Ad for Web
           if (kIsWeb) {
@@ -1885,10 +2090,7 @@ class _GameScreenState extends State<GameScreen> {
             onPressed: () {
               Navigator.pop(context);
               _session.endGame(); // Notify DB
-               Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => RewardScreen()),
-                (route) => false,
-              );
+              _proceedToReward(); // Apply rewards and navigate
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: _themePrimary,
@@ -2212,6 +2414,79 @@ class _GameScreenState extends State<GameScreen> {
       ),
     );
   }
+  String _resolveQuestionText(int index, String? stateQ) {
+      if (index < 0 || index >= _session.questions.length) {
+         return stateQ ?? 'Loading...';
+      }
+      
+      final baseQ = _session.questions[index];
+      final isEnglish = _session.language == 'en';
+
+      // 1. Resolve Base Content (Fallback)
+      String effectiveContent = baseQ; // Default Korean
+      
+      // If English, try to find content_en from parsed map? 
+      // _session.questions is List<String>. It only stored the Korean content string originally?
+      // Wait, _session.questions is populated in `_loadFromMap` from `game_sessions` table which has `questions` JSONB array.
+      // But locally `_session.questions` is `List<String>`.
+      // The `options` list stores the FULL map.
+      // So we should look at `_session.options[index]['content_en']` if available.
+      
+      if (index < _session.options.length) {
+         final opts = _session.options[index];
+         if (isEnglish) {
+             final enContent = opts['content_en']; // We added this in GameSession
+             if (enContent != null && enContent.toString().isNotEmpty) {
+                 effectiveContent = enContent.toString();
+             }
+         }
+         
+         final variants = isEnglish ? opts['variants_en'] : opts['variants']; // Choose map based on lang
+         
+         if (variants != null && variants is Map) {
+             // Resolve Variant
+             final turn = _session.currentTurn; 
+             final isHostTurn = (turn == 'A');
+             
+             String norm(String? g) {
+                 if (g == null || g.isEmpty) return 'm';
+                 final low = g.toLowerCase();
+                 if (low.startsWith('f') || low == 'female') return 'f';
+                 return 'm';
+             }
+             final hGen = norm(_session.hostGender); 
+             final gGen = norm(_session.guestGender); 
+             
+             // Attacker speaks to Defender
+             String attacker = isHostTurn ? hGen : gGen;
+             String defender = isHostTurn ? gGen : hGen;
+             
+             final key = "var_${attacker}_${defender}";
+             // Note: English keys we stored as 'var_m_f' (stripped _en) for consistency
+             
+             if (variants[key] != null && variants[key].toString().isNotEmpty) {
+                return variants[key].toString();
+             }
+         }
+      }
+      
+      // If we are in English mode and we only have Korean stateQ passed in via state...
+      // The stateQ usually comes from `game_state` in DB which might be pre-rendered or just content?
+      // Actually `interactionState['question']` is usually populated with `_resolveQuestionText` result by the sender?
+      // No, sender sends index. Receiver resolves?
+      // If sender resolves and puts it in `question` field of json, then receiver sees that string.
+      // Ideally, `interactionState` should just have index.
+      // But `GameSession` `startInteraction` puts `question: questions[index]` (Korean default).
+      
+      // If stateQ is provided and we can't resolve dynamic (e.g. index mismatch), use stateQ.
+      // But if we want English, and stateQ is Korean, we prefer our local resolution if possible.
+      if (index >= 0 && index < _session.options.length) {
+          return effectiveContent;
+      }
+
+      return stateQ ?? effectiveContent;
+  }
+
   String _getQuestionLabel(String? type) {
     if (type == 'balance' || type == 'B') return 'BALANCE GAME';
     if (type == 'truth' || type == 'T') return 'TRUTH OR DARE';

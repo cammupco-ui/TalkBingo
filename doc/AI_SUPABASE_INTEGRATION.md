@@ -48,6 +48,30 @@ def analyze_user_relationship(user1_id, user2_id, supabase):
         "code_name": code_name,
         "details": data
     }
+
+
+#### 맞춤형 입장 메시지 생성 (Entrance Greeting)
+```python
+def generate_entrance_message(host_profile, guest_profile, relation_context):
+    """
+    호스트와 게스트의 입장을 알리는 표준 메시지 생성.
+    (UI 모달에 표시될 텍스트)
+    """
+    
+    # AI Prompting (Standardized)
+    prompt = f"""
+    Create a standard entrance notification message.
+    Host: {host_profile['nickname']}, Guest: {guest_profile['nickname']}
+    Language: Korean / English
+    Output format: JSON {{"host_view": "...", "guest_view": "..."}}
+    """
+    
+    # response = ai.generate(prompt)
+    # Example Output:
+    # Host View: "[Guest] has entered." / "[Guest]님이 입장하셨습니다."
+    # Guest View: "Host has entered." / "초대자가 입장하셨습니다."
+    return ai_response
+```
 ```
 
 #### 관계 기반 질문 추천 (Relationship-based Tagging)
@@ -162,6 +186,25 @@ def summarize_game_session(game_id, supabase):
     })
     
     return summary
+    
+    
+    def analyze_sudden_exit_state(game_id, supabase):
+    """
+    강제 종료(Sudden Exit)된 게임의 상태를 분석하여 정산 로직 검증.
+    AI는 로그와 상태 불일치를 감지하여 재접속 시 올바른 리워드 표기를 보장하는 감시자 역할을 수행함.
+    """
+    # 1. Fetch Game State
+    game = supabase.table('game_sessions').select('game_status, game_state').eq('id', game_id).single().execute()
+    
+    # 2. Verify Score Integrity
+    # 로그 상 'Bingo Completed' 이벤트가 존재하는데, 리워드가 0인 경우 등을 탐지
+    logs = supabase.table('logs').select('*').eq('game_id', game_id).eq('event', 'BINGO_WIN').execute()
+    
+    # 3. Report Discrepancy
+    if logs.data and game.data['game_status'] != 'finished':
+       return {"alert": "Mismatch detected", "suggested_action": "force_settle", "score_snapshot": logs.data[-1]}
+    
+    return {"status": "integrity_verified"}
 ```
 
 #### 사용자 관계 발전 추이 분석

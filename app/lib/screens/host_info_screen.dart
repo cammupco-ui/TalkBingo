@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -171,6 +172,11 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
               decoration: InputDecoration(
                 hintText: 'Enter your nickname',
                 hintStyle: GoogleFonts.alexandria(color: Colors.grey),
+                errorText: _nicknameController.text.trim().isEmpty && _nicknameController.text.isNotEmpty 
+                    ? 'Nickname cannot be empty' : null,
+                suffixIcon: _nicknameController.text.trim().isNotEmpty 
+                    ? const Icon(Icons.check_circle, color: Colors.green) 
+                    : null,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 isDense: true,
                 border: const OutlineInputBorder(),
@@ -189,29 +195,47 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
             _buildLabel('Gender'),
             Row(
               children: [
-                _buildGenderChip('Male', 'Male'),
-                const SizedBox(width: 10),
-                _buildGenderChip('Female', 'Female'),
+                Expanded(child: _buildGenderButton('Male', 'Male')),
+                const SizedBox(width: 16),
+                Expanded(child: _buildGenderButton('Female', 'Female')),
               ],
             ),
             const SizedBox(height: 24),
 
-            // Next Button
-            ElevatedButton(
-              onPressed: _isFormValid ? _onNextPressed : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFBD0558),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 0),
-                fixedSize: const Size.fromHeight(44),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+            // Validation Message if Invalid
+            if (!_isFormValid)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Text(
+                  '👆 Please enter nickname and select gender',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                disabledBackgroundColor: Colors.grey[300],
               ),
-              child: const Text(
-                'Next',
-                style: TextStyle(fontSize: 14, fontFamily: 'NURA', fontWeight: FontWeight.bold),
+
+            // Next Button
+            Tooltip(
+              message: _isFormValid ? 'Continue' : 'Complete the form first',
+              child: AnimatedButton(
+                onPressed: _isFormValid ? _onNextPressed : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFBD0558),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 0),
+                  fixedSize: const Size.fromHeight(44),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  disabledBackgroundColor: Colors.grey[300],
+                ),
+                child: const Text(
+                  'Next',
+                  style: TextStyle(fontSize: 14, fontFamily: 'NURA', fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
@@ -234,25 +258,30 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
     );
   }
 
-  Widget _buildGenderChip(String label, String value) {
+  Widget _buildGenderButton(String label, String value) {
     final isSelected = _selectedGender == value;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (selected) => setState(() => _selectedGender = selected ? value : null),
-      selectedColor: const Color(0xFFBD0558),
-      labelStyle: TextStyle(
-        color: isSelected ? Colors.white : Colors.black,
-        fontWeight: FontWeight.bold,
-        fontSize: 12,
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-      visualDensity: VisualDensity.compact,
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: isSelected ? Colors.transparent : Colors.grey),
+    return InkWell(
+      onTap: () => setState(() => _selectedGender = value),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        height: 48,
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFBD0558) : Colors.white,
+          border: Border.all(
+            color: isSelected ? const Color(0xFFBD0558) : Colors.grey[400]!,
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.black87,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
@@ -47,7 +48,7 @@ class SignOutLandingScreen extends StatelessWidget {
               const SizedBox(height: 48),
 
               // Option 1: Log In Again (Return to Title)
-              ElevatedButton(
+              AnimatedButton(
                 onPressed: () {
                    // Disable Dev Mode to ensure we don't auto-redirect
                    DevConfig.isDevMode.value = false;
@@ -79,7 +80,7 @@ class SignOutLandingScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               // Option 2: Exit App
-              OutlinedButton(
+              AnimatedOutlinedButton(
                 onPressed: () {
                   SystemNavigator.pop(); // Note: Might not work on iOS based on Apple guidelines, but standard for Android
                 },

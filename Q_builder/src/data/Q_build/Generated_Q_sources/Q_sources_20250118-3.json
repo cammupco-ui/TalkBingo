@@ -1,0 +1,148 @@
+[
+  {
+    "topic": "수면습관",
+    "category": "Friend",
+    "order_code_prefix": "BDcL2",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "불면증에 대한 푸념",
+        "base_content": "혹시 요즘 잠 잘 못 자서 힘들어?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "밤늦게까지 스마트폰 보는 상황|커피 마시고 잠 못 드는 경험|시험·업무 스트레스로 인한 불면증|새벽에 깨서 뒤척이는 모습|멍하니 천장만 바라보는 밤",
+          "enrichment_trending_keywords": "수면의 질|꿀잠|불면증|만성피로|야행성|ASMR|수면패턴",
+          "enrichment_psychological_tensions": "피곤해 보인다고 지적하는 듯한 느낌|섣부른 조언에 대한 부담|나만 힘든 게 아니라는 공감대 형성 욕구|생활 습관 훈수처럼 들릴까 봐 조심스러움",
+          "enrichment_conversation_friendly_terms": "요즘 따라|괜찮아?|피곤해 보여|어쩐지|컨디션|신경 쓰여서"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "수면습관",
+    "category": "Friend",
+    "order_code_prefix": "BDcL2",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "밤샘 후 피로감 공유",
+        "base_content": "어제 밤새워서 혹시 많이 피곤해?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "밤샘 과제·시험공부 후유증|게임·드라마 정주행으로 인한 밤샘|밤샘 근무 후 퇴근길|친구들과 밤새 놀고 난 다음 날 아침|몽롱한 상태로 하루 버티는 모습",
+          "enrichment_trending_keywords": "밤샘|카페인 수혈|멍 때리기|좀비 모드|현타|에너지 드링크",
+          "enrichment_psychological_tensions": "자랑과 푸념 사이의 애매한 뉘앙스|'젊어서 고생' 식의 꼰대 발언 경계|자기관리 못한다는 인식을 줄까 봐 걱정|누가 더 피곤한지 은근한 경쟁 심리",
+          "enrichment_conversation_friendly_terms": "어떡해|얼굴이 퀭하다|괜찮아?|버티는 중|힘들겠다|고생했네"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "수면습관",
+    "category": "Friend",
+    "order_code_prefix": "BDcL2",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "최근 컨디션에 대한 대화",
+        "base_content": "요즘 컨디션은 좀 어때?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "환절기라 유독 피곤한 상황|큰 프로젝트나 시험 끝나고 방전된 상태|운동 시작하고 오히려 더 피곤한 경험|일상적인 안부 인사|영양제나 건강식품 이야기로 전환",
+          "enrichment_trending_keywords": "컨디션 난조|체력 방전|만성피로|번아웃|기력 딸림|몸보신",
+          "enrichment_psychological_tensions": "진심 어린 걱정 vs 형식적인 인사|어디까지 솔직하게 말해야 할지 고민|'나도 힘들어' 배틀로 번질 가능성|상대의 힘든 이야기를 들어줘야 한다는 부담감",
+          "enrichment_conversation_friendly_terms": "요즘|어때|딱히|그냥 그래|다크서클|기운 없어 보여"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "수면습관",
+    "category": "Family",
+    "order_code_prefix": "FaFsL3",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "자녀 건강 상태 확인",
+        "base_content": "요즘 아이들 잠은 잘 자고 있는지 궁금하네.",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "늦게까지 스마트폰 하는 자녀|시험 기간이라 밤새는 상황|아침에 못 일어나 힘들어하는 모습|주말에 잠 몰아자기",
+          "enrichment_trending_keywords": "수면의 질|꿀잠|만성피로|성장기|수면 패턴|디지털 디톡스",
+          "enrichment_psychological_tensions": "잔소리로 들릴까 봐 조심스러움|사생활 침해에 대한 우려|자녀의 스트레스에 대한 공감|알면서도 못 고치는 습관",
+          "enrichment_conversation_friendly_terms": "어떤 편이니|혹시|신경 쓰여서|피곤해 보여서|~하는 것 같아서"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "수면습관",
+    "category": "Family",
+    "order_code_prefix": "FaFsL3",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "달라진 생활 패턴 공유",
+        "base_content": "요즘 생활 패턴이 좀 달라졌는지 궁금하네.",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "새 학기나 방학 시작|잦은 야근이나 회식|새로운 취미나 운동 시작|밤낮이 바뀐 생활",
+          "enrichment_trending_keywords": "루틴|워라밸|야행성|아침형 인간|리듬|컨디션 조절",
+          "enrichment_psychological_tensions": "서로 바뀐 생활에 대한 서운함|간섭으로 느껴질 수 있는 질문|이해받고 싶은 마음|너무 다른 생활 패턴에 대한 이질감",
+          "enrichment_conversation_friendly_terms": "요새|어떻게 지내|크게 달라진 거 있어?|궁금해서|힘든 점은 없는지"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "수면습관",
+    "category": "Family",
+    "order_code_prefix": "FaFsL3",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "서로의 컨디션 걱정",
+        "base_content": "요즘 컨디션은 괜찮은지 궁금하네.",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "환절기라 피곤한 요즘|부쩍 피곤해 보이는 가족 얼굴|스트레스 받는 일이 있어 보이는 눈치|입맛이 없어 보이거나 식사를 거르는 모습",
+          "enrichment_trending_keywords": "컨디션 난조|에너지|체력|무기력|번아웃|영양제",
+          "enrichment_psychological_tensions": "걱정 끼칠까 봐 아픈 걸 숨김|'괜찮다'는 말을 믿어야 할지 의심|과보호로 느껴질 수 있는 염려|진심 어린 걱정과 형식적인 안부 사이",
+          "enrichment_conversation_friendly_terms": "얼굴이 안 좋아 보여|기운 없어 보여|어디 아픈 데는 없고?|잘 챙겨 먹고 다니는지|무리하지 말고"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "수면습관",
+    "category": "Lover",
+    "order_code_prefix": "LoHwL4",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "서로의 잠버릇 공유",
+        "base_content": "혹시 자면서 특별한 잠버릇이 있는 편이야?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "상대방 코골이나 잠꼬대 첫 경험 | 여행지에서의 첫 동침 | 자다가 이불 뺏고 뺏기는 상황 | 서로 발로 차거나 때리는 순간",
+          "enrichment_trending_keywords": "코골이 | 이갈이 | 잠꼬대 | 몸부림 | 개복치 자세 | 수면 어플 기록",
+          "enrichment_psychological_tensions": "내 잠버릇에 대한 민망함 | 상대에게 피해 줄까 봐 걱정 | 솔직하게 말하기의 어려움 | 귀엽게 봐주길 바라는 마음",
+          "enrichment_conversation_friendly_terms": "혹시나 해서 | 궁금해서 | 사실 나는 | 웃긴 얘긴데 | 말하기 부끄럽지만"
+        }
+      },
+      {
+        "context_variant": "공동 침실 환경 개선 논의",
+        "base_content": "우리가 함께 자는 공간을 더 편안하게 만들 방법이 있을까?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "새 침구/암막커튼 함께 쇼핑 | 침실 온도/습도 조절 논쟁 | 자기 전 스마트폰 사용 줄이기 약속 | 늦잠 vs 아침형 인간의 갈등",
+          "enrichment_trending_keywords": "수면의 질 | 꿀잠템 | 암막커튼 | 백색소음 | 적정 온도/습도 | 무드등",
+          "enrichment_psychological_tensions": "개인 취향 vs 공동의 편안함 | 추가 비용 발생에 대한 부담 | 상대에게 맞춰주려는 노력과 피로 | 불만 제기의 조심스러움",
+          "enrichment_conversation_friendly_terms": "~하는 건 어떨까? | 우리 같이 | 혹시 불편한 점은 없어? | 더 좋은 방법 | ~를 위해서"
+        }
+      },
+      {
+        "context_variant": "수면의 질 상호 체크",
+        "base_content": "요즘 잠은 편안하게 잘 자고 있어?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "피곤해 보이는 연인 얼굴 | 악몽 꿨다는 이야기 들어주기 | 아침에 일어나도 개운하지 않은 느낌 공유 | 스트레스 때문에 잠 못 이루는 밤",
+          "enrichment_trending_keywords": "숙면 | 불면증 | 만성피로 | 꿈자리 | 수면 사이클 | 기절하듯 잠들기",
+          "enrichment_psychological_tensions": "걱정 끼치고 싶지 않은 마음 | 괜찮다고 둘러대는 상황 | 나 때문에 못 자는 건 아닌지 염려 | 단순 피로와 건강 문제의 경계",
+          "enrichment_conversation_friendly_terms": "요즘 부쩍 | 얼굴이 안 좋아 보여 | 혹시 무슨 일 있어? | 내가 도와줄 거 없을까? | 걱정돼서 그래"
+        }
+      }
+    ]
+  }
+]

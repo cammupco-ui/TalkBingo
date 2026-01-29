@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
+import 'package:talkbingo_app/utils/localization.dart';
 
 class GameSession with ChangeNotifier {
   static final GameSession _instance = GameSession._internal();
@@ -95,6 +96,9 @@ class GameSession with ChangeNotifier {
   List<String> _tileOwnership = List.filled(25, ''); 
   List<String> get tileOwnership => _tileOwnership;
 
+  // Track Guest Join Status locally
+  String? _lastKnownGuestNickname;
+
   // New Method to Sync Guest Info
   Future<void> updateGuestProfile(String nickname) async {
     guestNickname = nickname;
@@ -172,31 +176,30 @@ class GameSession with ChangeNotifier {
          else subRel = 'Fs'; // Father-Son (M-M)
       }
 
-      // 1. Exact Match
+      // 1. Local CodeName for Reference (though we use Wildcards for query)
       codeName = '$hGender-$gGender-$relCode-$subRel-L$intimacyLevel';
       debugPrint('*** [Local CodeName Gen] Generated: $codeName ***');
     }
 
-    // --- NEW FALLBACK LOGIC ---
-    // Generate Candidate List for Hierarchy Matching
-    // 1. Exact: M-F-B-Ar-L3
-    // 2. Generic SubRel: M-F-B-*-L3
-    // 3. Generic Intimacy: M-F-B-Ar-*
-    // 4. Broad: M-F-B-*-*
+    // --- NEW WILDCARD FETCHING STRATEGY ---
+    // We fetch questions based on Relation & Intimacy, IGNORING gender in the query.
+    // Gender nuances are handled by client-side dynamic variants (gender_variants).
     
-    final parts = codeName!.split('-'); // Verify format first
-    List<String> candidateCodes = [codeName!];
+    final parts = codeName!.split('-');
+    List<String> candidateCodes = [];
     
-    if (parts.length == 5) { // Ensure format is correct [G1-G2-Rel-Sub-Lvl]
-       String base = '${parts[0]}-${parts[1]}-${parts[2]}'; // M-F-B
-       String sub = parts[3];
-       String lvl = parts[4];
+    if (parts.length == 5) {
+       // Format: [0]M-[1]F-[2]B-[3]Sub-[4]Lvl
+       // Query Pattern: *-*-[Rel]-[SubRel]-[Intimacy]
        
-       // Add Generic Variants
-       candidateCodes.add('$base-*-$lvl'); // Generic SubRel
-       candidateCodes.add('$base-$sub-*');  // Generic Intimacy
-       candidateCodes.add('$base-*-*');     // Broad (Gender-Relation)
-       candidateCodes.add('*-*-*-*-*');     // Universal (Safety Net)
+       // 1. Exact Relation Match (Gender Wildcard)
+       candidateCodes.add('*-*-${parts[2]}-${parts[3]}-${parts[4]}');
+       
+       // 2. Broad Relation Match (Gender & SubRel Wildcard)
+       candidateCodes.add('*-*-${parts[2]}-*-${parts[4]}');
+       
+       // 3. Safe Net (All Wildcard)
+       candidateCodes.add('*-*-*-*-*');
     }
 
     debugPrint('Fetching questions for candidates: $candidateCodes');
@@ -216,50 +219,11 @@ class GameSession with ChangeNotifier {
       if (loadedQuestions.length >= 25) {
           await _parseAndSetQuestions(loadedQuestions);
       } else {
-        // Not enough specific questions? Fallback to Universal or supplement.
-        // For MVP, if < 25, we treat it as "Not Found" and try Universal/Fallback
-        // to ensure we get a full grid.
-        debugPrint('⚠️ Only ${loadedQuestions.length} questions found for $candidateCodes. Need 25. Retrying with Universal...');
+        // Not enough questions found even with all fallback candidates.
+        debugPrint('⚠️ Only ${loadedQuestions.length} questions found for $candidateCodes. Using Fallback Mock.');
          
-        // Fallback Logic continues below...
-        // UNIVERSAL RETRY STRATEGY: 
-        // If specific gender combo returned nothing, try ALL gender combinations.
-        // This effectively implements "Ignore Gender" or "Universal" fallback.
-        debugPrint('⚠️ No data for $hGender-$gGender. Retrying with ALL gender combos (Universal)...');
-        
-        final List<String> allGenderCombos = ['M-M', 'M-F', 'F-M', 'F-F'];
-        final Set<String> universalRetryCodes = {};
-        
-        for (var genderPair in allGenderCombos) {
-            // Replace the gender part of the current candidate codes
-            for (var code in candidateCodes) {
-                // Assuming code format starts with G-G-... (e.g. M-M-B-Ar-L3)
-                // We reconstruct it to try other genders
-                // But candidateCodes might already have wildcards.
-                // Safest is to replace the prefix if it matches known pattern.
-                // Or simply add new constructed codes based on base logic.
-                // Let's rely on simple replacement of the first two chars if possible, 
-                // but regex is safer: ^[MF]-[MF]-
-                final newCode = code.replaceFirst(RegExp(r'^[MF]-[MF]'), genderPair);
-                universalRetryCodes.add(newCode);
-            }
-        }
-        
-       final retryResponse = await _supabase
-          .from('questions')
-          .select()
-          .overlaps('code_names', universalRetryCodes.toList())
-          .limit(100);
-          
-       if (retryResponse.length >= 25) {
-          await _parseAndSetQuestions(retryResponse as List<dynamic>);
-          debugPrint('✅ Loaded Universal Questions (Gender Fallback) for $codeName');
-          return; // Exit success
-       }
-
-        debugPrint('No questions found for $codeName (and Universal proxy failed) - Using Fallback');
         _generateFallbackQuestions();
-        gameStatus = 'playing'; // Ensure status update even with fallback
+        gameStatus = 'playing'; 
         await _syncGameState(); 
       }
     } catch (e) {
@@ -450,15 +414,69 @@ class GameSession with ChangeNotifier {
          }
       }
 
+      // 3. Parse Gender Variants (JSONB)
+      // Expecting: { "var_m_f": "...", "var_f_m": "...", ... }
+      Map<String, String> variants = {};
+      Map<String, String> variantsEn = {};
+
+      try {
+        if (q['gender_variants'] != null) {
+          final rawVariants = q['gender_variants'];
+          if (rawVariants is Map) {
+             variants = Map<String, String>.from(rawVariants.map((k, v) => MapEntry(k.toString(), v.toString())));
+          } else if (rawVariants is String) {
+             variants = Map<String, String>.from(jsonDecode(rawVariants));
+          }
+        }
+        
+        // Parse English Variants
+        if (q['gender_variants_en'] != null) {
+          final rawVariantsEn = q['gender_variants_en'];
+          if (rawVariantsEn is Map) {
+             variantsEn = Map<String, String>.from(rawVariantsEn.map((k, v) => MapEntry(k.toString(), v.toString())));
+          } else if (rawVariantsEn is String) {
+             variantsEn = Map<String, String>.from(jsonDecode(rawVariantsEn));
+          }
+        }
+      } catch (e) {
+        debugPrint('Error parsing gender_variants: $e');
+      }
+
+      // Parse English Details
+      String optAEn = '';
+      String optBEn = '';
+      String answersEn = '';
+      try {
+        if (q['details_en'] != null) {
+           final dEn = q['details_en'];
+           if (normalizedType == 'balance') {
+              optAEn = dEn['choice_a'] ?? '';
+              optBEn = dEn['choice_b'] ?? '';
+           } else {
+              answersEn = dEn['answers'] ?? '';
+           }
+        }
+      } catch (e) {
+         debugPrint('Error parsing details_en: $e');
+      }
+
       return {
         'id': q['id']?.toString() ?? '',
         'content': content,
+        'content_en': q['content_en']?.toString() ?? '',
+        'gender_variants': variants, 
+        'gender_variants_en': variantsEn,
         'options': {
           'type': normalizedType,
           'A': optA,
           'B': optB,
+          'A_en': optAEn,
+          'B_en': optBEn,
           'answer': answers,
+          'answer_en': answersEn,
           'game_code': safeDetails['game_code']?.toString() ?? '',
+          'variants': variants, 
+          'variants_en': variantsEn, 
         }
       };
   }
@@ -1003,6 +1021,25 @@ class GameSession with ChangeNotifier {
     notifyListeners();
     await _syncGameState();
   }
+
+  // --- Reporting ---
+  Future<void> reportContent(String qId, String reason, {String? details}) async {
+    try {
+      final user = _supabase.auth.currentUser;
+      final userId = user?.id; 
+
+      await _supabase.from('reports').insert({
+        'q_id': qId,
+        'reporter_id': userId,
+        'reason': reason,
+        'details': details,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+      debugPrint("Content Reported: $qId - $reason");
+    } catch (e) {
+      debugPrint("Error reporting content: $e");
+    }
+  }
 }
 
     Future<void> resolveInteraction(bool approved, {String? winnerOverride}) async {
@@ -1157,6 +1194,18 @@ class GameSession with ChangeNotifier {
     await _syncGameState();
   }
 
+  Future<void> addSystemMessage(String text) async {
+    final newMessage = {
+      'sender': 'SYSTEM',
+      'text': text,
+      'timestamp': DateTime.now().toIso8601String(),
+      'type': 'system',
+    };
+    messages.add(newMessage);
+    notifyListeners();
+    await _syncGameState(); // Sync to all players
+  }
+
   // --- Realtime Sync Helper ---
   Future<void> _syncGameState() async {
     if (_sessionId == null) return;
@@ -1252,7 +1301,23 @@ class GameSession with ChangeNotifier {
 
       // Sync Nicknames
       if (state['hostNickname'] != null) hostNickname = state['hostNickname'];
-      if (state['guestNickname'] != null) guestNickname = state['guestNickname'];
+      if (state['guestNickname'] != null) {
+          guestNickname = state['guestNickname'];
+          
+          // Check for Guest Join (Chat Notification) - HOST ONLY
+          // If I am Host ('A') and guest wasn't here before but is here now
+          if (myRole == 'A' && (_lastKnownGuestNickname == null || _lastKnownGuestNickname!.isEmpty) && 
+              guestNickname != null && guestNickname!.isNotEmpty) {
+              
+               final joinMsg = "${guestNickname} ${AppLocalizations.get('user_joined')}";
+               // Add System Message (Async - Fire & Forget or Await?)
+               // Since we are in the middle of processing a sync, triggering another sync is okay but we should notifyListeners first?
+               // addSystemMessage calls notifyListeners and _syncGameState.
+               // We should make sure we don't block this function.
+               Future.microtask(() => addSystemMessage(joinMsg));
+          }
+          _lastKnownGuestNickname = guestNickname;
+      }
       
       // Sync Ad Watch Status
       if (state['adWatchStatus'] != null) {
@@ -1367,13 +1432,7 @@ class GameSession with ChangeNotifier {
      int epA = cellsA;
      int epB = cellsB;
 
-     // 6. PERSIST POINTS (The Critical Fix)
-     if (myRole == 'A') {
-         addPoints(v: vpA, a: apA, e: epA);
-     } else if (myRole == 'B') {
-         addPoints(v: vpB, a: apB, e: epB); 
-     }
-
+     // 6. Return Results (Pure Calculation)
      return {
         'linesA': linesA,
         'linesB': linesB,
@@ -1386,6 +1445,24 @@ class GameSession with ChangeNotifier {
         'winner': winner
      };
   }
+
+  void applyEndGameRewards() {
+     final results = calculateEndGameResults();
+     final vpA = results['vpA'] as int;
+     final apA = results['apA'] as int;
+     final epA = results['epA'] as int;
+     
+     final vpB = results['vpB'] as int;
+     final apB = results['apB'] as int;
+     final epB = results['epB'] as int;
+
+     if (myRole == 'A') {
+         addPoints(v: vpA, a: apA, e: epA);
+     } else if (myRole == 'B') {
+         addPoints(v: vpB, a: apB, e: epB); 
+     }
+  }
+
   
   void addHistory(String type, int amount, String desc, {String? price, String? roomName}) {
      final now = DateTime.now();

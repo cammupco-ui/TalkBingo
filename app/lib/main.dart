@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui'; // Required for PointerDeviceKind
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -64,6 +65,7 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
     final session = Supabase.instance.client.auth.currentSession;
     
     return MaterialApp(
+      scrollBehavior: AppScrollBehavior(), // Enable Mouse Drag on Web
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       title: 'TalkBingo',
@@ -109,8 +111,11 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
                       builder: (context, showAdValue, _) {
                         // Check if keyboard is open
                         final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
-                        // Hide Ad if keyboard is open
-                        final showAd = showAdValue && !isKeyboardOpen;
+                        // Check orientation
+                        final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
+                        // Hide Ad if keyboard is open OR in landscape mode
+                        final showAd = showAdValue && !isKeyboardOpen && !isLandscape;
                         
                         final bottomPadding = showAd ? 94.0 : 0.0;
                         
@@ -141,9 +146,28 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
                                       Container(
                                         width: 320,
                                         height: 50,
-                                        color: Colors.grey[400],
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              AppColors.hostPrimary.withOpacity(0.8),
+                                              AppColors.guestPrimary.withOpacity(0.8),
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
                                         alignment: Alignment.center,
-                                        child: const Text('Banner Ad Space', style: TextStyle(color: Colors.white)),
+                                        child: Text(
+                                          'TalkBingo',
+                                          style: TextStyle(
+                                            fontFamily: 'NURA',
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white.withOpacity(0.6),
+                                            letterSpacing: 2,
+                                          ),
+                                        ),
                                       ),
                                       const SizedBox(height: 4),
                                     ],
@@ -221,4 +245,13 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
       },
     );
   }
+}
+
+class AppScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+      };
 }

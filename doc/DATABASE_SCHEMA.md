@@ -42,9 +42,10 @@
 | --- | --- | --- |
 | id (PK) | UUID | 질문 고유 ID |
 | type | TEXT | Balance / Truth |
-| content | TEXT | 질문 내용 |
+| content | TEXT | 질문 내용 (기본형) |
 | details | JSONB | 답변, 선택지 등 타입별 상세 데이터 |
-| code_names | TEXT[] | (Legacy) 타겟 코드네임 배열 |
+| gender_variants | JSONB | 성별/역할별 변형 텍스트 (M_to_F, F_to_M 등) |
+| code_names | TEXT[] | 타겟팅 태그 배열 (Wildcard 포함) |
 | created_at | DATETIME | 생성일 |
 | updated_at | DATETIME | 수정일 |
 | source | VARCHAR | 데이터 출처 (CSV_IMPORT, WEB_ADMIN 등) |

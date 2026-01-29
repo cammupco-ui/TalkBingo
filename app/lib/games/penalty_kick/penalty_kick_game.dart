@@ -1,12 +1,20 @@
 import 'dart:math';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // For HapticFeedback
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:talkbingo_app/games/physics/game_engine.dart';
 import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/foundation.dart'; // For kIsWeb, defaultTargetPlatform
+
+// New Imports
+import 'package:talkbingo_app/games/config/penalty_kick_config.dart';
+import 'package:talkbingo_app/games/config/responsive_config.dart';
+import 'package:talkbingo_app/widgets/game_header.dart';
+import 'package:talkbingo_app/widgets/power_gauge.dart';
 
 class PenaltyKickGame extends StatefulWidget {
   final VoidCallback onWin; 
@@ -38,10 +46,11 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
   // Sync Smoothing
   double? _remoteGoalieTargetX;
   
-  // Constants (Responsive)
-  double get kBallS => _gameSize.width * 0.15; // 15% width
-  double get kGoalieW => _gameSize.width * 0.40; // 40% width (Wider Paddle)
-  double get kGoalieH => _gameSize.width * 0.40 * 0.5; // Aspect Ratio 2:1 (120x60)
+  // Platform & Responsive Config
+  bool get _isMobile => !kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android);
+  
+  // Config (Initialized in build/LayoutBuilder)
+  PenaltyKickConfig? _config;
 
   // State
   int _score = 0;
@@ -68,6 +77,10 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
   // Drag Input
   Offset? _dragStart;
   Offset? _dragCurrent;
+  
+  // Power Gauge State
+  double _currentPower = 0.0;
+  String _powerLabel = '';
 
   @override
   void initState() {
@@ -84,6 +97,12 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
     _resetGame();
     _ticker = createTicker(_onTick)..start();
     _checkRoundState();
+  }
+
+  void _updateConfig(Size size) {
+     if (_config?.screenSize != size) {
+        _config = PenaltyKickConfig(size, isGameArea: true);
+     }
   }
 
   void _onSessionUpdate() {
@@ -455,61 +474,103 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
     }
   }
   
-  void _onPanUpdate(DragUpdateDetails details) {
+    void _onPanUpdate(DragUpdateDetails details) {
     final activePlayer = _session.interactionState?['activePlayer'];
     final isKicker = activePlayer == _session.myRole;
 
-    if (!isKicker) return; // Spectator Ignore
+    if (!isKicker) return; 
     if (_shotTaken) return;
     
     if (_isDraggingBall) {
        setState(() {
           _dragCurrent = details.localPosition;
+          
+          if (_dragStart != null) {
+              final dx = _dragCurrent!.dx - _dragStart!.dx;
+              final dy = _dragCurrent!.dy - _dragStart!.dy;
+              final distance = sqrt(dx*dx + dy*dy);
+              
+              // Max Drag ~ 40% of Height (Config Driven)
+              final maxDrag = (_config?.safeGameArea.height ?? 500) * 0.4;
+              _currentPower = (distance / maxDrag).clamp(0.0, 1.2);
+              _updatePowerFeedback();
+          }
        });
     }
   }
   
-  void _onPanEnd(DragEndDetails details) {
+  void _updatePowerFeedback() {
+    String newLabel = '';
+    if (_currentPower < 0.3) {
+      newLabel = 'WEAK';
+    } else if (_currentPower < 0.7) {
+      newLabel = 'GOOD!';
+    } else if (_currentPower < 1.0) {
+      newLabel = 'STRONG';
+    } else {
+      newLabel = 'TOO STRONG!';
+    }
+    
+    if (newLabel != _powerLabel) {
+       _powerLabel = newLabel;
+       if (newLabel == 'GOOD!') {
+          HapticFeedback.mediumImpact();
+       } else {
+          HapticFeedback.selectionClick();
+       }
+    }
+  }
+  
+    void _onPanEnd(DragEndDetails details) {
      final activePlayer = _session.interactionState?['activePlayer'];
      final isKicker = activePlayer == _session.myRole;
      
      if (!isKicker) return;
      if (_shotTaken) return;
      
-     if (_isDraggingBall) {
+     if (_isDraggingBall && _dragStart != null && _dragCurrent != null) {
         _isDraggingBall = false;
-        _dragStart = null; 
-        _dragCurrent = null;
-
-        // Analyze Flick Velocity
-        double vx = details.velocity.pixelsPerSecond.dx;
-        double vy = details.velocity.pixelsPerSecond.dy;
         
-        if (vy < -200) { 
-           _shotTaken = true;
-           double powerFactor = 0.55; 
-           
-           _ball.vx = vx * powerFactor;
-           _ball.vy = vy * powerFactor;
-           
-           double speed = sqrt(_ball.vx*_ball.vx + _ball.vy*_ball.vy);
-           if (speed > 1600) {
-              double ratio = 1600 / speed;
-              _ball.vx *= ratio;
-              _ball.vy *= ratio;
-           }
-
-            // Synch Shot to Spectator (Normalized)
-           if (_gameSize.width > 0 && _gameSize.height > 0) {
-              _session.sendGameEvent({
-                 'eventType': 'shot', 
-                 'vx': _ball.vx / _gameSize.width, 
-                 'vy': _ball.vy / _gameSize.height
-              });
-           }
-           
-           setState(() {}); 
+        // Use configured power/speed
+        // Base Speed heavily influenced by Power Gauge
+        final dx = _dragCurrent!.dx - _dragStart!.dx;
+        final dy = _dragCurrent!.dy - _dragStart!.dy;
+        
+        // Cancel if too weak
+        if (_currentPower < 0.15) {
+             setState(() { _dragStart = null; _dragCurrent = null; _currentPower = 0; });
+             return;
         }
+
+        final angle = atan2(dy, dx);
+        final baseSpeed = 1300.0; // Max reasonable speed
+        
+        _ball.vx = cos(angle) * baseSpeed * _currentPower;
+        _ball.vy = sin(angle) * baseSpeed * _currentPower;
+        
+        // Random deviation if Overpowered (> 100%)
+        if (_currentPower > 1.0) {
+           _ball.vx += (Random().nextDouble() - 0.5) * 400;
+        }
+
+        _shotTaken = true;
+         
+        // Synch Shot
+         if (_gameSize.width > 0 && _gameSize.height > 0) {
+            _session.sendGameEvent({
+               'eventType': 'shot', 
+               'vx': _ball.vx / _gameSize.width, 
+               'vy': _ball.vy / _gameSize.height
+            });
+         }
+         
+        setState(() {
+           // Reset for UI but let physics run
+           _dragStart = null; _dragCurrent = null; _currentPower = 0;
+           _powerLabel = '';
+        });
+        
+        HapticFeedback.heavyImpact();
      }
   }
 
@@ -528,252 +589,228 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
     final colPrimary = const Color(0xFF6B14EC);
     final colText = const Color(0xFFFDF9FF);
 
+    // Config Update removed from here. Handled in LayoutBuilder
+    // final size = MediaQuery.of(context).size;
+    // if (_config == null || _config!.screenSize != size) {
+    //    _updateConfig(size);
+    // }
+
     return Scaffold(
-      backgroundColor: colBg, 
-      body: SafeArea(
-        child: Column(
-          children: [
-             // 1. DISTINCT COMPACT HEADER (HUD)
-             Container(
-                height: 80, // Reduced from 140
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                   color: colBg,
-                   border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.1)))
-                ),
-                child: Row(
-                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                   children: [
-                      // Role & Status
-                      Column(
-                         mainAxisAlignment: MainAxisAlignment.center,
-                         crossAxisAlignment: CrossAxisAlignment.start,
-                         children: [
-                            Text(
-                               isKicker ? "ATTACKER" : "GOALKEEPER",
-                               style: GoogleFonts.alexandria(color: Colors.grey, fontSize: 10),
-                            ),
-                            Text(
-                               isKicker ? "SCORE!" : "DEFEND!",
-                               style: GoogleFonts.alexandria(
-                                  color: isKicker ? Colors.greenAccent : Colors.orangeAccent, 
-                                  fontSize: 16, fontWeight: FontWeight.bold
-                               ),
-                            ),
-                         ],
-                      ),
-                      
-                      // Scores
-                      Row(
-                         children: [
-                            _buildScoreBadge("YOU", isKicker ? _score : (scores[_session.myRole] ?? 0), isKicker),
-                            const SizedBox(width: 12),
-                            Text(":", style: GoogleFonts.alexandria(color: Colors.white30, fontSize: 16)),
-                            const SizedBox(width: 12),
-                            _buildScoreBadge("OPP", isKicker ? (scores[(_session.myRole == 'A' ? 'B' : 'A')] ?? 0) : _remoteScore, !isKicker),
-                         ],
-                      ),
-                      
-                      // Timer & Close
-                      Column(
-                         mainAxisAlignment: MainAxisAlignment.center,
-                         crossAxisAlignment: CrossAxisAlignment.end,
-                         children: [
-                           Text(
-                              "${_timeLeft.toStringAsFixed(1)}s", 
-                              style: GoogleFonts.alexandria(
-                                 color: _timeLeft < 5 ? Colors.red : Colors.white, 
-                                 fontSize: 24, fontWeight: FontWeight.bold
-                              ),
-                           ),
-                           InkWell(
-                              onTap: widget.onClose,
-                              child: const Icon(Icons.close, color: Colors.white54, size: 18),
-                           )
-                         ],
-                      )
-                   ],
-                ),
-             ),
+      backgroundColor: const Color(0xFF0C0219), 
+      body: Stack(
+         children: [
+            Column(
+              children: [
+                 // 1. GAME HEADER
+                 GameHeader(
+                   gameTitle: "PENALTY KICK",
+                   score: isKicker ? _score : (scores[_session.myRole] ?? 0),
+                   timeLeft: _timeLeft,
+                   isMyTurn: isKicker,
+                   onMenuTap: widget.onClose,
+                 ),
+                 
+                 // 2. GAME AREA
+                 Expanded(
+                    child: Padding(
+                       padding: const EdgeInsets.all(0), // Full width
+                       child: LayoutBuilder(
+                          builder: (context, constraints) {
+                              if (_gameSize != constraints.biggest) {
+                                  _gameSize = constraints.biggest;
+                                  _updateConfig(_gameSize);
+                              }
+                              
+                              // Check if config ready
+                              if (_config == null) return const SizedBox();
+                             
+                             if (_config != null) {
+                                // Update Entity Sizes from Config
+                                _ball.width = _config!.ballSize;
+                                _ball.height = _config!.ballSize;
+                                _goalie.width = _config!.goalieWidth;
+                                _goalie.height = _config!.goalieHeight;
+                             }
 
-             // 2. GAME AREA
-             Expanded(
-                child: Padding(
-                   padding: const EdgeInsets.all(10.0),
-                   child: LayoutBuilder(
-                      builder: (context, constraints) {
-                         // Update Game Size
-                            _gameSize = Size(constraints.maxWidth, constraints.maxHeight);
-                            
-                            // 1. Recalculate Logic based on new size
-                            final double zoneHeight = _gameSize.height / 3;
+                             final double zoneHeight = _gameSize.height / 3;
 
-                            // Update Entity Sizes Dynamic
-                            _ball.width = kBallS;
-                            _ball.height = kBallS;
-                            _goalie.width = kGoalieW;
-                            _goalie.height = kGoalieH;
+                             // Pos Logic (Only if not moving)
+                             if (_ball.vx == 0 && _ball.vy == 0 && !_shotTaken && !_isDraggingBall) {
+                                _ball.x = _gameSize.width / 2 - _ball.width / 2;
+                                _ball.y = zoneHeight * 2 + (zoneHeight / 2) - (_ball.height / 2); 
+                             }
+                             if (_goalie.x == 0 && _config != null) {
+                                 _goalie.x = _gameSize.width/2 - _goalie.width/2;
+                             }
+                             // Goalie Y
+                             _goalie.y = (zoneHeight / 2) - (_goalie.height / 2); 
 
-                            // Kicker Ball Pos: Bottom Zone Center
-                            if (_ball.vx == 0 && _ball.vy == 0 && !_shotTaken && !_isDraggingBall) {
-                               _ball.x = _gameSize.width / 2 - _ball.width / 2;
-                               _ball.y = zoneHeight * 2 + (zoneHeight / 2) - (_ball.height / 2); 
-                            }
-                            
-                            // Goalie Pos: Top Zone (Goal)
-                            // If just moving left/right, keep Y constant
-                            _goalie.y = (zoneHeight / 2) - (_goalie.height / 2); 
-                            // Ensure x is within bounds if resized
-                            if (_goalie.x == 0) _goalie.x = _gameSize.width/2 - kGoalieW/2;
-                         
-                         return Container(
-                            width: double.infinity,
-                            height: double.infinity,
-                            decoration: BoxDecoration(
-                               border: Border.all(color: Colors.white, width: 4),
-                               color: Colors.white, 
-                            ),
-                            child: ClipRect(
-                               child: Stack(
-                                  children: [
-                                     
-                                     // 1. INPUT LAYER
-                                     GestureDetector(
-                                        onPanStart: _onPanStart,
-                                        onPanUpdate: _onPanUpdate,
-                                        onPanEnd: _onPanEnd,
-                                        child: Container(
-                                           width: double.infinity, 
-                                           height: double.infinity,
-                                           color: Colors.transparent,
-                                           child: Stack(
-                                              children: [
-                                                 // A. Background Painter
-                                                 Positioned.fill(
-                                                    child: Transform.rotate(
-                                                       angle: isKicker ? 0 : pi,
-                                                       child: CustomPaint(
-                                                          painter: _SoccerPainter(
-                                                             dragStart: _dragStart,
-                                                             dragCurrent: _dragCurrent,
-                                                             colPrimary: colPrimary,
-                                                             colText: colText,
-                                                             zoneHeight: zoneHeight,
-                                                             ballCenter: Offset(_ball.x + _ball.width/2, _ball.y + _ball.height/2),
+                             return Container(
+                                width: double.infinity,
+                                height: double.infinity,
+                                decoration: BoxDecoration(
+                                   border: Border.all(color: Colors.white, width: 2),
+                                   color: Colors.white10, // Slight tint
+                                ),
+                                child: ClipRect(
+                                   child: Stack(
+                                      children: [
+                                         // 1. INPUT LAYER
+                                         GestureDetector(
+                                            onPanStart: _onPanStart,
+                                            onPanUpdate: _onPanUpdate,
+                                            onPanEnd: _onPanEnd,
+                                            behavior: HitTestBehavior.opaque,
+                                            child: Container(
+                                               color: Colors.transparent,
+                                               child: Stack(
+                                                  children: [
+                                                     // A. Background Painter
+                                                     Positioned.fill(
+                                                        child: Transform.rotate(
+                                                           angle: isKicker ? 0 : pi,
+                                                           child: CustomPaint(
+                                                              painter: _SoccerPainter(
+                                                                 dragStart: _dragStart,
+                                                                 dragCurrent: _dragCurrent,
+                                                                 colPrimary: colPrimary,
+                                                                 colText: colText,
+                                                                 zoneHeight: zoneHeight,
+                                                                 ballCenter: Offset(_ball.x + _ball.width/2, _ball.y + _ball.height/2),
+                                                              ),
+                                                           )
+                                                        )
+                                                     ),
+                                                  ]
+                                               ),
+                                            ),
+                                         ),
+
+                                         // 2. ENTITIES (Rotated)
+                                         IgnorePointer(
+                                            child: Transform.rotate(
+                                               angle: isKicker ? 0 : pi,
+                                               child: Stack(
+                                                  children: [
+                                                     // Goalie
+                                                     Positioned(
+                                                        left: _goalie.x, top: _goalie.y,
+                                                        width: _goalie.width, height: _goalie.height,
+                                                        child: AnimatedBuilder(
+                                                           animation: _goalieShakeAnimation,
+                                                           builder: (context, child) {
+                                                               double dx = sin(_goalieShakeAnimation.value * pi * 3) * 5;
+                                                               return Transform.translate(
+                                                                  offset: Offset(dx, 0),
+                                                                  child: child
+                                                               );
+                                                           },
+                                                           child: SvgPicture.asset('assets/images/Goalkeeper.svg'),
+                                                        ),
+                                                     ),
+                                                     // Ball
+                                                     Positioned(
+                                                        left: _ball.x, top: _ball.y,
+                                                        width: _ball.width, height: _ball.height,
+                                                        child: SvgPicture.asset('assets/images/soccerball.svg'),
+                                                     ),
+                                                     // Power Gauge
+                                                     if (_isDraggingBall)
+                                                        Positioned(
+                                                          left: 0, right: 0,
+                                                          top: _ball.y - 100,
+                                                          child: Center(
+                                                            child: SizedBox(
+                                                              width: 220,
+                                                              child: PowerGauge(
+                                                                power: _currentPower,
+                                                                label: _powerLabel,
+                                                                showLevels: true,
+                                                              )
+                                                            ),
+                                                          ),
+                                                        ),
+                                                  ],
+                                               ),
+                                            ),
+                                         ),
+
+                                         // OVERLAYS (Centered)
+                                         if (_isWaitingForStart && !_showRoundOverlay && state['step'] != 'finished')
+                                            Center(
+                                             child: Container(
+                                               padding: const EdgeInsets.all(20),
+                                               decoration: BoxDecoration(
+                                                  color: Colors.black.withOpacity(0.8),
+                                                  borderRadius: BorderRadius.circular(16)
+                                               ),
+                                               child: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                     Text(
+                                                        isKicker ? "YOU ARE KICKER" : "SPECTATOR MODE",
+                                                        style: GoogleFonts.alexandria(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold)
+                                                     ),
+                                                     const SizedBox(height: 20),
+                                                     if (isKicker)
+                                                       ElevatedButton.icon(
+                                                          onPressed: _startRoundManually,
+                                                          icon: const Icon(Icons.play_arrow, color: Colors.white),
+                                                          label: Text("START GAME", style: GoogleFonts.alexandria(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                                                          style: ElevatedButton.styleFrom(
+                                                             backgroundColor: colPrimary,
+                                                             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                                           ),
                                                        )
-                                                    )
-                                                 ),
-                                              ]
-                                           ),
-                                        ),
-                                     ),
+                                                     else
+                                                       Column(
+                                                         children: [
+                                                            const CircularProgressIndicator(color: Colors.white),
+                                                            const SizedBox(height: 20),
+                                                            Text("Waiting for Kicker...", style: GoogleFonts.alexandria(color: Colors.white70, fontSize: 16)),
+                                                         ],
+                                                       )
+                                                  ],
+                                               ),
+                                            ),
+                                            ),
 
-                                     // 2. ENTITIES (Rotated)
-                                     IgnorePointer(
-                                        child: Transform.rotate(
-                                           angle: isKicker ? 0 : pi,
-                                           child: Stack(
-                                              children: [
-                                                 // Goalie
-                                                 Positioned(
-                                                    left: _goalie.x, top: _goalie.y,
-                                                    width: _goalie.width, height: _goalie.height,
-                                                    child: AnimatedBuilder(
-                                                       animation: _goalieShakeAnimation,
-                                                       builder: (context, child) {
-                                                           // Shake horizontally
-                                                           double dx = sin(_goalieShakeAnimation.value * pi * 3) * 5;
-                                                           return Transform.translate(
-                                                              offset: Offset(dx, 0),
-                                                              child: child
-                                                           );
-                                                       },
-                                                       child: SvgPicture.asset('assets/images/Goalkeeper.svg'),
-                                                    ),
-                                                 ),
-                                                 // Ball
-                                                 Positioned(
-                                                    left: _ball.x, top: _ball.y,
-                                                    width: _ball.width, height: _ball.height,
-                                                    child: SvgPicture.asset('assets/images/soccerball.svg'),
-                                                 ),
-                                              ],
-                                           ),
-                                        ),
-                                     ),
+                                         if (_showRoundOverlay)
+                                            Container(
+                                               color: Colors.black.withOpacity(0.8),
+                                               alignment: Alignment.center,
+                                               child: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                     Text(
+                                                        "ROUND $round", 
+                                                        style: GoogleFonts.alexandria(color: colPrimary, fontSize: 30, fontWeight: FontWeight.bold)
+                                                     ),
+                                                     const SizedBox(height: 10),
+                                                     Text(
+                                                        isKicker ? "ATTACK!" : "DEFEND!", 
+                                                        style: GoogleFonts.alexandria(color: Colors.white, fontSize: 50, fontWeight: FontWeight.bold)
+                                                     ),
+                                                  ],
+                                               ),
+                                            ),
 
-                                     // OVERLAYS (Centered in Game Box)
-                                     
-                                     // MANUAL START
-                                     if (_isWaitingForStart && !_showRoundOverlay && state['step'] != 'finished')
-                                        Container(
-                                           color: Colors.black.withOpacity(0.8),
-                                           alignment: Alignment.center,
-                                           child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                 Text(
-                                                    isKicker ? "YOU ARE KICKER" : "SPECTATOR MODE",
-                                                    style: GoogleFonts.alexandria(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold)
-                                                 ),
-                                                 const SizedBox(height: 20),
-                                                 if (isKicker)
-                                                   ElevatedButton.icon(
-                                                      onPressed: _startRoundManually,
-                                                      icon: const Icon(Icons.play_arrow, color: Colors.white),
-                                                      label: Text("START GAME", style: GoogleFonts.alexandria(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                                                      style: ElevatedButton.styleFrom(
-                                                         backgroundColor: colPrimary,
-                                                         padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                                      ),
-                                                   )
-                                                 else
-                                                   Column(
-                                                     children: [
-                                                        const CircularProgressIndicator(color: Colors.white),
-                                                        const SizedBox(height: 20),
-                                                        Text("Waiting for Kicker...", style: GoogleFonts.alexandria(color: Colors.white70, fontSize: 16)),
-                                                     ],
-                                                   )
-                                              ],
-                                           ),
-                                        ),
+                                      ],
+                                   ) 
+                                ),
+                             );
+                          }
+                       ),
+                    ),
+                 )
+              ],
+            ),
+            
 
-                                     // ROUND CHANGE
-                                     if (_showRoundOverlay)
-                                        Container(
-                                           color: Colors.black.withOpacity(0.8),
-                                           alignment: Alignment.center,
-                                           child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                 Text(
-                                                    "ROUND $round", 
-                                                    style: GoogleFonts.alexandria(color: colPrimary, fontSize: 30, fontWeight: FontWeight.bold)
-                                                 ),
-                                                 const SizedBox(height: 10),
-                                                 Text(
-                                                    isKicker ? "ATTACK!" : "DEFEND!", 
-                                                    style: GoogleFonts.alexandria(color: Colors.white, fontSize: 50, fontWeight: FontWeight.bold)
-                                                 ),
-                                              ],
-                                           ),
-                                        ),
-
-                                  ],
-                               ) 
-                            ),
-                         );
-                      }
-                   ),
-                ),
-             )
-          ],
-        ),
+         ]
       ),
-      // GLOBAL OVERLAYS (Covering Header too)
+      // GLOBAL OVERLAYS
       bottomSheet: (state != null && state['step'] == 'finished') ? Container(
           width: double.infinity,
           height: double.infinity,

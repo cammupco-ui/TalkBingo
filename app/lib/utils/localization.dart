@@ -62,6 +62,7 @@ class AppLocalizations {
       'coming_soon': 'Coming Soon',
       'service_unavailable': 'This service is not yet available.',
       'sign_up_google': 'SIGN UP GOOGLE',
+      'enter_invite_placeholder': 'Enter Invite Code',
       'enter_invite_code': 'INVITE CODE',
       'already_account': 'Already have an account? ',
       'log_in': 'Log in',
@@ -82,6 +83,9 @@ class AppLocalizations {
       'trust_score_title': 'Trust Score',
       'trust_score_desc': 'Build trust with mannerly conversation.',
       'close': 'Close',
+      'user_joined': 'joined the game.',
+      'support': 'Support',
+      'send_feedback': 'Send Feedback',
     },
     'ko': {
       'new_game': '새 게임',
@@ -141,6 +145,7 @@ class AppLocalizations {
       'coming_soon': '준비 중',
       'service_unavailable': '아직 이용할 수 없는 서비스입니다.',
       'sign_up_google': 'Google로 시작하기',
+      'enter_invite_placeholder': '초대받은 코드를 입력하세요',
       'enter_invite_code': '초대 코드 입력하기',
       'already_account': '이미 계정이 있으신가요? ',
       'log_in': '로그인',
@@ -161,6 +166,9 @@ class AppLocalizations {
       'trust_score_title': '신뢰 점수',
       'trust_score_desc': '매너있는 대화로 신뢰를 얻으세요',
       'close': '닫기',
+      'user_joined': '님이 입장하셨습니다.',
+      'support': '지원',
+      'send_feedback': '의견 보내기',
     },
   };
 

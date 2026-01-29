@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'package:flutter/material.dart';
+import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:flutter/services.dart'; // For Clipboard
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -204,18 +205,8 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
               const SizedBox(height: 12),
               
               // Copy (Share) Button
-              OutlinedButton.icon(
+              AnimatedOutlinedButton(
                 onPressed: _shareCode,
-                icon: const Icon(Icons.share, color: Color(0xFFBD0558)),
-                label: const Text(
-                  'Share', 
-                  style: TextStyle(
-                    fontSize: 16, 
-                    fontFamily: 'NURA', 
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFBD0558),
-                  )
-                ),
                 style: OutlinedButton.styleFrom(
                   fixedSize: const Size.fromHeight(44), // Strict 44px
                   side: const BorderSide(color: Color(0xFFBD0558)),
@@ -223,11 +214,27 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.share, color: Color(0xFFBD0558)),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Share', 
+                      style: TextStyle(
+                        fontSize: 16, 
+                        fontFamily: 'NURA', 
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFBD0558),
+                      )
+                    ),
+                  ],
+                ),
               ),
                const SizedBox(height: 24),
 
               // Next Button
-              ElevatedButton(
+              AnimatedButton(
                 onPressed: () {
                    Navigator.of(context).push(
                     MaterialPageRoute(
@@ -256,7 +263,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
               ),
             ] else ...[
               // Generate Button
-              ElevatedButton(
+              AnimatedButton(
                 onPressed: _generateCode,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFBD0558),

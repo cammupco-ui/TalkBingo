@@ -1,15 +1,12 @@
-> [!IMPORTANT]
-> This document represents the original design using Neo4j and is kept for historical reference. For the current Supabase implementation, please refer to `TalkBingoPRD_MVP.md`.
-
-# TalkBingo Product Requirements Document (PRD) - Legacy (Neo4j)
+# TalkBingo Product Requirements Document (PRD)
 
 ## 1. 프로젝트 개요 (Project Overview)
 
-**TalkBingo**는 AI Agent와 GraphDB(Neo4j)를 활용한 실시간 대화형 밸런스 빙고 게임 플랫폼입니다. 단순한 질문 생성을 넘어, 사용자 간의 관계와 맥락을 이해하는 **AI Agent System**이 Neo4j를 제어하여 최적의 질문을 선별하고 게임 경험을 관리합니다.
+**TalkBingo**는 관계 기반 실시간 대화형 밸런스 빙고 게임 플랫폼입니다. 단순한 질문 생성을 넘어, **Supabase**를 활용한 실시간 데이터 동기화와 **동적 젠더 변형 시스템(Dynamic Gender Variants)**을 통해 사용자 간의 관계와 맥락에 딱 맞는 대화 경험을 제공합니다.
 
 ### 1.1 목표 (Goals)
 - **관계 증진**: 사용자 간의 관계와 친밀도에 최적화된 질문을 통해 대화를 유도합니다.
-- **AI Agent 기반 경험**: AI가 질문을 직접 생성하는 것이 아니라, Neo4j의 방대한 데이터를 지능적으로 탐색하고 제어하여 최적의 게임판을 구성합니다.
+- **동적 맥락 적응**: 정적인 텍스트 대신, 턴마다 화자와 청자의 성별/관계에 맞춰 질문이 자연스럽게 변형됩니다. (예: "형이 생각하기엔...", "누나가 볼 땐...")
 - **지속적 상호작용**: 게임 횟수와 결과에 따라 친밀도 레벨을 조정하고, 이전 대화를 기억하여 맞춤형 경험을 제공합니다.
 
 ---
@@ -18,245 +15,76 @@
 
 ### 2.1 기술 스택 (Tech Stack)
 - **Frontend (Mobile App)**: Flutter (iOS/Android)
-- **Frontend (Web/Admin)**: Next.js 16, React 19
-- **Backend**: Next.js API Routes (Serverless Functions)
-- **Database**: Neo4j (Graph Database)
-- **AI Engine**: OpenAI GPT-4 (AI Agent System)
-- **Real-time**: Socket.io
+- **Backend**: Supabase (PostgreSQL, Realtime, Auth, Edge Functions)
+- **Admin**: Python Scripts (Data Management)
+- **AI Engine**: OpenAI GPT-4 (Used for Question Variant Generation)
 
-### 2.2 AI Agent System Architecture
-AI Agent는 백엔드에서 Neo4j를 컨트롤하는 핵심 두뇌 역할을 수행합니다.
+### 2.2 Dynamic Variant System (동적 변형 시스템)
+TalkBingo는 고정된 텍스트의 한계를 넘어, 실시간 상황에 맞는 질문을 제공합니다.
 
-1.  **CodeName 생성기 (CodeName Generator)**:
-    - **입력 데이터**: 호스트/게스트 정보 (나이, 성별, 고향, **접속 지역**, 관계 유형, 친밀도)
-    - **구조**: `[MP]-[CP]-[IR]-[SubRel]-[Intimacy]`
-        - **MP (Main Player)**: 호스트 (Host) - 앱을 다운로드하여 게임을 개설한 사람. (CodeName용 성별: M/F)
-        - **CP (Companion Player)**: 게스트 (Guest) - 초청장을 받아 게임에 참가한 사람. (CodeName용 성별: M/F)
-        - **IR (Intimate Relationship)**: 관계 유형 (B: 친구, Fa: 가족, Lo: 연인)
-        - **SubRel**: 세부 관계 (Ar, Or, Sc, Dc, Fr, Br, Si, Co, Sw, Gw, Hw 등)
-        - **Intimacy**: 친밀도 레벨 (L1~L5)
-    - **기능**: 두 사용자의 정보와 관계를 분석하여 최적의 **CodeName**을 생성하고, 이를 기반으로 질문을 분류합니다.
+1.  **Wildcard Fetching (와일드카드 검색)**:
+    - **기존 문제**: `M-F` (남->여) 질문은 `F-M` 상황에서 쓸 수 없어 데이터가 파편화됨.
+    - **해결**: 모든 질문을 **관계(Relation)와 친밀도(Intimacy)** 기준으로만 검색합니다. (예: `*-*-Friend-L3`)
+    - **효과**: 성별에 구애받지 않고 풍부한 질문 풀(Pool)을 확보합니다.
 
-2.  **질문 큐레이터 (Question Curator)**:
-    - **CodeName 기반 추출**: 생성된 CodeName과 일치하는 질문을 Neo4j에서 조회합니다.
-    - **키워드 매칭**: CodeName별 매핑된 **키워드(Keywords)**를 활용하여 질문의 우선순위를 정합니다.
-    - **연휴 + 트렌드 반영 (Holiday & Trend Integration)**:
-        - 사용자 접속 지역(국가) 기반으로 다가오는 **연휴(Holiday)** 정보를 파악합니다.
-        - 현재 지역의 인기 **트렌드(Trend)** 키워드를 수집합니다.
-        - **규칙**: "이번 [연휴명] 계획은? (요즘 핫한 [트렌드] 스타일로)"와 같이 시의성 있는 질문을 동적으로 생성하거나 추천합니다.
-    - **질문 확보 및 Fallback (Quantity & Fallback)**:
-        - **필수 수량**: 게임 시작 시 반드시 **50개**의 질문(25개 사용 + 25개 예비)을 확보해야 합니다.
-        - **Fallback 로직**: 선택된 CodeName(예: L3)의 질문이 50개 미만일 경우, **인접한 친밀도 레벨(L2, L4)**에서 부족한 수량을 자동으로 가져와 채웁니다. (우선순위: Target > Adjacent > Others)
+2.  **Gender Variants (성별 변형 데이터)**:
+    - 하나의 질문 데이터(Row)는 내부적으로 4가지 텍스트 변형을 포함합니다.
+    - **Data Structure (JSONB)**:
+        ```json
+        {
+          "M_to_F": "누나/동생에게 바라는 점은?",
+          "F_to_M": "오빠/동생에게 바라는 점은?",
+          "M_to_M": "형/동생에게 바라는 점은?",
+          "F_to_F": "언니/동생에게 바라는 점은?"
+        }
+        ```
 
-3.  **기억 및 성장 (Memory & Growth)**:
-    - **Memory Rules (`AI_AGENT_MEMORY.md`)**:
-        - **밸런스 퀴즈**: 간결성(10단어), 함축성/대립성, 친밀도별 유머, 대화 확장성.
-        - **진실게임**: 간결성, 깊이 조절(L1~L5), 호기심/공감, 세대별 균형.
-    - **Evolution**: 게임이 반복될수록 `RelationLog`와 `TrustEval` 데이터를 통해 관계 변화를 학습하고, 다음 게임에서 더 적합한 친밀도 레벨(L1→L5)의 질문을 제시합니다.
+3.  **Real-time Adaptation (실시간 적응)**:
+    - 게임 중 **턴(Turn)**이 바뀔 때마다, 앱 클라이언트가 현재 **Attacker(질문자)**와 **Defender(응답자)**의 성별을 확인하여 위 JSON에서 적절한 텍스트를 즉시 렌더링합니다.
 
-4.  **분석가 (Analyst)**:
-    - 게임 종료 후 `GameSession` 로그를 분석하여 세션 요약 및 관계 발전 리포트를 생성합니다.
-    - `Trust Score` 및 친밀도 변화 추이를 시각화하여 제공합니다.
+4.  **질문 큐레이션 (Question Curation)**:
+    - **밸런스**: 게임당 **Balance(12~13)** + **Truth(12~13)** 비율을 맞춰 총 25개 배치.
+    - **Fallback**: 특정 관계의 질문이 부족할 경우, 더 넓은 범위(Broad Relation)의 질문을 자동으로 가져와 채웁니다.
 
 ---
 
 ## 3. 사용자 플로우 (User Flows)
 
-### 3.1 사용자 유형 및 접속 경로 (User Types & Access Paths)
-- **Host (호스트)**:
-    - **접속 경로**: 모바일 앱 (App) 설치 필수.
-    - **자격**: 익명(Anonymous) 또는 Google Sign-In을 통한 회원가입 유저.
-    - **계정 전환**: 익명 상태에서 `Settings > Link Account`를 통해 기존 데이터를 유지하며 정식 회원으로 전환 가능.
-    - **역할**: 게스트 초청, 게임 방 개설, 게임 진행 제어.
-- **Guest (게스트)**:
-    - **접속 경로**: 모바일 앱 (App) 또는 모바일 웹 (Web). 별도 설치 없이 링크 접속 가능.
-    - **자격**: 초청 코드를 받은 사용자.
-    - **회원가입**:
-        - **익명 플레이 (Anonymous First)**: 앱 설치 후 즉시 게임 플레이 가능 (회원가입 불필요).
-        - **포인트 저장**: 획득한 포인트(VP/AP)를 저장하려면 게임 종료 후 회원가입 필요.
-        - **계정 연동 (Link)**: 게임 기록 및 포인트 보호를 위해 설정에서 Google/Email 계정 연동 권장.
-
-### 3.2 호스트 플로우 (Host Flow)
-1.  **홈 화면 (`/`)**:
-    - 앱 실행 후 '초청 코드 생성' 버튼 클릭.
-    - 초청 코드(6자리) 및 링크 생성.
-    - **게스트 참여 (기존 회원)**: "Join a Game" 섹션에 초대 코드 입력 후 참여. (초대 링크 접속 시 자동 입력됨)
-    - **로그아웃**: 설정 메뉴에서 로그아웃 시 `SignOutLandingScreen`으로 이동.
-2.  **초대 페이지 (`/host/setup` - Invite Page)**:
-    - 초대 코드와 링크를 CP(게스트)에게 공유.
-    - 'Next' 버튼 클릭 시 **'Invite Code' 입력 페이지는 건너뛰고** 바로 'Host Info' 페이지로 이동.
-3.  **호스트 정보 입력 (`/host/info`)**:
-    - 닉네임 입력.
-    - 나이, 성별 선택.
-    - 고향 선택 (도/시 + 상세 지역).
-    - 접속 지역 공유 동의.
-    - *System*: 호스트 정보 저장 및 GameSession 생성.
-4.  **게스트 정보 입력 (`/game/setup`)**:
-    - **관계 설정**: 호스트와의 관계 및 친밀도 입력.
-    - **본인 정보 입력**: 나이, 성별, 고향 등.
-    - *System*: 게스트 정보 전송 및 GameSession 연결.
-5.  **게임 입장 (Enter Game)**:
-    - 정보 입력 완료 후 **'Next' 버튼 클릭 시 즉시 게임 화면(`/game/[id]`)으로 입장**.
-    - 호스트가 먼저 게임 화면에 입장하여 대기하며, 게스트는 이후 입장 시 자동으로 게임 화면에 합류합니다.
-    - *Note*: 게스트 대기 없이 바로 게임을 시작할 수 있습니다. (Single Player Mode 느낌으로 선입장)
-### 3.3 게스트 플로우 (Guest Flow)
-1.  **초청 코드 입력 (`Signup` -> `/invite-code`)**:
-    - **Start**: `SignupScreen` (웹/앱 공통 진입점).
-        - **초대 코드 입력 선택**: `Enter Invite Code` 버튼 클릭 시 입력 화면으로 이동.
-    - **값 검증**: 6자리 코드 입력 및 유효성 검사.
-    - **기존 회원 (Member)**: 초대 링크 접속 시 **Home Screen**으로 이동하며, 하단 "Join a Game" 입력란에 코드가 **자동 입력됨**.
-    - 'Next' 버튼 클릭.
-2.  **게스트 정보 입력 (`/game/info`)**:
-    - **본인 정보 입력**: 닉네임, 고향, 접속 지역 공유 동의 등.
-    - *System*: 게스트 정보 전송 및 GameSession 연결.
-3.  **게스트 대기실 (`/waiting`)**:
-    - "Waiting for Host..." 화면 표시.
-    - **동기화 로직**: MP(호스트)가 이미 게임 화면에 있다면 즉시 **GameScreen**으로 이동.
-    - MP가 아직 입장 전이라면 입장할 때까지 대기 후 자동 이동.
-
-### 3.4 게임 플레이 (Common Flow)
-1.  **게임 화면 (`/game/[id]`)**:
-    - **UI 구성**: 호스트와 게스트 동일한 UI (단, 컨트롤 권한 차이).
-    - **View 전환**: 빙고 보드 ↔ 채팅 리스트 보드 스와이프 또는 버튼으로 전환 가능.
-    - **실시간 채팅**: 게임 중 자유로운 채팅 가능.
-2.  **턴 기반 진행 (Turn-based)**:
-    - 호스트와 게스트가 번갈아가며 빙고 칸(질문)을 선택.
-    - **컨트롤 (Host Only)**: 게임 진행 및 제어는 호스트만 가능하며, 게스트는 상태 변화를 동기화받음.
-        1. **게임 시작 (Start Game)**:
-            - **초기 상태**: 백엔드에서 큐레이션된 질문이 배치된 빙고 보드 대기 상태.
-            - **동작**: 시작 버튼 클릭 시 턴이 결정되고 빙고 칸 선택이 활성화됨.
-        2. **일시 정지 (Pause)**:
-            - **동작**: 빙고 보드는 딤(Dim) 처리되어 비활성화되지만, **실시간 채팅은 자유롭게 가능**.
-        3. **게임 종료 (End Game)**:
-            - **강제 종료**: 게임 진행 중 언제든 가능.
-            - **저장 후 종료**: 빙고 라인이 최소 한 줄 이상 완성된 후 가능. 완성된 라인 수에 따라 포인트(VP/AP) 계산.
-        4. **질문 다시 불러오기 (Reload Questions)**:
-            - **조건**: 게임 시작 전, 호스트가 질문 구성을 변경하고 싶을 때 사용.
-            - **특징**: 대기실/게임 화면 입장 직후부터 채팅은 가능하므로, 채팅으로 상의 후 변경 가능.
-        5. **게임 저장 (Save Game)**:
-            - **조건**: 게임 시작 이후 언제든 저장 가능.
-            - **방식**: 게임 세션당 하나의 로그 파일(DB Log)에 **채팅 내용**과 **게임 결과(선택/빙고)**가 시간순으로 누적 저장됨.
-3.  **퀴즈 진행 및 점유 (Quiz & Claim Mechanics)**:
-    - **턴 진행**: 자신의 턴에 빙고칸을 선택하여 퀴즈에 도전합니다.
-    - **제한 시간 (Time Limit)**: 퀴즈 팝업이 뜨면 **제한 시간(예: 30초)** 내에 답변해야 합니다.
-    - **답변 및 승인 (Answer & Approval)**:
-        - **T Type (진실게임)**: 질문에 대한 답변(20자 이내)을 입력/말하기 -> 상대방이 **"동의(Approve)"** 버튼을 눌러야 점유 성공.
-        - **B Type (밸런스)**: 선택지를 고르고 이유 설명 -> 상대방이 **"동의(Approve)"** 버튼을 눌러야 점유 성공.
-    - **점유 성공 (Success)**:
-        - 상대방의 승인을 받으면 해당 칸을 **점유(Claim)**하고 **EP +1**을 획득합니다. (💕 아이콘)
-    - **점유 실패 (Fail)**:
-        - 제한 시간 초과 또는 상대방이 **"거절(Reject)"** 시 점유 실패.
-        - 실패한 칸은 **Lock** 상태가 되며, 보상은 없습니다.
-    - **잠김 해제 (Unlock)**:
-        - Lock된 칸은 다음 턴부터 **미니게임(M Type)**으로 도전 가능.
-        - **M Type (Mini Game)**: 두 사용자가 경쟁하여 승자가 칸을 점유. (패자부활전)
-    - **광고 연동**:
-        - **Banner Ad**: 하단 상시 노출.
-        - **Interstitial Ad**: 게임 종료 후 결과 화면 전 노출.
-4.  **중단 및 재연결 (Disconnection Handling)**:
-    - **Heartbeat**: 클라이언트-서버 간 30초 주기 연결 확인.
-    - **Paused State**: 30초 이상 응답 없을 시 게임 `paused` 상태 전환. 상대방에게 "연결 끊김" 알림 및 90초 카운트다운 노출.
-    - **Reconnect**: 90초 내 재접속 시 `playing` 상태 복구 및 게임 재개.
-    - **Timeout**: 90초 초과 시 `finished(timeout)` 처리. 잔류 사용자 승리 또는 무승부 처리.
-
-### 3.5 게임 규칙 및 점수 (Rules & Scoring)
-1.  **승리 조건 및 단계 (Victory Stages)**:
-    - 빙고 줄을 1줄 완성하고 게임을 종료하면 승리.
-    - MP(방장)는 1줄 완성 후 **[게임 종료]** 또는 **[이어하기]**를 선택 가능.
-
-2.  **상황별 점수 시나리오 (Scenarios)**:
-    - **단판 승부**: 1줄 완성 후 종료 → **1줄 AP + VP** 획득.
-    - **연승 (Streak)**: 이어하기 선택 후 2줄, 3줄 완성 → **더블 VP**, **트리플 VP** 획득.
-    - **무승부 (Draw)**: 서로 다른 턴에 각각 빙고 완성 후 종료 → **VP 50%씩 분배**.
-    - **역전승 (Comeback)**: 상대가 먼저 1줄 했으나, 이후 내가 연속으로 2, 3줄 완성 후 종료 → 상대는 AP만, 나는 **더블 VP** 획득.
-
-3.  **포인트 정의 (Points Definition)**:
-    - **VP (Victory Point)**: 게임 최종 승리자가 획득.
-    - **AP (Activity Point)**: 승패 관계없이 빙고 한 줄 완성 시마다 획득.
-    - **EP (Experience Point)**: 빙고 칸(Cell) 하나를 점유할 때마다 획득.
-    - **TS (Trust Score)**: 게스트가 호스트를 평가한 신뢰도 점수 (별점).
-
-4.  **Point Economy (포인트 경제)**:
-    - **구매 (IAP)**: 1,000 P = 900 KRW.
-    - **사용**: 광고 제거 (200 P/회).
-4.  **게임 결과 (`/game/[id]/result`)**:
-    - **결과 확인**: 최종 빙고 현황, 획득 포인트(VP/AP/EP) 확인.
-    - **AI Agent 분석 (Analysis)**:
-        - **세션 요약 (Session Summary)**: 사용된 질문, 주요 대화 내용, 플레이어 정보를 종합하여 게임 세션 요약 생성.
-        - **관계 발전 분석 (Relationship Progress)**:
-            - 최근 30일간의 게임 기록 분석.
-            - 친밀도(Intimacy Level) 및 신뢰도(Trust Score) 변화 추이 그래프 제공.
-            - "두 분은 점점 더 깊은 대화를 나누고 계시네요!"와 같은 인사이트 제공.
+(기존 섹션 3.1 ~ 3.5 유지, 로직 설명만 Supabase 기준으로 이해)
+*   **호스트 플로우**: 초대 코드 생성 -> 대기실(Realtime Subscribe).
+*   **데이터 전달**: 호스트가 질문 세트(`gender_variants` 포함)를 `game_state`에 업로드 -> 게스트 동기화.
 
 ---
 
 ## 4. 기능 요구사항 (Functional Requirements)
 
-### 4.1 AI Agent & Neo4j Control
-- **CodeName 매핑**: 사용자 속성(Age, Gender, Hometown, Location, Relation)을 조합하여 최적의 질문 클러스터인 CodeName을 도출.
-- **지능형 질문 추출 (Evolutionary)**:
-    - 단순 랜덤 추출 지양.
-    - **Input**: 호스트 정보, 호스트가 입력한 게스트 정보, 게스트 실제 정보, 이전 대화 이력, 게임 횟수, 친밀도 변화.
-    - **Process**: Neo4j 그래프를 탐색하여 현재 관계 단계에 딱 맞는 질문 50개(25개 사용 + 25개 예비) 큐레이션.
-    - **Output**: 맞춤형 빙고 보드 구성.
-- **게임 결과 기억**: `User-[:PLAYED]->(GameSession)-[:RESULT]->(Summary)` 형태로 게임 결과를 그래프에 저장.
-- **외부 질문 연동 (External Question Interface)**:
-    - **방식**: Neo4j 연동 관리자 페이지를 통한 **CSV 일괄 업로드**.
-    - **프로세스**: 외부 프로그램 생성 → CSV 변환 → 관리자 업로드 → CodeName 매핑 검토 → 서비스 반영.
-    - **정책**: 새로운 질문 업데이트 시, 기존 CodeName과의 적합성을 검토하여 연결.
+### 4.1 Data Management & AI
+- **CSV 기반 관리**: 기획자가 `Target`, `Content`, `Variants`를 작성한 CSV를 업로드합니다.
+- **AI Variant Generation**: 기본 질문(`Content`)만 작성하면, AI가 자동으로 4가지 성별 변형(`var_m_f` 등)을 생성하여 CSV를 완성해줍니다. (Python Script 활용)
 
-### 4.2 성능 및 최적화 (Performance & Rate Limiting)
-- **과도한 API 호출 방지**:
-    - **Debouncing**: 사용자 입력(검색 등)에 대한 API 호출 디바운싱 처리.
-    - **Caching**: 자주 조회되는 질문이나 CodeName 매핑 결과는 Redis 또는 인메모리 캐시 적용.
-    - **Batch Processing**: 게임 결과 저장은 실시간이 아닌 게임 종료 후 일괄 처리.
-- **쿼리 최적화**: Neo4j 인덱싱(Indexing)을 통해 질문 조회 속도 최적화.
-- **예외 처리 (Error Handling)**:
-    - **Neo4j/AI 지연**: "분석 중입니다" 알림 표시 후, 분석 완료 시 푸시 알림 또는 리포트함으로 결과 전송.
-    - **연결 실패**: 재시도 로직(Retry Policy) 적용 및 사용자 친화적 에러 메시지("잠시 후 다시 시도해주세요") 제공.
-
-### 4.3 게임 시스템
-- **빙고 로직**: 가로, 세로, 대각선 빙고 판정 알고리즘.
-- **턴 시스템**: Player 1(Host) -> Player 2(Guest) 순서 제어 및 동기화.
-- **UI 동기화**: 빙고 칸 선택 상태, 퀴즈 모달 팝업, 채팅 메시지 실시간 동기화.
+### 4.2 성능 및 최적화
+- **Pre-fetching**: 게임 시작 전(Lobby)에 모든 변형 텍스트를 미리 로드하여, 게임 중에는 네트워크 지연 없는 텍스트 교체가 이루어집니다.
+- **Supabase Realtime**: 게임 상태(Turn, Tile Selection)를 밀리세초 단위로 동기화합니다.
 
 ---
 
-## 5. 데이터 모델 (Data Model - Neo4j)
+## 5. 데이터 모델 (Data Model - Supabase)
 
-### 5.1 Nodes
-- **User**: `user_id`, `email`, `nick`, `age`, `gender`, `birthCity`, `role`, `country`, `region`, `timezone`
-- **GameSession**: `game_id`, `mp_id`, `cp_id`, `size`, `status`, `created_at`
-- **Question**: `q_id` (CodeName 기반), `type` (T/B/M), `content`, `choice_a`, `choice_b`, `intimacy_level`, `humor_level`, `cat`, `subcategory`, `source`
-    - **Type**:
-        - **T (Truth Game)**: 진실 게임 (주관식/대화형)
-        - **B (Balance Game)**: 밸런스 게임 (양자택일)
-        - **M (Mini Game)**: 패자부활전 미니게임 (HTML5)
-- **CodeName**: `code`, `mp`, `cp`, `ir`, `sub_rel`, `intimacy`, `keywords` (JSON)
-- **Reward**: `reward_id`, `vp`, `ap`, `ep`, `ts`
-- **Log**: `log_id`, `game_id`, `turn_no`, `user_id`, `action`, `detail` (JSON)
-- **RelationType**: `rel_type_id`, `code`, `label`, `category`, `description`
-- **IntimacyLevel**: `lvl_id`, `code` (L1~L5), `label`, `description`
-- **Holiday**: `holiday_id`, `country`, `name`, `date`, `type`
-- **Trend**: `trend_id`, `region`, `keyword`, `category`, `score`
+### 5.1 Tables
+- **User**: `user_id`, `email`, `nick`, `gender`, `role` ...
+- **GameSession**: `game_id`, `mp_id`, `cp_id`, `status`, `game_state` (JSONB)
+- **Question**: 
+    - `id` (UUID)
+    - `type` (Truth/Balance)
+    - `content` (Basic Text)
+    - `details` (JSONB: choices/answers)
+    - `gender_variants` (JSONB: M_to_F, etc.)
+    - `code_names` (Array: Targeting Tags)
+- **Reward**: `reward_id`, `vp`, `ap`, `ep` ...
 
-### 5.2 Relationships
-- **User Relationships**:
-    - `(User)-[:FRIEND_WITH {intimacy_lvl: 'L3', play_cnt: 5}]->(User)`
-    - `(User)-[:FAMILY_WITH]->(User)`
-    - `(User)-[:LOVES]->(User)`
-- **Game & Content**:
-    - `(User)-[:HAS_CODENAME]->(CodeName)`
-    - `(CodeName)-[:CONTAINS]->(Question)`
-    - `(CodeName)-[:MAPPED_TO]->(Keyword)`
-    - `(User)-[:PLAYED_IN]->(GameSession)`
-    - `(GameSession)-[:USED_QUESTION]->(Question)`
-    - `(User)-[:ANSWERED {response: '...', score: 10}]->(Question)`
-    - `(User)-[:EARNED]->(Reward)`
-- **History & Logs**:
-    - `(User)-[:EVALUATED {score: 5}]->(TrustEval)-[:TARGET]->(User)`
-    - `(GameSession)-[:LOGGED]->(Log)`
-    - `(Relation)-[:HAS_HISTORY]->(RelationLog)`
+### 5.2 Relationships (Logical)
+- **Tagging**: `Question`은 `code_names` 배열을 통해 여러 관계 타겟(`B-Ar-L3`, `Fa-Si-L2` 등)에 동시에 속할 수 있습니다.
+- **History**: `GameSession` 완료 시 `Log`가 생성되고, 유저의 `FriendRelation` 테이블에 플레이 횟수와 친밀도가 누적됩니다.
 
 ---
 

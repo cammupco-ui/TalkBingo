@@ -1,0 +1,67 @@
+[
+  {
+    "topic": "진로 가치관 밸런스",
+    "category": "Friend",
+    "order_code_prefix": "BArL4",
+    "gender_policy": "gender_neutral",
+    "questions": [
+      {
+        "context_variant": "진로 고민 상담",
+        "base_content": "네가 생각하는 이상적인 모습이랑 지금 진로가 좀 다르게 느껴질 때 없어?",
+        "enrichment_materials": {}
+      }
+    ]
+  },
+  {
+    "topic": "경제 가치관 밸런스",
+    "category": "Friend",
+    "order_code_prefix": "BArL4",
+    "gender_policy": "gender_neutral",
+    "questions": [
+      {
+        "context_variant": "현실적 어려움 토로",
+        "base_content": "이상적인 모습은 이런데 현실적인 어려움 때문에 좀 힘든 순간은 없어?",
+        "enrichment_materials": {}
+      }
+    ]
+  },
+  {
+    "topic": "시간 관점 밸런스",
+    "category": "Friend",
+    "order_code_prefix": "BArL4",
+    "gender_policy": "gender_neutral",
+    "questions": [
+      {
+        "context_variant": "오랜 친구와의 깊은 대화",
+        "base_content": "오랜만에 깊은 얘기인데, 네가 꿈꾸던 모습이랑 지금 현실 사이에 괴리감이 들 때는 어떤 기분이야?",
+        "enrichment_materials": {}
+      }
+    ]
+  },
+  {
+    "topic": "인생 경로 밸런스",
+    "category": "Family",
+    "order_code_prefix": "FaFsL4",
+    "gender_policy": "gender_neutral",
+    "questions": [
+      {
+        "context_variant": "부모님과의 인생 상담",
+        "base_content": "살면서 꿈꾸던 모습과 현실이 달라서 고민했던 경험이 혹시 있으셨나요?",
+        "enrichment_materials": {}
+      }
+    ]
+  },
+  {
+    "topic": "자아 표현 밸런스",
+    "category": "Lover",
+    "order_code_prefix": "LoSwL4",
+    "gender_policy": "gender_neutral",
+    "questions": [
+      {
+        "context_variant": "연인에게 속마음 고백",
+        "base_content": "혹시 이상적인 모습과 실제 모습 사이에서 괴리감을 느낄 때가 있어?",
+        "enrichment_materials": {}
+      }
+    ]
+  }
+]

@@ -14,6 +14,7 @@ import 'package:talkbingo_app/utils/ad_state.dart';
 import 'package:talkbingo_app/utils/dev_config.dart';
 import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/utils/localization.dart';
+import 'package:talkbingo_app/widgets/animated_button.dart';
 
 
 class SignupScreen extends StatefulWidget {
@@ -376,7 +377,7 @@ class _SignupScreenState extends State<SignupScreen> with WidgetsBindingObserver
                  const Center(child: CircularProgressIndicator(color: AppColors.hostPrimary))
               else ...[
                 // Google Sign In Button
-                ElevatedButton.icon(
+                AnimatedButton(
                   onPressed: _signInWithGoogle,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.hostPrimary, // Restore to Primary Color
@@ -387,18 +388,24 @@ class _SignupScreenState extends State<SignupScreen> with WidgetsBindingObserver
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  icon: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                    child: SvgPicture.asset(
-                      'assets/images/google_logo.svg', 
-                      height: 18,
-                      width: 18,
-                    ),
-                  ), 
-                  label: Text(
-                    AppLocalizations.get('sign_up_google'),
-                    style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'NURA')),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                        child: SvgPicture.asset(
+                          'assets/images/google_logo.svg', 
+                          height: 18,
+                          width: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        AppLocalizations.get('sign_up_google'),
+                        style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'NURA')),
+                      ),
+                    ],
                   ),
                 ),
                 
@@ -406,7 +413,7 @@ class _SignupScreenState extends State<SignupScreen> with WidgetsBindingObserver
 
                 // Manual Code Entry (Guest) - Hide if already anonymous (Converting Account)
                 if ((Supabase.instance.client.auth.currentSession?.user.isAnonymous ?? false) == false)
-                OutlinedButton(
+                AnimatedOutlinedButton(
                   onPressed: () {
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(builder: (_) => const InviteCodeScreen()),

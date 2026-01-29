@@ -1,0 +1,38 @@
+{
+    "topic": "그림그리기",
+    "category": "Family",
+    "order_code_prefix": "FaFsL2",
+    "gender_policy": "neutral",
+    "questions": [
+        {
+            "context_variant": "자녀와 놀아주기",
+            "base_content": "아이들과 그림 그리면서 어떤 시간 보내?",
+            "enrichment_materials": {
+                "enrichment_community_contexts": "거실 바닥에 펼쳐진 스케치북과 크레파스 | 그림 그리기 숙제 같이 해주기 | 냉장고에 아이 그림 붙여놓기 | 태블릿으로 다같이 그림 그리기",
+                "enrichment_trending_keywords": "금손 vs 똥손 | 육아템 | 엄빠표 미술놀이 | 디지털 드로잉",
+                "enrichment_psychological_tensions": "놀아줘야 한다는 부담감 | 아이보다 그림 못 그릴 때의 민망함 | 칭찬과 솔직함 사이의 고민 | 피곤하지만 억지로 놀아주기",
+                "enrichment_conversation_friendly_terms": "소소한 재미 | 나름의 방식 | 함께하는 시간 | 의외의 발견"
+            }
+        },
+        {
+            "context_variant": "어릴 적 그림 추억",
+            "base_content": "어릴 때 그림 그리던 추억 있어?",
+            "enrichment_materials": {
+                "enrichment_community_contexts": "교내 그림 그리기 대회에서 상 받던 순간 | 벽이나 장판에 했던 낙서 | 부모님이 보관해둔 어릴 적 그림 | 좋아하던 만화 캐릭터 따라 그리기",
+                "enrichment_trending_keywords": "추억 소환 | 흑역사 | 그림일기 | 사생대회 | 라떼는 말이야",
+                "enrichment_psychological_tensions": "어릴 때와 지금의 그림 실력 비교 | 유치한 그림에 대한 민망함 | 잊고 있던 화가의 꿈 | 상상과 현실의 괴리",
+                "enrichment_conversation_friendly_terms": "기억나는 장면 | 아련한 기억 | 꼬꼬마 시절 | 그땐 그랬지 | 엉뚱한 상상"
+            }
+        },
+        {
+            "context_variant": "취미 생활 공유",
+            "base_content": "가족들이랑 그림 그리는 취미를 함께 해본 적 있어?",
+            "enrichment_materials": {
+                "enrichment_community_contexts": "가족과 함께 드로잉 카페 방문 | 원데이 클래스 수강 | 서로의 얼굴 캐리커처 그려주기 | 가족 여행지에서 풍경화 그리기",
+                "enrichment_trending_keywords": "원데이 클래스 | 이색 취미 | 가족 액티비티 | 힐링 타임 | 컬러링북",
+                "enrichment_psychological_tensions": "가족 간의 실력 차이 | 혼자만 과하게 열정적일 때 | 취미가 경쟁이 되는 순간 | 다른 취향과 스타일",
+                "enrichment_conversation_friendly_terms": "새로운 도전 | 어설픈 솜씨 | 나름의 작품 | 소소한 성취감 | 의외의 재능"
+            }
+        }
+    ]
+}

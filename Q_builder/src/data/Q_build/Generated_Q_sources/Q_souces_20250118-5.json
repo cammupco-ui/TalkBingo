@@ -1,0 +1,107 @@
+[
+    {
+        "topic": "저녁메뉴를 못고르는 상황",
+        "category": "Friend",
+        "order_code_prefix": "BDcL2",
+        "gender_policy": "neutral",
+        "context_variant": "퇴근 후 저녁 약속",
+        "base_content": "퇴근하고 저녁 뭐 먹을지 정해봤어?",
+        "enrichment_materials": {
+            "enrichment_community_contexts": "퇴근길에 메뉴 고민하는 상황 | 월급날이라 맛있는 거 먹고 싶은 날 | 회사 근처 맛집 탐색",
+            "enrichment_trending_keywords": "맛집 리스트 | 실패 없는 조합 | 급 땡기는거 | 가성비",
+            "enrichment_psychological_tensions": "결정장애 | 메뉴 선택에 대한 책임 부담 | 친구 취향 먼저 고려하기 | 피곤함과 맛있는 음식 사이의 갈등",
+            "enrichment_conversation_friendly_terms": "혹시 | 뭐 어때 | 괜찮으면 | 슬슬"
+        },
+        "date": "2026-01-20"
+    },
+    {
+        "topic": "저녁메뉴를 못고르는 상황",
+        "category": "Friend",
+        "order_code_prefix": "BDcL2",
+        "gender_policy": "neutral",
+        "context_variant": "친구와의 번개 모임",
+        "base_content": "갑자기 만나서 저녁 뭐 먹을지 고민되네, 뭐 먹을까?",
+        "enrichment_materials": {
+            "enrichment_community_contexts": "만날 장소 근처 식당 검색 | 서로의 동선 중간 지점에서 만나기 | 간단하게 한잔하며 저녁 먹기",
+            "enrichment_trending_keywords": "번개 | 호불호 없는 | 근본 메뉴 | 맛잘알 추천",
+            "enrichment_psychological_tensions": "정보 부재의 막막함 | 맛없으면 어색해질까 걱정 | 시간과 장소의 제약 | 상대방의 배고픔 정도 파악",
+            "enrichment_conversation_friendly_terms": "일단 | 근처에 | 뭐든 좋아 | 간단하게"
+        },
+        "date": "2026-01-20"
+    },
+    {
+        "topic": "저녁메뉴를 못고르는 상황",
+        "category": "Friend",
+        "order_code_prefix": "BDcL2",
+        "gender_policy": "neutral",
+        "context_variant": "함께 배달음식 주문",
+        "base_content": "우리 배달 음식 뭐 시킬지 이제 정해볼까?",
+        "enrichment_materials": {
+            "enrichment_community_contexts": "배달앱 켜고 스크롤만 하는 상황 | 최소주문금액 맞추기 | 리뷰랑 별점 꼼꼼히 확인하기",
+            "enrichment_trending_keywords": "배달팁 | 리뷰 이벤트 | 신상 맛집 | 단골 가게",
+            "enrichment_psychological_tensions": "각자 먹고 싶은 메뉴가 다른 상황 | 배달비 부담 | 메뉴 통일 압박 | 사이드 메뉴 추가 눈치 싸움",
+            "enrichment_conversation_friendly_terms": "여기 어때? | 리뷰 괜찮다 | 뭐 추가할까? | 같이 볼까?"
+        },
+        "date": "2026-01-20"
+    },
+    {
+        "topic": "저녁메뉴를 못고르는 상황",
+        "category": "Family",
+        "order_code_prefix": "FaFsL2",
+        "gender_policy": "neutral",
+        "context_variant": "가족 외식 메뉴 정하기",
+        "base_content": "오늘 저녁 외식 메뉴, 뭘로 정하면 좋을까?",
+        "enrichment_materials": {
+            "enrichment_community_contexts": "부모님이 메뉴 추천을 유도하는 상황 | 각자 먹고 싶은 게 다른 상황 | \"아무거나\"라고 대답해서 더 어려워진 상황 | 오랜만에 다같이 하는 외식 | 늘 가던 단골집",
+            "enrichment_trending_keywords": "맛집 | 웨이팅 | 가성비 | 요즘 핫한 | 신상 맛집",
+            "enrichment_psychological_tensions": "세대 차이 입맛 | 비쌀까 봐 눈치 봄 | 결정 장애 | 매번 같은 메뉴에 대한 지겨움 | 한 사람만 희생하는 분위기",
+            "enrichment_conversation_friendly_terms": "끌리는 거 | 땡기는 거 | 뭐든 좋아 | 추천 | 의견"
+        },
+        "date": "2026-01-20"
+    },
+    {
+        "topic": "저녁메뉴를 못고르는 상황",
+        "category": "Lover",
+        "order_code_prefix": "LoSwL2",
+        "gender_policy": "neutral",
+        "context_variant": "데이트 저녁 메뉴 선정",
+        "base_content": "우리 오늘 데이트 저녁 뭐 먹을까?",
+        "enrichment_materials": {
+            "enrichment_community_contexts": "갑자기 특정 음식이 땡기는 상황 | 뭐 먹을지 몰라 결정장애 온 애인 | 월급날 전이라 가성비 맛집 찾는 커플 | 다이어트 중이라 메뉴 고민될 때",
+            "enrichment_trending_keywords": "한식/중식/일식/양식 | 분위기 맛집 | 노포 맛집 | 웨이팅 맛집 | 소울푸드 | 배달시켜 먹기",
+            "enrichment_psychological_tensions": "'아무거나'의 진짜 속마음 | 먹고 싶은 거 솔직하게 말 못 하는 상황 | 한 사람만 메뉴 정하는 부담감 | 상대가 고른 메뉴가 별로일까 봐 걱정 | 비싼 메뉴 말하기 눈치 보일 때",
+            "enrichment_conversation_friendly_terms": "뭐 땡겨? | 뭐 끌려? | ~는 어때? | 가벼운 거 | 든든한 거 | 뜨끈한 국물"
+        },
+        "date": "2026-01-20"
+    },
+    {
+        "topic": "저녁메뉴를 못고르는 상황",
+        "category": "Lover",
+        "order_code_prefix": "LoSwL2",
+        "gender_policy": "neutral",
+        "context_variant": "함께 장보고 요리하기",
+        "base_content": "같이 장 본 걸로 뭐 만들어 먹을까?",
+        "enrichment_materials": {
+            "enrichment_community_contexts": "계획 없이 장부터 봐온 상황 | 냉장고에 남은 재료 처리하기 | 간단하지만 맛있는 요리 vs 근사한 요리 | 요리 담당과 설거지 담당",
+            "enrichment_trending_keywords": "집밥 | 냉털 요리 | 자취 레시피 | 밀키트 | 에어프라이어 | 술안주 | 야식",
+            "enrichment_psychological_tensions": "요리 실력 차이로 인한 미안함 | 레시피 망칠까 봐 걱정 | 요리와 뒷정리 분담의 눈치싸움 | 서로 다른 입맛",
+            "enrichment_conversation_friendly_terms": "같이 만들어볼까? | 뭐부터 할까? | 도와줄게 | 간단하게 해먹자 | 이 재료 활용해서"
+        },
+        "date": "2026-01-20"
+    },
+    {
+        "topic": "저녁메뉴를 못고르는 상황",
+        "category": "Lover",
+        "order_code_prefix": "LoSwL2",
+        "gender_policy": "neutral",
+        "context_variant": "기념일 레스토랑 결정",
+        "base_content": "기념일인데 어떤 레스토랑으로 갈지 정해볼까?",
+        "enrichment_materials": {
+            "enrichment_community_contexts": "한 달 전부터 레스토랑 예약하기 | 기념일 당일에 부랴부랴 식당 찾기 | 처음 만났던 곳 근처 레스토랑 가기 | 인스타 핫플 리스트업",
+            "enrichment_trending_keywords": "파인다이닝 | 오마카세 | 호텔 뷔페 | 뷰 맛집 | 프라이빗 룸 | 예약 필수 | 코스 요리",
+            "enrichment_psychological_tensions": "기념일에 대한 서로 다른 기대치 | 서프라이즈와 사전 합의 사이의 고민 | 식사 비용에 대한 부담감 | 예약 실패에 대한 불안감 | 상대가 실망할까 봐 걱정",
+            "enrichment_conversation_friendly_terms": "특별한 날이니까 | 기분 내러 가자 | 분위기 좋은 곳 | 오붓하게 | 의미 있는 곳 | 가고 싶은 곳 있어?"
+        },
+        "date": "2026-01-20"
+    }
+]

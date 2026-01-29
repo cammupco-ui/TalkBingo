@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:talkbingo_app/utils/ad_state.dart';
@@ -456,7 +457,7 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
             const SizedBox(height: 12),
 
             // Start Game Button
-            ElevatedButton(
+            AnimatedButton(
               onPressed: _isFormValid ? _onStartGamePressed : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFBD0558),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:talkbingo_app/utils/ad_state.dart';
@@ -106,6 +107,11 @@ class _GuestInfoScreenState extends State<GuestInfoScreen> {
               decoration: InputDecoration(
                 hintText: 'Enter your nickname',
                 hintStyle: GoogleFonts.alexandria(color: Colors.grey),
+                errorText: _nicknameController.text.trim().isEmpty && _nicknameController.text.isNotEmpty 
+                    ? 'Nickname cannot be empty' : null,
+                suffixIcon: _nicknameController.text.trim().isNotEmpty 
+                    ? const Icon(Icons.check_circle, color: Colors.green) 
+                    : null,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                 // isDense: true, // Removed for standard height
                 border: const OutlineInputBorder(),
@@ -120,28 +126,46 @@ class _GuestInfoScreenState extends State<GuestInfoScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Next Button
-            ElevatedButton(
-              onPressed: _isFormValid ? _onNextPressed : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFBD0558),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 0),
-                fixedSize: const Size.fromHeight(44),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+            // Validation Message if Invalid
+            if (!_isFormValid)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Text(
+                  '👆 Please enter your nickname to join',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                disabledBackgroundColor: Colors.grey[300],
               ),
-              child: const Text(
-                'Join Room',
-                style: TextStyle(fontSize: 14, fontFamily: 'NURA', fontWeight: FontWeight.bold),
+
+            // Next Button
+            Tooltip(
+              message: _isFormValid ? 'Join Game' : 'Enter nickname first',
+              child: AnimatedButton(
+                onPressed: _isFormValid ? _onNextPressed : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFBD0558),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 0),
+                  fixedSize: const Size.fromHeight(44),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  disabledBackgroundColor: Colors.grey[300],
+                ),
+                child: const Text(
+                  'Join Room',
+                  style: TextStyle(fontSize: 14, fontFamily: 'NURA', fontWeight: FontWeight.bold),
+                ),
               ),
             ),
             const SizedBox(height: 16),
             
             // Home Button
-            OutlinedButton(
+            AnimatedOutlinedButton(
                onPressed: () {
                   // Optional: Save before exit?
                   GameSession().updateGuestProfile(_nicknameController.text); 

@@ -9,6 +9,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/foundation.dart'; // For kIsWeb, defaultTargetPlatform
 import 'dart:async'; // For StreamSubscription
 
+// New Imports
+import 'package:talkbingo_app/games/config/target_shooter_config.dart';
+import 'package:talkbingo_app/games/config/responsive_config.dart';
+import 'package:talkbingo_app/widgets/game_header.dart';
+import 'package:talkbingo_app/widgets/power_gauge.dart';
+
 class TargetShooterGame extends StatefulWidget {
   final VoidCallback onWin; 
   final VoidCallback onClose;
@@ -40,14 +46,9 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
   
   // Platform & Responsive Config
   bool get _isMobile => !kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.android);
-
-  // Constants (Relative)
-  // Constants (Top-Down Perspective)
-  double get kArrowW => _gameSize.width * 0.05; // 5% width (Slim)
-  double get kArrowH => _gameSize.width * 0.25; // 25% width (Long)
-  double get kTargetW => _gameSize.width * 0.40; // 40% width (Wide Bar)
-  double get kTargetH => _gameSize.width * 0.20; // 20% width (Approx 2:1 Ratio)
-  double get kPlayerS => _gameSize.width * 0.35; // Bow Size
+  
+  // Config (Initialized in build/LayoutBuilder)
+  TargetShooterConfig? _config;
   
   // Game State
   int _score = 0;
@@ -69,12 +70,14 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
   double _remoteDrawAmt = 0;
   int _remoteScore = 0; // Track opponent score locally
   
+  // Current Draw Power (0.0 - 1.0) for Gauge
+  double _currentPower = 0.0;
+  
   // Size
   Size _gameSize = Size.zero;
 
   @override
   void initState() {
-    super.initState();
     super.initState();
     // Initialize Defaults (Sizes will be updated in LayoutBuilder)
     _target = GameEntity(x: 0, y: 0, width: 100, height: 30, color: Colors.orange);
@@ -93,8 +96,16 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
     // Check initial state
     WidgetsBinding.instance.addPostFrameCallback((_) {
         _checkRoundState(); 
-        if (_gameSize != Size.zero) _repositionEntities();
+      if (_gameSize != Size.zero) _repositionEntities();
     });
+  }
+  
+  void _updateConfig(Size size) {
+     if (_config?.screenSize != size) {
+        // We assume 'size' comes from LayoutBuilder, so it IS the Game Area.
+        _config = TargetShooterConfig(size, isGameArea: true);
+        // Don't call _repositionEntities() here as it's called by the caller
+     }
   }
   
   void _onSessionUpdate() {
@@ -167,8 +178,8 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
              x: normX * _gameSize.width,
              y: normY * _gameSize.height,
 
-             width: kArrowW,
-             height: kArrowH,
+             width: _config!.arrowWidth,
+             height: _config!.arrowHeight,
              color: Colors.redAccent,
              vx: normVX * _gameSize.width,
              vy: normVY * _gameSize.height,
@@ -183,30 +194,36 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
   }
   
   void _repositionEntities() {
-      // Recalculate sizes
-      _target.width = kTargetW;
-      _target.height = kTargetH;
-      _player.width = kPlayerS;
-      _player.height = kPlayerS;
-
-      // Fix Player at Bottom, Target at Top
-      _player.x = _gameSize.width / 2 - _player.width / 2;
-      _player.y = _gameSize.height - (_gameSize.height * 0.2); // Relative bottom
+      if (_config == null) return;
       
-      _target.y = _gameSize.height * 0.05; // Relative Top
+      // Update Sizes from Config
+      _target.width = _config!.targetWidth;
+      _target.height = _config!.targetHeight;
+      _player.width = _config!.playerSize;
+      _player.height = _config!.playerSize;
+
+      // Position Player (활) - Center horizontally, positioned for easy touch
+      _player.x = _config!.safeGameArea.width / 2 - _player.width / 2;
+      // Use config value - positioned at 70% from top for comfortable reach
+      _player.y = _config!.playerY;
+      
+      // Position Target (과녘) - Top
+      _target.y = _config!.targetY;
       
       final activePlayer = _session.interactionState?['activePlayer'];
       final isShooter = activePlayer == _session.myRole;
 
-      if (isShooter) {
-         _target.x = _gameSize.width / 2 - _target.width/2;
-         _target.vx = _gameSize.width * 0.5; // Speed relative to width
-      } else {
-         // Spectator might lag, but reset to center for safety
-         _target.x = _gameSize.width / 2 - _target.width/2; 
-         _target.vx = 0; 
+      // Initialize target position only if not already set or if velocity is 0
+      if (isShooter && (_target.vx == 0 || _target.x == 0)) {
+         _target.x = _config!.safeGameArea.width / 2 - _target.width/2;
+         _target.vx = _config!.targetSpeed; 
+      } else if (!isShooter) {
+         // Spectator: don't reset position/velocity
+         if (_target.x == 0) {
+            _target.x = _config!.safeGameArea.width / 2 - _target.width/2;
+         }
       }
-  }
+   }
 
 
 
@@ -253,6 +270,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
     _remoteAimAngle = 0;
     _remoteDrawAmt = 0;
     _remoteScore = 0;
+    _currentPower = 0.0;
     
     // Initialize with placeholders, repositionEntities will set correct sizes
     _target = GameEntity(x: 0, y: 0, width: 100, height: 30, color: Colors.orange);
@@ -442,7 +460,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
   }
 
   void _stickArrow(GameEntity b, double hitX, double hitY) {
-       double relX = hitX - _target.x - (kArrowW/2);
+       double relX = hitX - _target.x - (_config!.arrowWidth/2);
        double relY = hitY - _target.y;
        
        _stuckArrows.add({
@@ -477,11 +495,13 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
         setState(() {
           _aimStart = details.localPosition;
           _aimCurrent = details.localPosition;
+          _currentPower = 0.0;
         });
     }
   }
   
   void _onPanUpdate(DragUpdateDetails details) {
+    if (_config == null) return;
     final activePlayer = _session.interactionState?['activePlayer'];
     final isShooter = activePlayer == _session.myRole;
     
@@ -489,6 +509,13 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
     if (isShooter) {
         setState(() {
           _aimCurrent = details.localPosition;
+          
+          // Calculate Power for Gauge
+          double dx = _aimStart!.dx - _aimCurrent!.dx; 
+          double dy = _aimStart!.dy - _aimCurrent!.dy; 
+          double pullDist = sqrt(dx*dx + dy*dy);
+          double maxPull = 300.0; 
+          _currentPower = (pullDist / maxPull).clamp(0.0, 1.0);
           
           // SYNC AIMING
           if (DateTime.now().difference(_lastAimSync).inMilliseconds > 50) {
@@ -518,16 +545,16 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
        double dy = _aimStart!.dy - _aimCurrent!.dy; 
        
        double pullDist = sqrt(dx*dx + dy*dy);
-       if (pullDist > 60) { 
+       if (pullDist > _config!.touchThreshold) { 
           // Fire!
-          double maxPull = 300.0;
+          double maxPull = _config?.aimLineLength ?? 300.0;
           double power = (pullDist / maxPull).clamp(0.2, 1.2); 
           
           final b = GameEntity(
-            x: _player.x + _player.width/2 - kArrowW/2,
+            x: _player.x + _player.width/2 - _config!.arrowWidth/2,
             y: _player.y, 
-            width: kArrowW,
-            height: kArrowH, 
+            width: _config!.arrowWidth,
+            height: _config!.arrowHeight, 
             color: Colors.redAccent,
             vx: (dx / pullDist) * 800 * power,
             vy: (dy / pullDist) * 800 * power,
@@ -551,6 +578,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
        setState(() {
           _aimStart = null;
           _aimCurrent = null;
+          _currentPower = 0.0;
           
           // Reset Aim Sync
           _session.sendGameEvent({'eventType': 'aim', 'angle': 0, 'draw': 0});
@@ -560,6 +588,12 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
 
   @override
   Widget build(BuildContext context) {
+    // Config Update removed from here, moved to LayoutBuilder
+    // final size = MediaQuery.of(context).size;
+    // if (_config == null || _config!.screenSize != size) {
+    //    _updateConfig(size);
+    // }
+
     final state = _session.interactionState;
     if (state == null) return const SizedBox(); 
 
@@ -577,7 +611,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
            double dx = _aimStart!.dx - _aimCurrent!.dx;
            double dy = _aimStart!.dy - _aimCurrent!.dy;
            bowAngle = atan2(dy, dx) + pi/2;
-           drawAmt = sqrt(dx*dx + dy*dy).clamp(0, 100);
+           drawAmt = sqrt(dx*dx + dy*dy).clamp(0, _config?.aimLineLength ?? 100);
         }
     } else {
         // Use Remote State
@@ -590,85 +624,32 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
       body: SafeArea(
         child: Column(
           children: [
-            // 1. DISTINCT HEADER (HUD)
-            // 1. DISTINCT COMPACT HEADER (HUD)
-            Container(
-              height: 80, // Reduced from 140
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.black,
-                border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.1)))
-              ),
-              child: Row(
-                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                 children: [
-                    // Role & Action
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          isShooter ? "SHOOTER" : "SPECTATOR",
-                          style: GoogleFonts.alexandria(color: Colors.grey, fontSize: 10),
-                        ),
-                        Text(
-                           isShooter ? "SHOOT!" : "DODGE!",
-                           style: GoogleFonts.alexandria(
-                               color: isShooter ? Colors.greenAccent : Colors.orangeAccent, 
-                               fontSize: 16, 
-                               fontWeight: FontWeight.bold
-                           ),
-                        ),
-                      ],
-                    ),
-                    
-                    // Score Center
-                    Row(
-                      children: [
-                         _buildScoreBadge("YOU", isShooter ? _score : (scores[_session.myRole] ?? 0), isShooter),
-                         const SizedBox(width: 12),
-                         Text(":", style: GoogleFonts.alexandria(color: Colors.white30, fontSize: 16)),
-                         const SizedBox(width: 12),
-                         // Shows remote score if spectator, or remote score if shooter
-                         // Actually scores in 'state' might be lagged. 
-                         // Use _remoteScore for opponent if I am spectator and opponent is shooter?
-                         // If I am Shooter, opponent is dodging (score 0 normally or existing score?)
-                         // Simplification: Just show valid scores.
-                         _buildScoreBadge("OPP", isShooter ? (scores[(_session.myRole == 'A' ? 'B' : 'A')] ?? 0) : _remoteScore, !isShooter),
-                      ],
-                    ),
-                    
-                    // Timer & Close
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                            "${_timeLeft.toStringAsFixed(1)}s", 
-                            style: GoogleFonts.alexandria(
-                                color: _timeLeft < 5 ? Colors.red : Colors.white, 
-                                fontSize: 24, 
-                                fontWeight: FontWeight.bold
-                            ),
-                          ),
-                          InkWell(
-                             onTap: widget.onClose,
-                             child: const Icon(Icons.close, color: Colors.white54, size: 18),
-                          )
-                      ]
-                    )
-                 ],
-              ),
-            ),
+            // 1. GAME HEADER
+             GameHeader(
+               gameTitle: "ARROW SHOT",
+               score: isShooter ? _score : (scores[_session.myRole] ?? 0),
+               timeLeft: _timeLeft,
+               isMyTurn: isShooter,
+               onMenuTap: widget.onClose,
+             ),
 
             // 2. GAME AREA (Draggable)
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  // Init Game Size once
-                  if (_gameSize != constraints.biggest) {
+                  // Init Game Size and Config
+                  final needsUpdate = _gameSize != constraints.biggest;
+                  if (needsUpdate) {
                      _gameSize = constraints.biggest;
+                     // Update Config with ACTUAL Game Area Size
+                     _updateConfig(_gameSize);
+                     // Only reposition when config changes, not every frame
                      _repositionEntities();
+                  }
+
+                  // Ensure config is ready before rendering content dependent on it
+                  if (_config == null) {
+                    return const SizedBox();
                   }
 
                   return GestureDetector(
@@ -690,18 +671,19 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                           child: SvgPicture.asset(
                              'assets/images/Targetboard.svg',
                              fit: BoxFit.contain, 
+                             colorFilter: const ColorFilter.mode(AppColors.hostSecondary, BlendMode.srcIn),
                           ),
                         ),
 
                         // STUCK ARROWS (Attached to Target)
                         ..._stuckArrows.map((a) => Positioned(
-                            left: _target.x + (a['x'] as num).toDouble(), // Relative offset applied to Target X
+                            left: _target.x + (a['x'] as num).toDouble(), 
                             top: _target.y + (a['y'] as num).toDouble(),
-                            width: kArrowW,
-                            height: kArrowH,
+                            width: _config!.arrowWidth,
+                            height: _config!.arrowHeight,
                             child: Transform.rotate(
                                 angle: (a['angle'] as num).toDouble(),
-                                child: SvgPicture.asset('assets/images/arrow.svg', fit: BoxFit.contain)
+                                child: SvgPicture.asset('assets/images/arrow.svg', fit: BoxFit.contain, colorFilter: const ColorFilter.mode(AppColors.hostSecondary, BlendMode.srcIn))
                             )
                         )),
 
@@ -719,6 +701,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                                 child: SvgPicture.asset(
                                    'assets/images/arrow.svg',
                                    fit: BoxFit.contain,
+                                   colorFilter: const ColorFilter.mode(AppColors.hostSecondary, BlendMode.srcIn),
                                 ),
                               )
                            );
@@ -742,16 +725,18 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                                     child: SvgPicture.asset(
                                       drawAmt > 10 ? 'assets/images/Bow_2.svg' : 'assets/images/Bow.svg',
                                       fit: BoxFit.contain,
+                                      colorFilter: const ColorFilter.mode(AppColors.hostSecondary, BlendMode.srcIn),
                                     ),
                                   ),
                                   // Arrow on Bow (if aiming)
                                   if (drawAmt > 5)
-                                    Positioned( // Adjust arrow visual offset on bow string
-                                      top: 20 + drawAmt/2, // Pull back visual
+                                    Positioned( 
+                                      top: 20 + drawAmt/2, 
                                       child: SvgPicture.asset(
                                         'assets/images/arrow.svg', 
-                                        height: kArrowH, 
-                                        fit: BoxFit.fitHeight
+                                        height: _config!.arrowHeight, 
+                                        fit: BoxFit.fitHeight,
+                                        colorFilter: const ColorFilter.mode(AppColors.hostSecondary, BlendMode.srcIn),
                                       )
                                     )
                                ]
@@ -759,6 +744,16 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                            ),
                         ),
                         
+                        // POWER GAUGE
+                        if (isShooter && _aimStart != null)
+                           Positioned(
+                              bottom: _player.height + 20,
+                              left: 0, right: 0,
+                              child: Center(
+                                 child: PowerGauge(power: _currentPower, label: "POWER", showLevels: true)
+                              )
+                           ),
+
                         // MANUAL START OVERLAY
                         if (_isWaitingForStart && !_showRoundOverlay && state['step'] != 'finished')
                            Container(

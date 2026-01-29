@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:talkbingo_app/screens/guest_info_screen.dart'; // New Guest Screen
@@ -252,7 +253,7 @@ class _InviteCodeScreenState extends State<InviteCodeScreen> {
 
 
             // Next Button
-            ElevatedButton(
+            AnimatedButton(
               onPressed: () {
                 final code = _getEnteredCode();
                 if (code.length < 6) {

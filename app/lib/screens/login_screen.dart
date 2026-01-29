@@ -12,6 +12,7 @@ import 'package:talkbingo_app/utils/ad_state.dart';
 import 'package:talkbingo_app/utils/dev_config.dart';
 import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/utils/localization.dart';
+import 'package:talkbingo_app/widgets/animated_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -177,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                  const Center(child: CircularProgressIndicator(color: AppColors.hostPrimary))
               else ...[
                 // Google Sign In Button
-                ElevatedButton.icon(
+                AnimatedButton(
                   onPressed: _signInWithGoogle,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
@@ -189,17 +190,22 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                       side: BorderSide(color: Colors.grey.shade300),
                     ),
                   ),
-                  icon: SvgPicture.asset( // Ensure you have google_logo.svg or use Icon(Icons.login) temporarily
-                    'assets/images/google_logo.svg', 
-                    height: 24,
-                    width: 24,
-                    // Fallback to icon if asset specific log is missing, but usually we add it. 
-                    // For now, I'll use a standard Icon if asset is risky, but let's assume standard asset or use text.
-                    // Actually, let's use a standard Icon for safety if asset doesn't exist.
-                  ), 
-                  label: Text(
-                    AppLocalizations.get('continue_google'),
-                    style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'NURA')),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Google Icon
+                      SvgPicture.asset( 
+                        'assets/images/google_logo.svg', 
+                        height: 24,
+                        width: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      // Label
+                      Text(
+                        AppLocalizations.get('continue_google'),
+                        style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'NURA')),
+                      ),
+                    ],
                   ),
                 ),
                 

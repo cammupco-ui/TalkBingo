@@ -1,0 +1,149 @@
+[
+  {
+    "topic": "목소리만으로 기분을 맞추는 기술에 놀란 상태",
+    "category": "Friend",
+    "order_code_prefix": "BScL2",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "신기한 기술 뉴스 공유",
+        "base_content": "목소리만 듣고도 기분을 맞추는 기술이 나왔대, 너 이 뉴스 봤어?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "유튜브 IT 뉴스 채널 시청|단톡방에 공유된 기사|같이 웹서핑하다 발견한 글",
+          "enrichment_trending_keywords": "감정인식 AI|소름|빅브라더|사생활 침해|기술 발전 속도",
+          "enrichment_psychological_tensions": "편리함 vs 불안감|순수한 공감 vs 회의적 시각|감정 노출에 대한 거부감",
+          "enrichment_conversation_friendly_terms": "어떻게 생각해?|~긴 한데|한편으로는|만약에|좀 그렇지 않아?"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "목소리만으로 기분을 맞추는 기술에 놀란 상태",
+    "category": "Friend",
+    "order_code_prefix": "BScL2",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "AI 스피커 사용 경험담",
+        "base_content": "AI 스피커가 목소리만으로 내 기분을 알 수 있다면, 평소에 내 기분을 뭐라고 예측할까?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "집에 있는 AI 스피커 사용 중|음성인식 서비스 사용 후기 공유|친구가 AI 스피커 쓰는 모습 구경",
+          "enrichment_trending_keywords": "기분 데이터|음성 비서|맞춤형 서비스|포커페이스|감정 기복",
+          "enrichment_psychological_tensions": "기계가 나를 판단하는 것에 대한 불쾌감|나도 모르는 나를 알게 될 기대감|친구 앞에서 감정을 숨기고 싶은 마음",
+          "enrichment_conversation_friendly_terms": "~라고 진단할 듯|왠지 ~할 것 같아|궁금하지 않아?|너는 어떨 것 같아?|솔직히"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "목소리만으로 기분을 맞추는 기술에 놀란 상태",
+    "category": "Friend",
+    "order_code_prefix": "BScL2",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "IT 기기 관련 잡담",
+        "base_content": "IT 기기들이 목소리만으로 기분까지 파악하는 수준까지 발전한 거 보면 정말 신기하지 않아?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "최신 스마트폰 기능 이야기|SF 영화 보고 난 후 잡담|미래 기술 관련 유튜브 시청 후기",
+          "enrichment_trending_keywords": "특이점|기술 발전|인공지능|SF 현실화|상상도 못 한 기능",
+          "enrichment_psychological_tensions": "기술 발전에 대한 기대 vs 두려움|인간 고유 영역 침범에 대한 경계심|기술에 대한 시각 차이",
+          "enrichment_conversation_friendly_terms": "대박이지 않아?|~수준이라니|나중에는|영화에서나 보던 건데|생각해 보면"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "목소리만으로 기분을 맞추는 기술에 놀란 상태",
+    "category": "Family",
+    "order_code_prefix": "FaBrL3",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "TV에서 본 신기한 기술 이야기",
+        "base_content": "TV에서 목소리로 기분 맞춰주는 기술 봤는데, 진짜 신기하지 않아?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "거실에서 다 같이 TV 보는 상황 | 신기술 다큐멘터리 시청 후 대화 | 저녁 식사하며 나누는 TV 이야기",
+          "enrichment_trending_keywords": "감성 인식 AI | 소름 돋는 정확도 | 기술 발전 속도",
+          "enrichment_psychological_tensions": "기술에 대한 기대감 vs 불안감 | 사생활 침해에 대한 우려 | 기술의 정확성에 대한 의구심",
+          "enrichment_conversation_friendly_terms": "신기하긴 하다 | 한편으로는 어떨까 | 어떻게 생각해"
+        }
+      },
+      {
+        "context_variant": "새로운 AI 서비스에 대한 놀라움 표현",
+        "base_content": "요즘 목소리만 듣고도 기분을 안다는 AI 서비스가 나왔다는데, 정말 놀랍지 않아?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "새로 나온 AI 스피커 기능 써본 후 | IT 기사나 유튜브 영상 보고 나누는 대화 | 자녀가 부모님께 신기술 설명해주는 상황",
+          "enrichment_trending_keywords": "AI 비서 | 멘탈케어 앱 | 개인 맞춤형 서비스",
+          "enrichment_psychological_tensions": "유용성에 대한 기대 vs 회의감 | AI에 대한 정서적 의존 가능성 | 기술 오남용에 대한 걱정",
+          "enrichment_conversation_friendly_terms": "한번 써보고 싶다 | 나라면 어떨까 | ~라는 생각도 들어"
+        }
+      },
+      {
+        "context_variant": "기술 발전과 미래에 대한 대화",
+        "base_content": "목소리로 기분까지 읽는 기술이 나온 걸 보면, 앞으로 기술이 얼마나 더 발전할지 궁금하지 않아?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "SF 영화 본 후 미래 기술에 대한 대화 | 자녀의 미래 직업에 대해 이야기하는 상황 | 기술 발전의 명과 암에 대한 토론",
+          "enrichment_trending_keywords": "기술 특이점 | 인공지능 윤리 | 미래 사회",
+          "enrichment_psychological_tensions": "미래에 대한 낙관론 vs 비관론 | 인간 고유 영역 침범에 대한 경계심 | 통제 불가능한 기술 발전에 대한 두려움",
+          "enrichment_conversation_friendly_terms": "세상이 어떻게 바뀔까 | 상상해봤어? | 먼 미래의 일 같지만"
+        }
+      }
+    ],
+    "date": "2026-01-22"
+  },
+  {
+    "topic": "목소리만으로 기분을 맞추는 기술에 놀란 상태",
+    "category": "Lover",
+    "order_code_prefix": "LoSwL2",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "데이트 중 흥미로운 발견 공유",
+        "base_content": "목소리만으로 기분을 맞추는 기술이 있다는데, 진짜 신기하지 않아?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "같이 유튜브 보다 신기한 영상 발견했을 때 | 자기 전 침대에 누워 통화할 때 | 서로 목소리 톤 때문에 오해했던 경험 이야기",
+          "enrichment_trending_keywords": "감정인식 AI | 소름 | 신기방기 | 사생활 침해 | 빅브라더",
+          "enrichment_psychological_tensions": "기술에 대한 기대감 vs 불안감 | 감정이 분석당하는 것에 대한 거부감 | 기계보다 내가 더 잘 안다는 자신감 | 선의의 거짓말이 불가능해지는 상황에 대한 우려",
+          "enrichment_conversation_friendly_terms": "어떨 것 같아? | 만약에 우리한테 쓴다면 | 궁금하다 | 한편으로는 | 장점/단점"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "목소리만으로 기분을 맞추는 기술에 놀란 상태",
+    "category": "Lover",
+    "order_code_prefix": "LoSwL2",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "새로운 기술에 대한 감상 나누기",
+        "base_content": "목소리만으로 기분을 맞추는 기술이라니, 듣기만 해도 너무 놀라운 것 같아. 어떻게 생각해?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "SF 영화나 드라마를 함께 본 후 | 최신 IT 기기 리뷰 영상을 보다가 | AI 스피커와 대화하다가 | 서로의 기분을 눈치껏 살필 때",
+          "enrichment_trending_keywords": "음성 인식 | 감성 기술 | 기술 발전 속도 | 양날의 검 | 편리함",
+          "enrichment_psychological_tensions": "편리함 추구 vs 사생활 보호 | 기술의 긍정적 활용에 대한 믿음 vs 악용 가능성에 대한 걱정 | 내 감정을 말없이 알아주길 바라는 마음 vs 기계가 판단하는 것에 대한 불쾌감",
+          "enrichment_conversation_friendly_terms": "어떻게 생각해? | ~라는 생각 안 들어? | 좋을까, 나쁠까? | 너라면 어떨 것 같아? | 솔직히 말하면"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "목소리만으로 기분을 맞추는 기술에 놀란 상태",
+    "category": "Lover",
+    "order_code_prefix": "LoSwL2",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "미래 기술과 관련된 상상",
+        "base_content": "목소리로 기분을 읽어내는 기술이 더 발전하면, 미래에는 어떤 세상이 올까?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "미래 배경 영화에 대해 이야기할 때 | 우리 결혼 생활을 상상해볼 때 | 아이를 키우는 미래를 그릴 때 | 다툰 뒤 화해하는 방법을 고민할 때",
+          "enrichment_trending_keywords": "유토피아 | 디스토피아 | AI 상담사 | 텔레파시 | 마음 스캐너",
+          "enrichment_psychological_tensions": "오해가 사라진 세상에 대한 기대 vs 숨길 권리가 사라진 세상에 대한 공포 | 진심만 통하는 관계에 대한 로망 vs 솔직함이 강요되는 부담감 | 감정 교류의 효율성 vs 인간관계의 삭막함",
+          "enrichment_conversation_friendly_terms": "상상해봐 | 만약 ~세상이 온다면 | 어떤 모습일까 | ~도 가능할까? | 재밌겠다 vs 무서울 것 같아"
+        }
+      }
+    ]
+  }
+]

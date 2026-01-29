@@ -1,0 +1,96 @@
+{
+    "category": "Friend",
+    "code_prefix": "B",
+    "description": "자발적으로 형성된 수평적 관계",
+    "relationships": [
+        {
+            "type": "AreaFriend",
+            "code": [
+                "B-Ar"
+            ],
+            "label": "고향친구",
+            "description": "어릴 때부터 알고 지낸 고향 또는 소꿉친구",
+            "examples": [
+                "초/중학교 동창이자 동네 친구",
+                "부모님끼리 아는 소꿉친구",
+                "10년 지기 동네 친구"
+            ],
+            "recommended_intimacy": {
+                "min": 1,
+                "max": 5
+            },
+            "features": [
+                "long_term_relationship",
+                "shared_growth",
+                "family_level_familiarity"
+            ]
+        },
+        {
+            "type": "SchoolFriend",
+            "code": [
+                "B-Sc"
+            ],
+            "label": "학교친구",
+            "description": "학교에서 만나 친해진 친구 관계",
+            "examples": [
+                "고등학교 같은 반 친구",
+                "대학교 학과 동기",
+                "동아리 선후배"
+            ],
+            "recommended_intimacy": {
+                "min": 1,
+                "max": 4
+            },
+            "features": [
+                "shared_school_memories",
+                "school_based_network",
+                "possible_distance_after_graduation"
+            ]
+        },
+        {
+            "type": "OrganizationFriend",
+            "code": [
+                "B-Or"
+            ],
+            "label": "직장동료",
+            "description": "직장이나 아르바이트 등 일터에서 만난 친구",
+            "examples": [
+                "전 직장 동료",
+                "현재 팀 동료",
+                "프로젝트로 알게 된 사이"
+            ],
+            "recommended_intimacy": {
+                "min": 1,
+                "max": 3
+            },
+            "features": [
+                "workplace_context",
+                "professional_boundary",
+                "relationship_evolves_over_time"
+            ]
+        },
+        {
+            "type": "DailyLifeCircleFriend",
+            "code": [
+                "B-Dc"
+            ],
+            "label": "동네친구",
+            "description": "생활 반경이 겹치며 자주 만나는 친구",
+            "examples": [
+                "동네 술친구",
+                "운동 메이트",
+                "같은 동네로 이사 와서 친해진 경우",
+                "온라인 소모임에서 만난 친구"
+            ],
+            "recommended_intimacy": {
+                "min": 1,
+                "max": 4
+            },
+            "features": [
+                "physical_proximity",
+                "easy_meetups",
+                "shared_daily_routine"
+            ]
+        }
+    ]
+}

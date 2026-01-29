@@ -1,5 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:talkbingo_app/widgets/animated_button.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:talkbingo_app/models/game_session.dart';
@@ -38,6 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _regionConsent = false;
   
   bool _hasChanges = false; // Track unsaved changes
+  bool _isSaving = false; // Track saving state
 
   final List<String> _ageGroups = ['10s', '20s', '30s', '40s', '50s', '60s+'];
   
@@ -131,6 +134,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _saveSettings() async {
+    setState(() => _isSaving = true);
+    
+    // Simulate slight delay for visual feedback if save is too fast
+    await Future.delayed(const Duration(milliseconds: 500));
+
     final session = GameSession();
     session.hostNickname = _nicknameController.text;
     session.hostBirthDate = _birthDateController.text;
@@ -150,6 +158,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     
     setState(() {
         _hasChanges = false;
+        _isSaving = false;
     });
     
     if (mounted) {
@@ -157,6 +166,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
         SnackBar(content: Text(AppLocalizations.get('settings_saved')), backgroundColor: AppColors.hostPrimary),
         );
     }
+  }
+
+  Future<void> _launchFeedback() async {
+     const url = 'https://docs.google.com/forms'; // TODO: Replace with your actual Google Form URL
+     final uri = Uri.parse(url);
+     if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+     } else {
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Could not open feedback form.'))
+           );
+        }
+     }
   }
 
   @override
@@ -214,6 +237,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildLanguageChip('한국어', 'ko'),
               ],
             ),
+            const SizedBox(height: 24),
+
+            // Feedback / Support
+            _buildLabel(AppLocalizations.get('support')),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _launchFeedback,
+                icon: const Icon(Icons.feedback_outlined, size: 18),
+                label: Text(AppLocalizations.get('send_feedback')),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.black87,
+                  side: BorderSide(color: Colors.grey[300]!),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  alignment: Alignment.centerLeft,
+                ),
+              ),
+            ),
+
             const SizedBox(height: 24),
             const Divider(height: 1, thickness: 1),
             const SizedBox(height: 24),
@@ -353,7 +395,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Save Button
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              child: AnimatedButton(
                 onPressed: _saveSettings,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.hostPrimary,
@@ -361,7 +403,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
-                child: Text(AppLocalizations.get('save_changes'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                child: _isSaving 
+                  ? const Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)))
+                  : Text(AppLocalizations.get('save_changes'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
               ),
             ),
 
@@ -371,7 +415,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if (Supabase.instance.client.auth.currentSession?.user.isAnonymous ?? true)
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton.icon(
+                child: AnimatedButton(
                   onPressed: () async {
                     // Capture current guest ID before going to Sign Up / Log In
                     await MigrationManager().prepareForMigration();
@@ -382,22 +426,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       );
                     }
                   },
-                  icon: const Icon(Icons.login, color: Colors.white),
-                  label: Text(
-                    "Sign Up / Link Account", // Matches PageFlow doc
-                    style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.hostPrimary, // Prominent color
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.login, color: Colors.white),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Sign Up / Link Account", // Matches PageFlow doc
+                        style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      ),
+                    ],
+                  ),
                 ),
               )
             else
               // Logout Button (Member)
-              TextButton.icon(
+              // Logout Button (Member)
+              AnimatedTextButton(
                 onPressed: () async {
                   final confirm = await showDialog<bool>(
                     context: context,
@@ -421,8 +472,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     }
                   }
                 },
-                icon: const Icon(Icons.logout, color: Colors.grey),
-                label: Text(AppLocalizations.get('sign_out'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(color: Colors.grey))),
+                style: TextButton.styleFrom(foregroundColor: Colors.grey),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.logout, color: Colors.grey),
+                    const SizedBox(width: 8),
+                    Text(AppLocalizations.get('sign_out'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(color: Colors.grey))),
+                  ],
+                ),
               ),
             const SizedBox(height: 100), // Bottom padding for scrolling
           ],
@@ -553,21 +611,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SizedBox(
             width: double.infinity,
             height: 48,
-            child: OutlinedButton.icon(
+            child: AnimatedOutlinedButton(
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const PointPurchaseScreen())
                 ).then((_) => setState(() {})); 
               },
-              icon: const Icon(Icons.stars, color: Colors.white),
-              label: Text(
-                AppLocalizations.get('manage_points'), 
-                style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))
-              ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.white,
                 side: const BorderSide(color: Colors.white, width: 0.5), // Thin Outline
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.stars, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text(
+                    AppLocalizations.get('manage_points'), 
+                    style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))
+                  ),
+                ],
               ),
             ),
           ),

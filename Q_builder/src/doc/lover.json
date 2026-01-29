@@ -1,0 +1,55 @@
+{
+    "category": "Lover",
+    "code_prefix": "Lo",
+    "description": "로맨틱한 감정을 바탕으로 형성된 친밀한 관계",
+    "relationships": [
+        {
+            "type": "DatingPartner",
+            "code": [
+                "Lo-Sw",
+                "Lo-Gw"
+            ],
+            "label": "애인",
+            "description": "결혼하지 않았지만 교제 중인 연인 관계 (썸, 연애, 약혼 포함)",
+            "examples": [
+                "사귄 지 100일 된 커플",
+                "결혼을 약속한 예비 부부",
+                "오래된 장수 커플"
+            ],
+            "recommended_intimacy": {
+                "min": 1,
+                "max": 5
+            },
+            "features": [
+                "romantic_attraction",
+                "emotional_connection",
+                "non_legal_commitment",
+                "relationship_fluidity"
+            ]
+        },
+        {
+            "type": "MarriedCouple",
+            "code": [
+                "Lo-Hw",
+                "Lo-Pw"
+            ],
+            "label": "부부",
+            "description": "법적으로 혼인한 배우자 관계",
+            "examples": [
+                "신혼부부",
+                "결혼 10년 차 부부",
+                "은퇴 후 노부부"
+            ],
+            "recommended_intimacy": {
+                "min": 3,
+                "max": 5
+            },
+            "features": [
+                "legal_commitment",
+                "economic_community",
+                "lifelong_partnership",
+                "shared_responsibilities"
+            ]
+        }
+    ]
+}

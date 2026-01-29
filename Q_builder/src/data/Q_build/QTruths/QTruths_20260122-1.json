@@ -1,0 +1,67 @@
+[
+  {
+    "topic": "자극적인 유행 영상 대신 철학 책을 읽거나 필사하는 모습이 획일화된 또래와 구별되는 차별점이라 여기는 상황",
+    "category": "Friend",
+    "order_code_prefix": "BScL3",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "가치관 공유 대화",
+        "base_content": "요즘 자극적인 유행보다 철학책을 읽는 게 더 의미 있다고 느껴질 때가 있어?",
+        "enrichment_materials": {}
+      }
+    ]
+  },
+  {
+    "topic": "자극적인 유행 영상 대신 철학 책을 읽거나 필사하는 모습이 획일화된 또래와 구별되는 차별점이라 여기는 상황",
+    "category": "Family",
+    "order_code_prefix": "FaFsL4",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "자녀의 정체성 고민",
+        "base_content": "요즘 철학 책을 읽고 필사하는 게 너의 정체성을 찾아가는 데 어떤 의미가 있을까?",
+        "enrichment_materials": {}
+      }
+    ]
+  },
+  {
+    "topic": "자극적인 유행 영상 대신 철학 책을 읽거나 필사하는 모습이 획일화된 또래와 구별되는 차별점이라 여기는 상황",
+    "category": "Lover",
+    "order_code_prefix": "LoSwL4",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "연인 간 가치관 공유",
+        "base_content": "유행하는 영상보다 철학 책을 읽거나 필사하는 것에 어떤 가치를 두는지 궁금해.",
+        "enrichment_materials": {}
+      }
+    ]
+  },
+  {
+    "topic": "자극적인 유행 영상 대신 철학 책을 읽거나 필사하는 모습이 획일화된 또래와 구별되는 차별점이라 여기는 상황",
+    "category": "Lover",
+    "order_code_prefix": "LoSwL4",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "서로의 특별함에 대한 대화",
+        "base_content": "요즘 유행보다는 철학 책을 찾아 읽거나 필사하는 모습에서 스스로 특별하다고 느끼는 부분이 있어?",
+        "enrichment_materials": {}
+      }
+    ]
+  },
+  {
+    "topic": "자극적인 유행 영상 대신 철학 책을 읽거나 필사하는 모습이 획일화된 또래와 구별되는 차별점이라 여기는 상황",
+    "category": "Lover",
+    "order_code_prefix": "LoSwL4",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "지적인 교감 형성",
+        "base_content": "철학 책을 읽거나 필사하면서 얻는 생각이나 깨달음이 있다면 어떤 것들이야?",
+        "enrichment_materials": {}
+      }
+    ]
+  }
+]

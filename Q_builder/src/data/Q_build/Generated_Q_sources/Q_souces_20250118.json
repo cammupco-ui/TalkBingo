@@ -1,0 +1,81 @@
+[
+  {
+    "topic": "첫사랑이 전학가는상황",
+    "category": "Friend",
+    "order_code_prefix": "BScL4",
+    "gender_policy": "directional",
+    "context_variant": "친구의 연애 고민 상담",
+    "base_content": "첫사랑이 전학 가게 돼서 요즘 어떤 고민이 있어?",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "하교 후 같이 집에 가는 길|새벽에 하는 카톡 통화|분식집에서 떡볶이 먹는 상황|쉬는 시간에 멍 때리는 친구 모습",
+      "enrichment_trending_keywords": "롱디|못한 고백|마지막 추억|강제이별|자연스럽게 멀어짐",
+      "enrichment_psychological_tensions": "고백하기 vs 마음 숨기기|포기 vs 계속 좋아하기|현실적 조언 vs 감정적 위로|잊혀질 거라는 두려움",
+      "enrichment_conversation_friendly_terms": "솔직히|네 마음은 어때|속상하겠다|신경 쓰이다|어떤 선택을 하든"
+    },
+    "date": "2026-01-20"
+  },
+  {
+    "topic": "첫사랑이 전학가는상황",
+    "category": "Family",
+    "order_code_prefix": "FaSwL3",
+    "gender_policy": "directional",
+    "context_variant": "자녀의 상실감 이해하기",
+    "base_content": "첫사랑이 전학 간다는 소식에 마음이 많이 허전했니?",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "방에 혼자 틀어박혀 있는 모습 | 밥도 잘 안 먹고 기운 없어 보일 때 | 그 친구 SNS만 계속 들여다보는 상황 | 전학 가기 전 마지막으로 만나는 날",
+      "enrichment_trending_keywords": "맴찢 | 현타 | 세상 잃은 표정 | 우울 모드 | 공허함",
+      "enrichment_psychological_tensions": "부모님이 내 감정을 이해 못 할 거라는 생각 | 어른들 눈엔 별거 아닌 일로 보일까 봐 걱정됨 | 슬픈 티를 내고 싶지 않은 마음 | 위로받고 싶지만 먼저 말하기 민망함",
+      "enrichment_conversation_friendly_terms": "마음이 어때 | 괜찮은지 궁금해서 | 속상하겠다 | 어떤 기분일지 | 신경 쓰여서"
+    },
+    "date": "2026-01-20"
+  },
+  {
+    "topic": "첫사랑이 전학가는상황",
+    "category": "Family",
+    "order_code_prefix": "FaSwL3",
+    "gender_policy": "directional",
+    "context_variant": "앞으로의 자녀 관계 조언",
+    "base_content": "그 친구랑 앞으로 어떻게 지낼지 생각해본 적 있니?",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "연락이 점점 뜸해지는 상황 | SNS로만 서로 소식을 보는 사이 | 장거리 관계를 고민하는 모습 | 새로운 환경에 적응하며 서로를 잊어가는 과정",
+      "enrichment_trending_keywords": "롱디 | 손절 | 자연스러운 멀어짐 | 연락 유지 | 랜선 관계",
+      "enrichment_psychological_tensions": "관계를 이어가고 싶지만 현실적으로 어렵다는 생각 | 부모님이 섣불리 관계를 정리하라고 할까 봐 걱정됨 | 괜한 기대를 주는 것에 대한 부담감 | 현실적인 조언과 감정적인 지지 사이의 고민",
+      "enrichment_conversation_friendly_terms": "궁금해서 물어보는 건데 | 어떤 계획이 있는지 | 네 생각은 어때 | 꼭 이래야 한다는 건 아니지만 | 부담 갖지 말고"
+    },
+    "date": "2026-01-20"
+  },
+  {
+    "topic": "첫사랑이 전학가는상황",
+    "category": "Family",
+    "order_code_prefix": "FaSwL3",
+    "gender_policy": "directional",
+    "context_variant": "부모로서의 역할 고민",
+    "base_content": "이럴 때 어떤 도움이 필요하니?",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "자녀 기분을 풀어주려 외식을 제안하는 부모 | '시간이 약이다'라며 어설프게 위로하는 상황 | 자녀의 이야기를 묵묵히 들어주는 모습 | 그 친구와 마지막으로 만날 때 용돈을 챙겨주는 상황",
+      "enrichment_trending_keywords": "기분 전환 | 정서적 지지 | 공감 | 현실 조언 | 개입 vs 존중",
+      "enrichment_psychological_tensions": "도와주고 싶지만 방법을 모르는 막막함 | 부모의 도움이 오히려 부담될 수 있다는 걱정 | '그냥 내버려 뒀으면' 하는 자녀의 마음 | 구체적인 도움과 조용히 지켜봐 주기 사이의 균형",
+      "enrichment_conversation_friendly_terms": "엄마/아빠가 해줄 수 있는 게 있을까 | 부담 갖지 말고 말해줘 | 뭐가 제일 힘들어 | 혼자 끙끙 앓지 말고 | 이야기 들어줄 준비가 됐어"
+    },
+    "date": "2026-01-20"
+  },
+  {
+    "topic": "첫사랑이 전학가는상황",
+    "category": "Lover",
+    "order_code_prefix": "LoSwL3",
+    "gender_policy": "directional",
+    "context_variant": "장거리 연애 시작",
+    "base_content": "이제 장거리 연애를 시작하는데, 우리가 잘 해낼 수 있을까?",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "기차역에서 헤어지는 순간 | 영상통화하다 잠드는 상황 | 서로 시간표 공유하기",
+      "enrichment_trending_keywords": "롱디 | 애틋함 | 믿음",
+      "enrichment_psychological_tensions": "보고 싶을 때 못 보는 서러움 | 연락 문제로 인한 불안감 | 새로운 환경에 대한 걱정",
+      "enrichment_conversation_friendly_terms": "솔직히 말하면 | 걱정되는 건 | 우리만의 규칙"
+    },
+    "date": "2026-01-20"
+  }
+]
+
+January 20,
+2: 45 PM
+

@@ -1,0 +1,459 @@
+CodeName,Order,q_id,content,choice_a,choice_b,content_en,choice_a_en,choice_b_en
+*-*-*-*-*,*-*-*-00001,B26-00001,"힘든 일이 있어 고민 상담을 할 때, 내가 더 원하는 방식은?",뼈 때리는 팩폭,따뜻한 위로,"When I need advice, what do I prefer?",Harsh truth,Warm comfort
+*-*-*-*-*,*-*-*-00002,B26-00002,"지친 한 주를 보내고 맞이한 주말, 나에게 진정한 충전은?",집콕 힐링,밖에서 놀기,"After a tiring week, what truly recharges me on the weekend?",Home relaxation,Going out
+*-*-*-*-*,*-*-*-00003,B26-00003,친구가 정말 난해하고 이상한 패션을 하고 왔을 때 나의 반응은?,솔직히 말하기,그냥 넘어감,A friend wears a really weird outfit. My reaction?,Honest feedback,Ignore it
+*-*-*-*-*,*-*-*-00004,B26-00004,"중요한 결정을 내려야 할 때, 내가 더 신뢰하는 판단 기준은?",데이터 분석파,직감 승부파,"When making important decisions, what do I trust more?",Data analysis,Gut feeling
+*-*-*-*-*,*-*-*-00005,B26-00005,내가 진정으로 추구하는 이상적인 인간관계의 모습은?,좁고 깊은 소수,넓고 얕은 인싸,What's my ideal relationship style?,"Small, deep circle","Large, casual network"
+*-*-*-*-*,*-*-*-00006,B26-00006,"새로운 진로를 선택해야 할 때, 나에게 더 중요한 기준은?",고통 동반 급성장,맘 편한 안정감,"When choosing a new career path, what matters more?",Painful growth,Easy stability
+*-*-*-*-*,*-*-*-00007,B26-00007,연애를 할 때 나에게 더 중요하고 필요한 감정은?,불타는 설렘,편안한 안정감,"In a relationship, what feeling is more important to me?",Excitement,Comfort
+*-*-*-*-*,*-*-*-00008,B26-00008,"결정적인 순간, 나를 움직이는 것은?",냉철한 이성,가슴 뛰는 직관,"In a crucial moment, what moves me?",Logic,Intuition
+*-*-*-*-*,*-*-*-00009,B26-00009,사람 많은 길에서 꽈당! 넘어졌을 때 나의 대처법은?,쪽팔림 참고 벌떡,아파하며 누워있기,I trip and fall in a crowded place! What do I do?,Get up fast,Lie there in pain
+*-*-*-*-*,*-*-*-00010,B26-00010,내가 생각하는 진정으로 만족스러운 인생의 방향은?,하고픈 거 다 하기,미래 위해 지금 참기,What's a truly satisfying life to me?,Do everything,Sacrifice now
+*-*-*-*-*,*-*-*-00011,B26-00011,둘 중 나에게 더 큰 스트레스를 주는 상황은?,나 때문에 민폐,남 때문에 피해,Which situation stresses me out more?,Inconveniencing others,Being inconvenienced
+*-*-*-*-*,*-*-*-00012,B26-00012,나의 삶을 이끌어가는 주된 원동력은?,평온한 일상,짜릿한 도전,What's my main driving force in life?,Peaceful routine,Thrilling challenge
+*-*-*-*-*,*-*-*-00013,B26-00013,솔로인 내가 휴가를 가장 완벽하게 보내는 방법은?,방구석 넷플릭스,친구들과 파티,"As a single person, how do I spend the perfect vacation?",Netflix binge,Party with friends
+*-*-*-*-*,*-*-*-00014,B26-00014,"갑자기 큰돈이 생겼을 때, 가장 먼저 하고 싶은 일은?",명품관 싹쓸이,해외여행 티켓팅,"If I suddenly got a lot of money, what's the first thing I'd do?",Luxury shopping spree,Book a trip
+*-*-*-*-*,*-*-*-00015,B26-00015,"스트레스가 쌓였을 때, 나만의 확실한 해소법은?",혼자만의 시간,친구들과 수다,What's my go-to stress reliever?,Solo time,Chat with friends
+*-*-*-*-*,*-*-*-00016,B26-00016,SNS에서 나를 불편하게 만드는 게시물을 봤을 때는?,조용히 차단,댓글로 참교육,See something annoying on social media?,Silent block,Comment takedown
+*-*-*-*-*,*-*-*-00017,B26-00017,대화 중 숨 막히는 어색한 침묵이 흐를 때 나는?,아무 말 대잔치,누가 말할 때까지 존버,That awkward silence in a convo?,Word vomit,Wait it out
+*-*-*-*-*,*-*-*-00018,B26-00018,공공장소에서 정말 참기 힘든 소음 빌런 유형은?,귀 씹어먹는 쩝쩝충,네버엔딩 알람충,Most annoying noise-maker in public?,Loud chewing,Endless alarms
+*-*-*-*-*,*-*-*-00019,B26-00019,기대했던 해외여행에서 마주한 최악의 상황은?,매번 한국이랑 비교,현지인도 거르는 맛집,Worst travel experience?,Constant comparing,Bad local food
+*-*-*-*-*,*-*-*-00020,B26-00020,"갈등 상황이 발생했을 때, 내가 선호하는 해결 방식은?",돌직구 해결,빙빙 돌려 말하기,Preferred conflict resolution?,Direct approach,Beat around bush
+*-*-*-*-*,*-*-*-00021,B26-00021,사람들 많은 곳에서 저지른 더 끔찍한 실수는?,천둥번개 방귀,공룡급 트림,More mortifying public mistake?,Loud fart,Dino-burp
+*-*-*-*-*,*-*-*-00022,B26-00022,"스트레스가 폭발하기 직전, 나에게 더 필요한 것은?",익명판에 하소연,집에서 허공에 욕설,"About to explode from stress, need?",Vent anonymously,Yell at home
+*-*-*-*-*,*-*-*-00023,B26-00023,내가 꿈꾸는 더 완벽한 인생의 모습은?,하고 싶은 일 하기,하기 싫은 일 안 하기,Dream life?,Do what I want,Avoid dislikes
+*-*-*-*-*,*-*-*-00024,B26-00024,내가 삶의 만족감을 얻는 더 확실한 방법은?,신상 풀세트 장착,폰 끄고 여행 가기,Surest path to life satisfaction?,New gear,Digital detox
+*-*-*-*-*,*-*-*-00025,B26-00025,중요한 선택을 앞두고 나를 더 방해하는 것은?,훈수 두는 지인들,먹통 된 와이파이,Hindrance when making big choices?,Advice from friends,Dead wifi
+*-*-*-*-*,*-*-*-00026,B26-00026,생각만 해도 이불킥! 더 지워버리고 싶은 흑역사는?,전 애인 염탐하다 하트,짝사랑 고백 후 차임,Cringiest memory to erase?,Ex-stalking fail,Rejected confession
+*-*-*-*-*,*-*-*-00027,B26-00027,지인들과 관계를 유지하는 나의 주된 방식은?,눈팅과 좋아요,만나서 입 털기,Main way to keep up with friends?,Lurking and likes,Hang and chat
+*-*-*-*-*,*-*-*-00028,B26-00028,엘리베이터에서 애매하게 아는 이웃을 만났을 때는?,폰만 보며 외면,어색해도 스몰토크,Awkward elevator with a neighbor?,Phone avoidance,Awkward small talk
+*-*-*-*-*,*-*-*-00029,B26-00029,"우연히 내 뒷담화를 들었을 때, 누가 더 나은?",절친(이유나 묻자),모르는 사람(무시),"Hear someone talking smack, who's better?",Close friend (Ask why),Stranger (Ignore)
+*-*-*-*-*,*-*-*-00030,B26-00030,"로또 1등에 당첨된 순간, 가장 먼저 드는 생각은?",드디어 내 세상!,혹시 몰카 아냐?,"Win the lottery, first thought?",My time!,Hidden camera?
+*-*-*-*-*,*-*-*-00031,B26-00031,다음 생에 다시 태어난다면 어떤 삶을 살고 싶은?,돈 없는 인기쟁이,돈 많은 왕따,"If you could be reborn, what kind of life would you want?","Popular, broke","Rich, loner"
+*-*-*-*-*,*-*-*-00032,B26-00032,"친구가 조언을 구할 때, 내가 피드백하는 스타일은?",무한 공감과 위로,팩트 체크와 조언,"When a friend asks for advice, what's your feedback style?",Endless empathy,Fact check & advice
+*-*-*-*-*,*-*-*-00033,B26-00033,신이 나에게 한 가지 능력을 준다면 뭘 고를까?,아인슈타인 두뇌,연예인급 매력,"If a god gave you one power, what would you choose?",Einstein brain,Celebrity charisma
+*-*-*-*-*,*-*-*-00034,B26-00034,직장을 선택할 때 나에게 더 중요한 1순위는?,연봉 킹,워라밸 킹,"When choosing a job, what's your top priority?",Salary king,Work-life balance king
+*-*-*-*-*,*-*-*-00035,B26-00035,고민에 빠진 친구를 돕는 나만의 방식은?,머리 맞대고 분석,바람 쐬러 나가기,What's your way of helping a friend in trouble?,Analyze together,Go for fresh air
+*-*-*-*-*,*-*-*-00036,B26-00036,함께 여행 갈 때 더 잘 맞는 메이트의 성향은?,즉흥적인 P,계획적인 J,"When traveling, what kind of travel mate suits you best?",Spontaneous P,Planner J
+*-*-*-*-*,*-*-*-00037,B26-00037,예측불허의 돌발 상황이 닥쳤을 때 나의 대처법은?,일단 멈춤,일단 고(Go),"When an unpredictable situation hits, how do you react?",Pause first,Just go
+*-*-*-*-*,*-*-*-00038,B26-00038,아침에 눈 떴을 때 저절로 이루어졌으면 하는 마법은?,풀세팅 되는 얼굴,저절로 되는 청소,What magic do you wish would happen when you wake up?,Perfect look,Automatic cleaning
+*-*-*-*-*,*-*-*-00039,B26-00039,평생 동안 딱 한 가지 능력만 가질 수 있다면?,살 안 찌는 체질,지치지 않는 체력,If you could only have one ability for life?,Never gain weight,Endless energy
+*-*-*-*-*,*-*-*-00040,B26-00040,휴식이 필요할 때 내가 더 선호하는 힐링 장소는?,뜨끈한 찜질방,땀 흘리는 등산,"When you need a break, what's your preferred healing place?",Hot sauna,Sweaty hike
+*-*-*-*-*,*-*-*-00041,B26-00041,아끼던 물건을 잃어버렸을 때 나의 행동은?,찾을 때까지 뒤짐,쿨하게 새로 삼,"If you lose a treasured item, what do you do?",Search until found,"Cool, just buy new"
+*-*-*-*-*,*-*-*-00042,B26-00042,집에 꼭 전시해야 한다면 어떤 선물이 더 나은?,내 취향 아닌 명품,친구가 만든 괴작,"If you had to display a gift at home, which is better?",Fancy thing I hate,Friend's weird art
+*-*-*-*-*,*-*-*-00043,B26-00043,내가 무언가에 집중할 때 더 선호하는 환경은?,절간 같은 고요함,적당한 카페 소음,"When focusing, what environment do you prefer?",Dead silence,Cafe noise
+*-*-*-*-*,*-*-*-00044,B26-00044,먼 훗날 사람들에게 어떤 사람으로 기억되고 싶은?,유능한 천재,유쾌한 사람,How do you want to be remembered in the distant future?,Talented genius,Fun person
+*-*-*-*-*,*-*-*-00045,B26-00045,나의 생활 패턴과 더 잘 맞는 바이오리듬은?,올빼미형,아침형,Which biorhythm fits your lifestyle better?,Night owl,Early bird
+*-*-*-*-*,*-*-*-00046,B26-00046,한여름에 가질 수 있는 유용한 초능력 하나는?,땀이 향수로 변함,모기 결계 생성,Best summer superpower?,Sweat turns to perfume,Mosquito shield
+*-*-*-*-*,*-*-*-00047,B26-00047,내가 꿈꾸는 부자의 모습에 더 가까운 것은?,유명 인사 셀럽,숨겨진 찐부자,Closer to your dream of being rich?,Famous celeb,Secretly rich
+*-*-*-*-*,*-*-*-00048,B26-00048,내가 유명해진다면 어떤 방식으로 살고 싶은?,세상을 바꾸는 영웅,소통하는 인플루언서,"If you became famous, how would you live?",World-changing hero,Relatable influencer
+*-*-*-*-*,*-*-*-00049,B26-00049,맛집을 찾아갔는데 더 실망스러운 상황은?,사진기만,노맛탱,More disappointing restaurant experience?,Just photogenic,Tastes awful
+*-*-*-*-*,*-*-*-00050,B26-00050,학창 시절로 돌아간다면 어떤 능력을 갖고 싶은?,전교 1등 두뇌,전교 회장 인기,Back to school with what ability?,Top of class brain,Class president popularity
+*-*-*-*-*,*-*-*-00051,B26-00051,친구가 새로운 도전을 제안할 때 나의 반응은?,군말 없이 따라감,도전 리스트 짬,"Friend suggests a new challenge, your reaction?",Just go along,Brainstorm challenge list
+*-*-*-*-*,*-*-*-00052,B26-00052,나를 더 열심히 움직이게 만드는 동기부여 방식은?,매운맛 피드백,무한 칭찬 감옥,What motivates you more?,Harsh feedback,Endless praise
+*-*-*-*-*,*-*-*-00053,B26-00053,나를 더 크게 성장시키는 환경은?,벼랑 끝 생존기,칭찬 가득 꽃길,What environment helps you grow more?,Edge of survival,Path of praise
+*-*-*-*-*,*-*-*-00054,B26-00054,3년만 죽도록 고생하면 부자가 된다! 도전?,콜! 버틴다,안 해! 현재가 중요,Work like crazy for 3 years to get rich? Deal?,Deal! Endure,No! Value the present
+*-*-*-*-*,*-*-*-00055,B26-00055,SNS에 내 외모를 칭찬하는 댓글이 달렸을 때는?,1초 만에 하트 꾹,스토리로 은근 자랑,Someone compliments your looks on social media?,Like immediately,Humble brag on story
+*-*-*-*-*,*-*-*-00056,B26-00056,갑자기 100억이 생겼는데 더 최악인 상황은?,세금으로 다 뜯김,돈 쓸 친구가 없음,"Suddenly have $10 million, worse situation?",All taken by taxes,No friends to spend it with
+*-*-*-*-*,*-*-*-00057,B26-00057,전혀 생각지도 못했던 사람에게 고백을 받는다면 기분은?,아니면 칼거절,혹시 모르니 킵,"Unexpected confession of love from someone, how would you feel?",Hard no,"Maybe, keep options open"
+*-*-*-*-*,*-*-*-00058,B26-00058,스트레스를 풀 때 나에게 더 효과적인 방법은?,방구석 명상,노래방 떼창,Better stress relief?,Meditation at home,Karaoke blast
+*-*-*-*-*,*-*-*-00059,B26-00059,지난 1년의 성과를 측정하는 나만의 기준은?,팔로워 숫자,통장 잔고 숫자,How do you measure your past year's success?,Follower count,Bank balance
+*-*-*-*-*,*-*-*-00060,B26-00060,둘 중 하나의 인생을 선택해야 한다면 무엇을 택할까?,꿈 포기한 벼락부자,가난한 예술가,"Choosing between two lives, which would you choose?","Rich, dreamless",Poor artist
+*-*-*-*-*,*-*-*-00061,B26-00061,스트레스가 폭발하기 직전! 나만의 해소법은?,폭식으로 조지기,운동으로 조지기,About to explode from stress! What's your way to relieve it?,Ravage with food,Ravage with exercise
+*-*-*-*-*,*-*-*-00062,B26-00062,"함께 일할 사업 파트너, 나라면 누구?",일잘러 개차반,일못러 천사,Who would I pick as a business partner?,Talented jerk,Incompetent angel
+*-*-*-*-*,*-*-*-00063,B26-00063,평생 함께하고 싶은 친구의 스타일은?,맨날 싸우는 개그 콤비,진지한 철학자 콤비,What kind of friend for life?,"Funny, always fighting","Serious, philosophical"
+*-*-*-*-*,*-*-*-00064,B26-00064,직업 만족도를 결정하는 더 중요한 기준은?,노잼 고소득,꿀잼 저소득,What's more important for job satisfaction?,"Boring, high pay","Fun, low pay"
+*-*-*-*-*,*-*-*-00065,B26-00065,"나른한 휴일 오후, 나에게 필요한 힐링은?",와인 한잔의 여유,수다 한판의 재미,"Lazy Sunday afternoon, what kind of chill?",Glass of wine,Fun chat
+*-*-*-*-*,*-*-*-00066,B26-00066,내가 생각하는 진정한 행복의 기준은?,자기 만족,타인 인정,What's your measure of true happiness?,Self-satisfaction,External validation
+*-*-*-*-*,*-*-*-00067,B26-00067,도저히 답이 없는 문제를 만났을 때 해결법은?,AI랑 밤샘 토론,일단 자고 생각,"Faced with an impossible problem, what's the solution?",All-night AI debate,Sleep on it
+*-*-*-*-*,*-*-*-00068,B26-00068,짝사랑 고백 성공을 위한 나만의 전략은?,묵묵히 기다리기,변신해서 어필하기,"Confessing a crush, what's your strategy?",Patiently wait,Total makeover
+*-*-*-*-*,*-*-*-00069,B26-00069,나와 MBTI가 정반대인 사람에게 끌리는 이유는?,개그 코드 맞음,완전 달라서 궁금함,Attracted to someone with the opposite MBTI because?,Same humor,Intriguing differences
+*-*-*-*-*,*-*-*-00070,B26-00070,지금 당장 내가 사귀고 싶은 연애 상대는?,심장 터지는 외모,마음 편안한 성격,Who do you want to date right now?,Stunning looks,Comforting personality
+*-*-*-*-*,*-*-*-00071,B26-00071,무인도에 딱 한 권의 책만 가져갈 수 있다면 무엇을?,백과사전,해리포터,"Stuck on a desert island, one book only, which one?",Encyclopedia,Harry Potter
+*-*-*-*-*,*-*-*-00072,B26-00072,다이어트 중 배고픔을 참는 나만의 꿀팁은?,먹방 보며 대리만족,얼음 씹으며 참기,"Dieting, how do you handle hunger?",Mukbang fix,Chew ice
+*-*-*-*-*,*-*-*-00073,B26-00073,썸 탈 때 나를 더 심쿵하게 만드는 포인트는?,취향 통하는 대화,우연한 스킨십,What's a heart-fluttering moment when you're flirting?,Shared interests,Accidental touch
+*-*-*-*-*,*-*-*-00074,B26-00074,호감 가는 사람에게 나를 어필하는 방법은?,반전 허당미,편안한 익숙함,How to impress someone you like?,Unexpected clumsiness,Familiar comfort
+*-*-*-*-*,*-*-*-00075,B26-00075,지친 날 친구가 부탁을 해올 때 나의 선택은?,투덜대며 들어줌,단호하게 거절,"Tired, and a friend asks for a favor. Your move?",Grumbling acceptance,Firm refusal
+*-*-*-*-*,*-*-*-00076,B26-00076,인생의 번아웃이 왔을 때 나를 위한 처방은?,잠수 타기,새로운 취미 찾기,Life's got you burnt out. What's your Rx?,Disappear,New hobby
+*-*-*-*-*,*-*-*-00077,B26-00077,친구가 말도 안 되는 황당한 고민을 털어놓을 때는?,욕하면서 상담,더 황당하게 대꾸,"A friend vents about some ridiculous problem, what would you do?",Roast and advise,Reply even crazier
+*-*-*-*-*,*-*-*-00078,B26-00078,"둘 중 하나의 돈 복을 선택할 수 있다면, 나라면?",지금 100억,30년 뒤 200억,"Choose one pot of gold, which would I pick?",$10M now,$20M in 30 yrs
+*-*-*-*-*,*-*-*-00079,B26-00079,"새벽 2시, 참을 수 없는 야식의 유혹 앞에서 나는?",내일 후회해도 먹자,배고파도 참자,"2 AM. Late-night cravings hitting hard, what would I do?","Eat, regret later","Resist, stay hungry"
+*-*-*-*-*,*-*-*-00080,B26-00080,"잠이 오지 않는 밤, 잠들기 위해 내가 하는 일은?",폰 보며 밤새기,눈 감고 양 세기,Can't sleep. What's your go-to?,Phone all night,Count sheep
+*-*-*-*-*,*-*-*-00081,B26-00081,새로운 도전을 시작할 때 나의 스타일은?,완벽한 계획 수립,일단 저지르고 수습,"Starting a new challenge, your style?",Perfect plan,Just dive in
+*-*-*-*-*,*-*-*-00082,B26-00082,모르는 사람들 모임에 갔을 때 나의 포지션은?,MC 빙의해서 주도,구석에서 관전,"At a gathering of strangers, you are?",The MC,Wallflower
+*-*-*-*-*,*-*-*-00083,B26-00083,내가 생각하는 돈에 대한 올바른 철학은?,써야 돈이다,모아야 돈이다,Your philosophy about money?,Spend it,Save it
+*-*-*-*-*,*-*-*-00084,B26-00084,절대 양보할 수 없는 탕수육 먹는 방법은?,부먹파,찍먹파,Tangsooyuk (sweet & sour pork) – how MUST you eat it?,Sauce poured on,Sauce on the side
+*-*-*-*-*,*-*-*-00085,B26-00085,친구 생일 선물로 더 주고 싶은 것은?,실용성 갑 아이템,예쁜 쓰레기,"For a friend's birthday, better to give?",Super useful,Cute & useless
+*-*-*-*-*,*-*-*-00086,B26-00086,어릴 적 놀이터에서 내가 더 좋아했던 것은?,그네 독점왕,시소 독점왕,"At the playground as a kid, you preferred?",Swing hog,Seesaw hog
+*-*-*-*-*,*-*-*-00087,B26-00087,놀이터에서 겪었던 더 서러운 최악의 상황은?,영원한 술래,투명인간,Worse playground experience?,Always 'it',Being ignored
+*-*-*-*-*,*-*-*-00088,B26-00088,내가 꿈꾸는 가장 이상적인 휴가 스타일은?,핫플 투어,무인도 힐링,Dream vacation style?,Trendy spots,Desert island
+*-*-*-*-*,*-*-*-00089,B26-00089,내가 따르고 싶은 리더의 유형은?,아이디어 뱅크,인맥왕,What kind of leader do you want to follow?,Idea machine,Networking pro
+*-*-*-*-*,*-*-*-00090,B26-00090,주말에도 일 생각이 날 때 나의 대처는?,성공 위해 ON,휴식 위해 OFF,Thinking about work on the weekend. You?,Grind for success,Rest is priority
+*-*-*-*-*,*-*-*-00091,B26-00091,상대방을 위해 더 낫다고 생각하는 조언 방식은?,아픈 팩트폭력,달콤한 선의의 거짓말,Better way to advise someone?,Harsh truth,Sweet little lie
+*-*-*-*-*,*-*-*-00092,B26-00092,소개팅에서 차라리 더 견딜만한 최악은?,숨 막히는 정적,귀 따가운 TMI,Worst first date experience?,Awkward silence,Annoying TMI
+*-*-*-*-*,*-*-*-00093,B26-00093,집에서 나를 더 킹받게 만드는 상황은?,물건이 안 보임,치웠는데 또 어지럽힘,What annoys you more at home?,Can't find stuff,Mess returns after cleaning
+*-*-*-*-*,*-*-*-00094,B26-00094,더 눈물 나는 생계형 짠내 상황은?,새벽 알바 후 수업,간장밥 레시피 연구,"More pathetic, struggling life?","Morning job, then class",Soy sauce rice recipes
+*-*-*-*-*,*-*-*-00095,B26-00095,1년 동안 무엇이든 할 수 있는 자유이용권이 있다면 뭘 할까?,세계일주,사랑하는 사람과 살기,"Free pass for anything for a year, what would you do?",World trip,Live with loved one
+*-*-*-*-*,*-*-*-00096,B26-00096,"중요한 결정을 내릴 때, 누구의 말을 듣는 편?",인생 선배 조언,내 직관,Whose advice do you usually take on big decisions?,Experienced mentor,My gut
+*-*-*-*-*,*-*-*-00097,B26-00097,직장 생활에서 나의 성장을 돕는 핵심 포인트는?,처세술,실무 능력,Key to growth at work?,Networking,Skills
+*-*-*-*-*,*-*-*-00098,B26-00098,딱 하루만 다른 사람으로 살 수 있다면 누구로?,핵인싸 인플루언서,천재 개발자,"Live as someone else for a day, who would you be?",Popular influencer,Genius coder
+*-*-*-*-*,*-*-*-00099,B26-00099,친구가 곤경에 처했을 때 내가 돕는 방식은?,우르르 몰려가기,먼저 해결책 찾기,How do you help a friend in trouble?,Group support,Find solutions first
+*-*-*-*-*,*-*-*-00100,B26-00100,파티에서 인맥을 넓히는 나의 전략은?,여기저기 기웃대기,한 놈만 팬다,Party networking strategy?,Flit around,Focus on one person
+*-*-*-*-*,*-*-*-00101,B26-00101,내가 꿈꾸는 더 완벽한 연애의 형태는?,나를 좋아하는 사람,내가 좋아하는 사람,Perfect relationship?,Someone into me,Someone I'm into
+*-*-*-*-*,*-*-*-00102,B26-00102,인생 살면서 더 빨리 깨달았으면 좋았을 것은?,쓸데없는 자존심,똥차 구별법,Wish you realized sooner in life?,Useless pride,Spotting bad partners
+*-*-*-*-*,*-*-*-00103,B26-00103,친구의 치명적인 단점을 대하는 나의 태도는?,스스로 알 때까지 침묵,돌직구로 말해주기,Friend's fatal flaw - your reaction?,Silence until they notice,Directly point it out
+*-*-*-*-*,*-*-*-00104,B26-00104,둘 중 그나마 더 나은 친구 유형은?,진지충 바보,웃긴 비관론자,Better friend type?,Serious fool,Funny pessimist
+*-*-*-*-*,*-*-*-00105,B26-00105,약속 잡을 때 나를 더 빡치게 만드는 유형은?,늦고 사과 안 함,일찍 와서 닥달함,Meeting up - more annoying?,"Late, no apology","Early, rushing me"
+*-*-*-*-*,*-*-*-00106,B26-00106,돈을 펑펑 써야 한다면 어디에 쓰고 싶을까?,지인 선물 쏘기,생필품 쟁여두기,"If you had to splurge, what would you want to spend it on?",Gifts for friends,Stock up on essentials
+*-*-*-*-*,*-*-*-00107,B26-00107,이상형을 만났는데 가치관이 정반대라면 어떡할까?,노력해서 맞춘다,헤어진다,"You meet your ideal type, but your values clash, what would you do?",Make it work,Move on
+*-*-*-*-*,*-*-*-00108,B26-00108,절대 만날 수 없는 최악의 연애 조건은?,존잘/존예 노잼,성격 천사 패션 테러,What's the worst deal-breaker in a relationship?,Hot but boring,Sweet but fashion disaster
+*-*-*-*-*,*-*-*-00109,B26-00109,"소개팅 상대와 식성이 완전 정반대라면, 나는?",칼같이 거절,일단 만나봄,"Your date's food preferences are totally opposite to yours, what would you do?",Hard pass,Give it a shot
+*-*-*-*-*,*-*-*-00110,B26-00110,평생 하나의 직업으로 살아야 한다면 뭘 해야 할까?,쉴 틈 없는 노마드,머리 쥐나는 창작자,"If you had to have one job for life, what would it be?",Non-stop nomad,Brain-melting creative
+*-*-*-*-*,*-*-*-00111,B26-00111,"친구가 끈질기게 소개팅 시켜달라고 조를 때, 나의 대처법은?",같이 찾아보자,알아서 해라,"When a friend keeps bugging me for a blind date, what's my approach?",Let's find someone together,Figure it out yourself
+*-*-*-*-*,*-*-*-00112,B26-00112,내가 친구에게 팩폭을 날렸을 때 친구의 반응은?,웃어넘김(속으론 맴찢),발끈함(니가 뭔데),"My friend's reaction when I hit them with brutal honesty, is?",Laughs it off (secretly hurt),Gets defensive (who are you?)
+*-*-*-*-*,*-*-*-00113,B26-00113,"내 생일파티에 전 애인이 나타났을 때, 나라면?",아무렇지 않은 척,세상 쿨한 척 인사,"If my ex showed up at my birthday party, what would I do?",Act normal,Play it cool
+*-*-*-*-*,*-*-*-00114,B26-00114,지금 나에게 가장 필요한 덕목은 무엇일까?,따뜻한 공감 능력,차가운 현실 감각,What virtue do I need the most right now?,Warm empathy,"Cold, hard realism"
+*-*-*-*-*,*-*-*-00115,B26-00115,직장 생활 중 겪은 더 소름 돋는 실화는?,자고 일어났더니 회사,다이어트 중 폭식,The creepiest real-life workplace story?,Woke up at the office,Binge during diet
+*-*-*-*-*,*-*-*-00116,B26-00116,"이성을 대할 때, 정말 열 번 찍어 안 넘어가는 나무는 없는 걸까?",끈기 인정! 감동,집착 아냐? 공포,"When pursuing someone, is it really true that there's no tree that won't fall after ten hits?",Admire the effort! Touching,Obsessive? Scary
+*-*-*-*-*,*-*-*-00117,B26-00117,직장 생활에서 느끼는 행복의 원천은?,좋은 동료,확실한 보상,The source of happiness at work?,Good colleagues,Solid compensation
+*-*-*-*-*,*-*-*-00118,B26-00118,"친구가 떨어진 음식을 주워 먹는 걸 봤을 때, 나는?",비위 좋네~ 인정,원래 저랬지~ 무시,"If I saw a friend eat food off the floor, I would...?",Impressive stomach,Just ignore
+*-*-*-*-*,*-*-*-00119,B26-00119,"성격 안 맞는 친구와 관계를 유지해야 할 때, 내 선택은?",솔직하게 담판,적당히 맞춤,"When I have to maintain a relationship with a friend I don't vibe with, what's my choice?",Honest talk,Just go with it
+*-*-*-*-*,*-*-*-00120,B26-00120,내가 진정으로 원하는 인맥의 형태는?,마당발 인싸,소수정예 찐친,What kind of network do you really want?,Huge network,Close-knit group
+*-*-*-*-*,*-*-*-00121,B26-00121,데이트가 갑자기 취소되었을 때 나의 기분은?,오예! 자유시간,아... 뭐 하지?,"Date canceled last minute, my reaction?",Freedom!,Now what?
+*-*-*-*-*,*-*-*-00122,B26-00122,돈 빌려간 친구가 어떤 행동을 하면 제일 화날까?,단체방 활발,SNS 감성팔이,What action from a friend who owes me money would make me the angriest?,Active in group chat,Sad posts on social
+*-*-*-*-*,*-*-*-00123,B26-00123,썸남/썸녀 앞에서 더 민망한 상황은?,카드 결제 오류,이빨에 낀 김,More embarrassing situation in front of crush?,Card declined,Spinach in teeth
+*-*-*-*-*,*-*-*-00124,B26-00124,친구가 고민 상담을 요청할 때 나의 자세는?,내 일처럼 참견,들어만 주기,"Friend asks for advice, my approach?",Full intervention,Just listen
+*-*-*-*-*,*-*-*-00125,B26-00125,"10년 뒤에 나의 흑역사를 발견한다면, 내 반응은?",나만 간직함,술자리 안주 감,"If I discovered my past self's embarrassing moment in 10 years, what would my reaction be?",Keep it secret,Party story
+*-*-*-*-*,*-*-*-00126,B26-00126,평생 함께할 친구의 조건으로 더 중요한 것은?,동업 가능 능력자,그냥 편한 백수,More important quality in a lifelong friend?,Business partner,Easygoing bum
+*-*-*-*-*,*-*-*-00127,B26-00127,"이상형과 매일 싸운다면, 그래도 만날까?",맞춰간다,갈아탄다,"If I fought with my ideal type every day, would I still date them?",Make it work,Next!
+*-*-*-*-*,*-*-*-00128,B26-00128,"숙취로 고생하는 다음 날 아침, 나의 모습은?",해장국 흡입,어제 실수 확인,"Next morning, dealing with a hangover, I'm...",Soup time,Damage control
+*-*-*-*-*,*-*-*-00129,B26-00129,나의 50대는 어떤 모습이면 좋을까?,안정적 루틴,새로운 도전,What kind of person would I like to be in my 50s?,Stable routine,New challenges
+*-*-*-*-*,*-*-*-00130,B26-00130,명절 잔소리를 피하기 위한 나만의 작전은?,조용히 방콕,친구랑 여행,My tactic to avoid holiday nagging?,Stay home,Trip with friends
+*-*-*-*-*,*-*-*-00131,B26-00131,"인생에서 딱 하나만 포기해야 한다면, 뭘 포기할까?",유머(핵노잼),욕망(무기력),"If I had to give up just one thing in life, what would it be?",Humor (so boring),Desire (so lazy)
+*-*-*-*-*,*-*-*-00132,B26-00132,"연애와 커리어 중 하나만 선택해야 한다면, 뭘 선택하는?",커리어 우선,연애 올인,"If I had to choose between romance and career, which one would I choose?",Career first,All in on love
+*-*-*-*-*,*-*-*-00133,B26-00133,"친구랑 싸운 후 관계 정리, 어떻게 하는?",조용히 손절,대판 싸우고 화해,"After a fight with a friend, how do I handle the relationship?",Ghosting,"Big fight, then makeup"
+*-*-*-*-*,*-*-*-00134,B26-00134,출근길에 겪을 수 있는 최악의 상황은?,커피 없이 회의,폭탄 업무 당첨,Worst possible thing to happen on my commute?,"Meeting, no coffee",Assigned tough task
+*-*-*-*-*,*-*-*-00135,B26-00135,직장에서 만난 최악의 빌런 유형은?,공 가로채는 도둑,일 떠넘기는 상사,Worst type of villain at work?,Credit thief,Work dumper
+*-*-*-*-*,*-*-*-00136,B26-00136,연애와 일을 대하는 나의 태도는?,냉정한 커리어맨,불타는 사랑꾼,Approach to love vs work?,Cold professional,Passionate lover
+*-*-*-*-*,*-*-*-00137,B26-00137,직장 생활 속 소소하고 확실한 행복은?,점심 메뉴 결정권,매일 맛있는 구내식당,"Small, sure source of happiness at work?",Lunch menu control,Great cafeteria food
+*-*-*-*-*,*-*-*-00138,B26-00138,직장 생활이 나에게 주는 가장 큰 보상은?,칼퇴 후 자유,입금된 월급,Biggest reward from working?,Freedom after work,Paycheck
+*-*-*-*-*,*-*-*-00139,B26-00139,"연봉 3배를 주는 대신 하나를 포기해야 한다면, 뭘 포기할 수 있을까?",워라밸 반납,인간관계 반납,"If I had to give up one thing for a triple salary, what could I give up?",No work-life balance,No relationships
+*-*-*-*-*,*-*-*-00140,B26-00140,"중요한 발표 전, 마인드컨트롤 방법은?",인생은 코미디다,나는 스티브 잡스다,Mind control before a big presentation?,Life's a comedy,I'm Steve Jobs
+*-*-*-*-*,*-*-*-00141,B26-00141,가족끼리 주말 나들이 갈 때 선호하는 방식은?,분 단위 계획표,무계획 즉흥 여행,Weekend family trip style?,By-the-minute plan,"Spontaneous, no plan"
+*-*-*-*-*,*-*-*-00142,B26-00142,부모님 패션 지적할 때 더 효과적인 말은?,연예인 같아요!,사진 잘 나와요!,More effective when commenting on parents' fashion?,You look like a celeb!,Great for photos!
+*-*-*-*-*,*-*-*-00143,B26-00143,이상형이 MBTI를 물어볼 때 나의 대답은?,중요한 건 궁합!,천생연분 우기기,"Ideal type asks for your MBTI, your reply?",Compatibility matters!,Fated connection!
+*-*-*-*-*,*-*-*-00144,B26-00144,가족끼리 서운한 일이 생겼을 때 대처법은?,바로 푼다,참는다,How to handle family disagreements?,Resolve immediately,Hold it in
+*-*-*-*-*,*-*-*-00145,B26-00145,나의 성장을 돕는 가족의 태도는?,매운맛 조언,무한 칭찬,Family's attitude that helps your growth?,Spicy advice,Endless praise
+*-*-*-*-*,*-*-*-00146,B26-00146,행복한 가족을 위해 필요한 능력은?,보살급 인내심,개떡 찰떡 번역기,Necessary skill for a happy family?,Buddha-level patience,Awkward to perfect translator
+*-*-*-*-*,*-*-*-00147,B26-00147,가족에게 들었을 때 가장 기분 좋은 말은?,역시 네가 최고야,미안했어,Best thing to hear from family?,You're the best,I was wrong
+*-*-*-*-*,*-*-*-00148,B26-00148,친구가 무리한 부탁을 해올 때 나의 반응은?,단칼 거절,조건부 수락,Friend asks for a huge favor?,Hard no,Conditional yes
+*-*-*-*-*,*-*-*-00149,B26-00149,부모님을 설득해야 할 때 나의 전략은?,PPT 발표 모드,감성 호소 모드,Strategy when persuading parents?,PPT presentation,Emotional appeal
+*-*-*-*-*,*-*-*-00150,B26-00150,가족에게 가장 바라는 점은?,따뜻한 배려,무한한 신뢰,Biggest wish for your family?,Warm consideration,Unwavering trust
+*-*-*-*-*,*-*-*-00151,B26-00151,내가 선호하는 상담의 기술은?,뼈 때리는 팩폭,따뜻한 힐링,Counseling style: harsh truth or comfort?,Tough love,Warm hug
+*-*-*-*-*,*-*-*-00152,B26-00152,주말에 에너지를 충전하는 나만의 방식은?,집콕 휴식,외출 만남,Weekend recharge: how?,Homebody mode,Social butterfly
+*-*-*-*-*,*-*-*-00153,B26-00153,중요한 선택을 해야 할 때 나의 기준은?,고통 속 성장,안전한 유지,Big choices: what matters most?,Pain = growth,Safe & steady
+*-*-*-*-*,*-*-*-00154,B26-00154,만족스러운 인생을 위한 나의 좌우명은?,욜로(YOLO),존버(JohnBur),Life motto for happiness?,YOLO,HODL
+*-*-*-*-*,*-*-*-00155,B26-00155,솔로가 휴가를 즐기는 최고의 방법은?,집순이 모드,파티 피플 모드,Best solo vacation vibe?,Staying in,Party time
+*-*-*-*-*,*-*-*-00156,B26-00156,공공장소에서 만난 최악의 소음 빌런은?,쩝쩝 소리,알람 소리,Worst public noise offender?,Loud chewing,Alarm sounds
+*-*-*-*-*,*-*-*-00157,B26-00157,삶의 만족도를 결정하는 핵심 요소는?,자아실현,인간관계,Key to a fulfilling life?,Self-actualization,Relationships
+*-*-*-*-*,*-*-*-00158,B26-00158,인생의 기로에 섰을 때 나의 선택은?,가시밭길 도전,꽃길 유지,Life crossroads: which path?,Thorny challenge,Easy street
+*-*-*-*-*,*-*-*-00159,B26-00159,인맥을 관리하는 나만의 노하우는?,SNS 좋아요,오프라인 만남,Networking: how to connect?,SNS likes,In-person meetups
+*-*-*-*-*,*-*-*-00160,B26-00160,뜻밖의 행운이 찾아왔을 때 나의 반응은?,오예 땡큐!,의심부터 함,Unexpected good luck: react how?,"Yes, please!",Skeptical first
+*-*-*-*-*,*-*-*-00161,B26-00161,다시 태어난다면 어떤 인생을 살고 싶은가?,가난한 사랑꾼,외로운 부자,"If reborn, what kind of life would you want?",Poor & in love,Rich & lonely
+*-*-*-*-*,*-*-*-00162,B26-00162,친구가 고민 상담을 해올 때 나는?,현실 팩폭,감성 위로,Friend's venting: what's your style?,Reality check,Emotional support
+*-*-*-*-*,*-*-*-00163,B26-00163,예측불허의 상황이 닥치면 나는?,준비 철저,일단 돌격,Unforeseen situation: your move?,Over-prepare,Dive right in
+*-*-*-*-*,*-*-*-00164,B26-00164,받았을 때 더 당황스러운 선물은?,내 취향 아님,버리기 힘든 쓰레기,Most awkward gift to receive?,Not my taste,Hard-to-discard junk
+*-*-*-*-*,*-*-*-00165,B26-00165,사람들에게 어떤 이미지로 남고 싶은가?,유능한 사람,재밌는 사람,What kind of image do you want to leave on people?,Competent,Fun
+*-*-*-*-*,*-*-*-00166,B26-00166,식당에서 겪은 최악의 경험은?,사진 사기,맛 사기,Worst restaurant experience ever?,Photo deception,Flavor letdown
+*-*-*-*-*,*-*-*-00167,B26-00167,새로운 체험을 할 때 나의 스타일은?,무작정 따라가기,처음 리스트 짜기,New experience style?,Go with the flow,Initial checklist
+*-*-*-*-*,*-*-*-00168,B26-00168,나를 성장시키는 더 큰 힘은?,실패의 쓴맛,성공의 단맛,What motivates you more?,Failure's sting,Success's sweetness
+*-*-*-*-*,*-*-*-00169,B26-00169,SNS 칭찬 댓글 달렸을 때 나의 리액션은?,즉시 하트,은근 즐기기,SNS compliment reaction?,Instant heart,Secret enjoyment
+*-*-*-*-*,*-*-*-00170,B26-00170,더 선호하는 고민 상담 스타일은?,팩폭 조언,공감 힐링,Counseling style preference?,Tough love,Empathetic comfort
+*-*-*-*-*,*-*-*-00171,B26-00171,지난 1년의 성과를 증명하는 것은?,SNS 핫플 정복,통장 잔고 정복,Proof of the past year's success?,Hot spot conquest,Bank balance win
+*-*-*-*-*,*-*-*-00172,B26-00172,행복을 위해 딱 하나만 골라야 한다면?,돈 많은 노잼,돈 적은 꿀잼,If you had to choose only one thing for happiness?,Rich & boring,Poor & fun
+*-*-*-*-*,*-*-*-00173,B26-00173,나에게 더 완벽한 휴식과 힐링 방식은?,와인 반신욕,수다 파티,Perfect rest & relaxation?,Wine bath,Chat party
+*-*-*-*-*,*-*-*-00174,B26-00174,답이 없는 난제에 부딪혔을 때 나는?,검색왕,잠만보,Faced with an impossible problem?,Search master,Sleep it off
+*-*-*-*-*,*-*-*-00175,B26-00175,정반대 성향인 사람과 끌리는 포인트는?,웃음 코드,호기심 자극,Attracted to opposites by?,Humor,Intrigue
+*-*-*-*-*,*-*-*-00176,B26-00176,잠들기 전 꼭 해야 하는 루틴은?,폰질,명상,Pre-sleep must-do?,Phone scrolling,Meditation
+*-*-*-*-*,*-*-*-00177,B26-00177,친구가 고민을 털어놓을 때 나의 역할은?,해결사 빙의,리액션 봇,Friend's venting - your role?,Problem solver,Reaction machine
+*-*-*-*-*,*-*-*-00178,B26-00178,돈에 대한 나의 솔직한 철학은?,쓰는 맛,모으는 맛,Your money philosophy?,Enjoy spending,Love saving
+*-*-*-*-*,*-*-*-00179,B26-00179,우리 가족의 행복을 위한 조건은?,다 같이 으쌰으쌰,각자 알아서 잘,Family happiness needs?,Teamwork,Independence
+*-*-*-*-*,*-*-*-00180,B26-00180,내가 지향하는 인간관계 스타일은?,소수 정예,넓은 인맥,Relationship style?,Close circle,Large network
+*-*-*-*-*,*-*-*-00181,B26-00181,"결정적인 순간, 내가 믿는 것은?",선배 조언,내 직감,Critical moment: what do I trust?,Mentor advice,Gut feeling
+*-*-*-*-*,*-*-*-00182,B26-00182,가족에게 들으면 섭섭하고 싫은 말은?,너 예민해,그럴 줄 알았다,Which family comment stings more?,You're too sensitive,I knew it
+*-*-*-*-*,*-*-*-00183,B26-00183,지우개로 싹 지우고 싶은 과거는?,자아 상실 시기,사랑 호구 시기,Erase from your past with an eraser?,Lost self era,Love doormat era
+*-*-*-*-*,*-*-*-00184,B26-00184,엄마가 세상에서 제일 든든해 보일 때는?,아플 때 죽 배달,대신 화내줄 때,When does Mom seem most reliable?,Sick day delivery,Fights your battles
+*-*-*-*-*,*-*-*-00185,B26-00185,딸이 있어서 정말 든든하다고 느낄 때는?,센스 있는 선물,조용한 위로,When does having a daughter feel great?,Thoughtful gifts,Quiet support
+*-*-*-*-*,*-*-*-00186,B26-00186,가족이라서 참 좋다고 느낄 때는?,편안한 침묵,빠른 해결사,When are you happiest to have family?,Comfy silence,Quick fixer
+*-*-*-*-*,*-*-*-00187,B26-00187,자녀가 유튜버를 하겠다고 한다면 어떨 것 같아?,투잡 권유,전폭 지원,"If your kid wants to be a YouTuber, then?",Suggest a side hustle,Full support
+*-*-*-*-*,*-*-*-00188,B26-00188,인생 마지막 날 자녀에게 듣고 싶은 말은?,감사합니다,존경합니다,What do you want to hear from your kid on your last day?,Thank you,I respect you
+*-*-*-*-*,*-*-*-00189,B26-00189,여동생이 있어서 참 든든할 때는?,침착한 일 처리,내 편 들어줌,When is it great having a younger sister?,Calm under pressure,Takes my side
+*-*-*-*-*,*-*-*-00190,B26-00190,같이 대화하기 더 힘든 수다 빌런은?,나도나도충,호구조사충,Who's harder to chat with?,"""Me too!"" person",Asks too many Qs
+*-*-*-*-*,*-*-*-00191,B26-00191,친구에게 해주는 조언 중 진짜는?,아픈 진실,착한 거짓,Which friend advice is the truest?,Painful truth,Kind lie
+*-*-*-*-*,*-*-*-00192,B26-00192,내가 생각하는 더 최악의 이별은?,마음 남음,관계만 남음,Worse breakup?,Lingering feelings,Just the connection
+*-*-*-*-*,*-*-*-00193,B26-00193,짝사랑 성공 확률을 1%라도 올리려면?,논문급 분석,타이밍 예술,To raise the chance of unrequited love by even 1%?,Detailed analysis,Perfect timing
+*-*-*-*-*,*-*-*-00194,B26-00194,싸운 뒤 화해의 정석이라 생각하는 것은?,격렬한 포옹,진심 담은 편지,Best way to make up after a fight?,Big hug,Sincere letter
+*-*-*-*-*,*-*-*-00195,B26-00195,싸우고 나서 날 더 민망하게 만드는 것은?,배달음식 도착,예약 알림 띵동,What makes me more embarrassed after a fight?,Food delivery arrives,Reservation reminder
+*-*-*-*-*,*-*-*-00196,B26-00196,친구의 단점을 대하는 나의 태도는?,침묵하며 기다림,솔직하게 지적,How do I react to a friend's flaws?,Silent patience,Honest feedback
+*-*-*-*-*,*-*-*-00197,B26-00197,평생 같이 갈 친구의 취향은?,진지한 바보,웃긴 불행러,My forever friend's vibe?,Earnest goofball,Funny disaster
+*-*-*-*-*,*-*-*-00198,B26-00198,친구들과 약속 잡을 때 나의 스타일은?,코리안 타임,미리 가서 대기,My style for meeting up with friends?,Korean time,Arrive early
+*-*-*-*-*,*-*-*-00199,B26-00199,"소개팅 상대, 더 참기 힘든 식성은?",극소식,푸드파이터,Worse dating app date eating habit?,Eats nothing,Competitive eater
+*-*-*-*-*,*-*-*-00200,B26-00200,"연애 중 집착, 차라리 뭐가 더 나을까?",상대가 집착,내가 집착,"In a relationship, which kind of clinginess is better?",The stalkee,The stalker
+*-*-*-*-*,*-*-*-00201,B26-00201,짝사랑 상대를 공략하는 나의 전략은?,은근히 맴돌기,대놓고 플러팅,My strategy to win over my crush?,Subtle orbiting,Aggressive flirting
+*-*-*-*-*,*-*-*-00202,B26-00202,우정을 지키기 위해 더 필요한 것은?,불편해도 솔직,선의의 거짓,More important to maintain a friendship?,Brutal honesty,White lies
+*-*-*-*-*,*-*-*-00203,B26-00203,데이트가 취소됐을 때 솔직한 심정은?,환호성,허무함,My honest reaction when a date is cancelled?,Relief,Disappointment
+*-*-*-*-*,*-*-*-00204,B26-00204,내가 더 선호하는 교우 관계는?,인싸 마당발,찐친 소수,Friendship style?,Popular networker,Small close circle
+*-*-*-*-*,*-*-*-00205,B26-00205,"돈 빌려간 친구, 더 꼴 보기 싫은 행동은?",단체방서 활발,SNS서 우울,"Friend who borrowed money, more annoying behavior?",Chatty in group chat,Depressing on socials
+*-*-*-*-*,*-*-*-00206,B26-00206,썸 탈 때 나를 더 피곤하게 하는 것은?,답장 타이밍 고민,읽씹 후 인스타 업로드,More exhausting when things are getting flirty?,Reply timing anxiety,"Read/ignored, then Insta update"
+*-*-*-*-*,*-*-*-00207,B26-00207,친구가 피드백을 원할 때 나는?,진지하게 참견,가볍게 위로,"When a friend wants feedback, I'm more likely to?",Serious advice,Light comfort
+*-*-*-*-*,*-*-*-00208,B26-00208,친구가 바람을 피운다면 나의 대처는?,투명한 솔직함,편안한 믿음,"If a friend is cheating, I'll be?",Transparently honest,Comfortingly faithful
+*-*-*-*-*,*-*-*-00209,B26-00209,새로운 사람을 만나는 즐거움은 어디에 있는?,깊은 대화,즐거운 경험,Where does the joy of meeting new people lie?,Deep talks,Fun experiences
+*-*-*-*-*,*-*-*-00210,B26-00210,주말 근무를 해야 한다면 어디서 하는?,카페 카공족,침대 일체형,"If you have to work on the weekend, where do you do it?",Cafe study session,Bed setup
+*-*-*-*-*,*-*-*-00211,B26-00211,함께 일하고 싶은 동료 스타일은?,농땡이꾼,투명인간 취급,Dream coworker style?,Slacker,Get ignored
+*-*-*-*-*,*-*-*-00212,B26-00212,AI 시대 리더에게 필요한 자질은?,기술 혁신,윤리 준수,Key leadership trait in the AI era?,Tech innovation,Ethical standards
+*-*-*-*-*,*-*-*-00213,B26-00213,회사에서 내가 되고 싶은 캐릭터는?,만능 인싸,조용한 실력자,Office persona?,Social butterfly,Quiet achiever
+*-*-*-*-*,*-*-*-00214,B26-00214,내가 직장을 다니는 가장 큰 이유는?,소속감,월급,Main reason for working?,Belonging,Paycheck
+*-*-*-*-*,*-*-*-00215,B26-00215,"퇴근 후 연락, 어디까지 괜찮은?",긴급 회의 링크,잡담 톡,"After-work contact, how much is acceptable?",Emergency meeting link,Casual chat
+*-*-*-*-*,*-*-*-00216,B26-00216,퇴근 후 오는 연락 중 최악은?,회의 소집,심심풀이 톡,Worst after-work contact?,Meeting invite,Bored chat
+*-*-*-*-*,*-*-*-00217,B26-00217,회식 자리 꼴불견 1위는?,아픈 척 연기,자기 자랑 만취,Top pet peeve at company dinners?,Faking sick,Drunk bragging
+*-*-*-*-*,*-*-*-00218,B26-00218,성격 안 맞는 동료와 지내는 법은?,사무적 관계,마인드 컨트롤,How to deal with clashing coworkers?,Professional only,Mind control
+*-*-*-*-*,*-*-*-00219,B26-00219,퇴근 후 완벽한 차단을 위해 나는?,폰 두고 오기,전원 끄기,Perfect after-work disconnect?,Leave phone behind,Power it off
+*-*-*-*-*,*-*-*-00220,B26-00220,직장에서 더 중요하게 생각하는 가치는?,압도적 성과,끈끈한 동료애,More important value at work?,Crushing results,Team bonding
+*-*-*-*-*,*-*-*-00221,B26-00221,친구가 위로가 필요할 때 나는?,객관적 분석,무지성 공감,"Friend needs comfort, I...",Offer analysis,Blind support
+*-*-*-*-*,*-*-*-00222,B26-00222,갑자기 1억이 생긴다면 어디에 쓸?,빚 청산 & 장비빨,재테크 & 창업,"Suddenly got $100K, what would you spend it on?",Debt & gear,Invest & start up
+*-*-*-*-*,*-*-*-00223,B26-00223,짝사랑을 끝내는 나만의 방법은?,지르고 후회,참고 친구,My way to end a crush?,Confess & regret,"Suffer, be friends"
+*-*-*-*-*,*-*-*-00224,B26-00224,아들이 있어서 든든할 때는?,내 편 들어줄 때,짐 들어줄 때,Glad I have a son when...,He takes my side,He carries stuff
+*-*-*-*-*,*-*-*-00225,B26-00225,누나가 있어서 든든할 때는?,사회생활 코치,용돈 투척,Glad I have an older sister when...,Career advice,Cash injection
+*-*-*-*-*,*-*-*-00226,B26-00226,남동생이 든든하게 느껴질 때는?,누가 괴롭힐 때 방어,부모님 일 해결,Feel most supported by your younger sibling when?,Defense from bullies,Handle parents' issues
+*-*-*-*-*,*-*-*-00227,B26-00227,지친 퇴근 후 나의 모습은?,기절,씻고 잠,Your vibe after a tiring day?,Instant knockout,Shower then sleep
+*-*-*-*-*,*-*-*-00228,B26-00228,"배달 음식 vs 외식, 나의 선택은?",지금 당장 배달,주말 맛집 탐방,Delivery or dining out?,Delivery now,Weekend restaurant
+*-*-*-*-*,*-*-*-00229,B26-00229,연인 사이 솔직함의 정도는?,선의의 거짓말,솔직한 상처,Honesty in a relationship: how much?,White lies,Brutal truth
+*-*-*-*-*,*-*-*-00230,B26-00230,"소개팅 상대, 더 참기 힘든 태도는?",폰 집중,멍 때리기,Worse first date habit?,Phone glued to hand,Zoning out
+*-*-*-*-*,*-*-*-00231,B26-00231,연애 상대를 볼 때 더 선호하는 점은?,사생활 존중,세심한 관심,More important in a partner?,Privacy,Attention to detail
+*-*-*-*-*,*-*-*-00232,B26-00232,내가 추구하는 연애 스타일은?,안정적,짜릿함,Relationship style?,Stable,Exciting
+*-*-*-*-*,*-*-*-00233,B26-00233,늦잠 자서 지각 위기! 나는?,쌩얼로 질주,택시 타고 화장,Running late because you overslept!?,Sprint bare-faced,Taxi makeup
+*-*-*-*-*,*-*-*-00234,B26-00234,애인에게 듣고 싶은 조언 스타일은?,팩폭,위로,Relationship advice style?,Tough love,Comfort
+*-*-*-*-*,*-*-*-00235,B26-00235,싸움이 났을 때 해결하는 방식은?,당장 끝장 토론,하루 냉전 생각,Conflict resolution style?,Immediate debate,Cool off period
+*-*-*-*-*,*-*-*-00236,B26-00236,연애을 위한 초능력 하나는?,독심술,개그 본능,One superpower for romance?,Mind reading,Comedy genius
+*-*-*-*-*,*-*-*-00237,B26-00237,애인에게 듣고 싶은 말은?,달콤한 칭찬,쓴소리 조언,What do you want to hear from a partner?,Sweet compliments,Harsh advice
+*-*-*-*-*,*-*-*-00238,B26-00238,이성에게 보이고 싶은 나의 이미지는?,귀염둥이,섹시 다이너마이트,Ideal image to project?,Cute,Sexy
+*-*-*-*-*,*-*-*-00239,B26-00239,싸우고 난 뒤 나를 더 힘들게 하는 건?,나만 화남,찜찜함,What bothers me more after a fight?,Only I'm upset,Lingering tension
+*-*-*-*-*,*-*-*-00240,B26-00240,연인 간 갈등의 주된 원인은?,집착과 간섭,무관심,Main cause of relationship conflict?,Clinginess,Lack of interest
+*-*-*-*-*,*-*-*-00241,B26-00241,연인과 함께하고 싶은 감성적인 순간은?,지친 날 침묵,비 오는 날 음악,Perfect romantic moment with your partner?,Quiet on a tired day,Music on a rainy day
+*-*-*-*-*,*-*-*-00242,B26-00242,힘든 한 주를 보낸 나를 위한 선물은?,드라마 정주행,폭풍 쇼핑,Gift for myself after a tough week?,Binge-watch a show,Shopping spree
+*-*-*-*-*,*-*-*-00243,B26-00243,내가 들었을 때 최악의 반응은?,너 예민해?,나도 힘들어,Worst response to hear?,Are you sensitive?,I'm struggling too
+*-*-*-*-*,*-*-*-00244,B26-00244,평화를 지키기 위한 나만의 전략은?,배고프면 대화 금지,무조건 니 말이 맞아,What's your personal strategy for keeping the peace?,No talk when hungry,You're always right
+*-*-*-*-*,*-*-*-00245,B26-00245,우리의 애정을 확인하는 척도는?,텔레파시 통함,대화로 위로,How do we know we're in love?,Telepathic connection,Comfort through talk
+*-*-*-*-*,*-*-*-00246,B26-00246,완벽한 스킨십 타이밍은?,자연스럽게,분위기 잡고,What's the perfect timing for a physical touch?,Naturally,Set the mood
+*-*-*-*-*,*-*-*-00247,B26-00247,지금 연인에게 가장 원하는 것은?,진한 스킨십,깊은 대화,What do you want most from your partner right now?,Intense physical touch,Deep conversation
+*-*-*-*-*,*-*-*-00248,B26-00248,나의 치명적인 매력 포인트는?,그윽한 눈빛,달콤한 속삭임,Your most killer charming point?,"Deep, soulful eyes",Sweet whispers
+*-*-*-*-*,*-*-*-00249,B26-00249,바람직한 부모의 자세는?,자식에게 배운다,돈이 최고다,What's a good parent like?,Learning from their kids,Money is everything
+*-*-*-*-*,*-*-*-00250,B26-00250,친오빠가 든든하게 느껴질 때는?,힘들 때 먼저 연락,무거운 일 해결,When do you feel like your older brother is reliable?,Contacts me when I'm down,Handles the heavy stuff
+*-*-*-*-*,*-*-*-00251,B26-00251,아빠가 세상에서 제일 든든할 때는?,내가 해결할게,믿는다 한마디,When does your dad feel most supportive?,I'll take care of it,Just 'I believe in you'
+*-*-*-*-*,*-*-*-00252,B26-00252,숙취에 시달릴 때 나의 모습은?,해장국 힐링,폰 뒤지며 이불킥,You with a hangover?,Hangover soup healing,Cringe-scrolling in bed
+*-*-B-Ar-L3,B-Ar-L3-00253,B26-00253,나에게 있어 더 생리현상 대참사인 것은?,생각보다 큰 방귀소리,생각보다 큰 트림소리,Which bodily function is more mortifying?,Loud fart,Loud burp
+*-*-B-Ar-L3,B-Ar-L3-00254,B26-00254,술자리 안주거리 주제로 더 끌리는 쪽은?,술자리 안주거리,공감 100% 현실 썰,More engaging topic for drinking snacks?,Drinking snacks,Relatable real stories
+*-*-B-Ar-L3,B-Ar-L3-00255,B26-00255,더 지우고 싶은 흑역사는?,짝사랑 앞 큰 트림,교실에서 큰 방귀,Which embarrassing memory would you erase?,Loud burp in front of crush,Loud fart in class
+*-*-Fa-Br-L3,Fa-Br-L3-00256,B26-00256,"어릴 적 흑역사, 뭐가 더 강렬한데?",레전드급 변기 막힘,이불에 오줌지도 그림,Childhood cringe moment: which is more intense?,Epic toilet overflow,Peeing the bed
+*-*-Fa-Br-L3,Fa-Br-L3-00257,B26-00257,"가족에게 놀림당할 때, 내 반응은?",서로의 실수 놀리기,물귀신 작전,"When family teases me, what's my reaction?",Tease each other's mistakes,Misery loves company
+*-*-Fa-Br-L3,Fa-Br-L3-00258,B26-00258,"여행 중, 더 아찔한 상황은?",고속도로 한복판 급똥 신호,길에서 지갑 잃어버림,"Traveling, more horrifying situation?",Sudden urge on the highway,Losing your wallet
+*-*-Lo-Sw-L3,Lo-Sw-L3-00259,B26-00259,"애인 앞에서, 더 숨고 싶은 순간은?",연인과 스스럼 없어지기,냄새로 존재감 어필,"Hiding from your partner, which moment?",Getting too comfortable,Making a smelly entrance
+*-*-Lo-Sw-L3,Lo-Sw-L3-00260,B26-00260,데이트 중 신호 포착! 내 선택은?,포커페이스로 핑계대며 이동,솔직하게 표현하고 이동,Sensing a signal on a date! My choice?,"Poker face, make an excuse",Be honest and move
+*-*-Lo-Sw-L3,Lo-Sw-L3-00261,B26-00261,"애인의 실수, 더 센스 있는 대처는?",서로의 긴장 풀어주기,먼저 웃어주기,"Partner's mistake, better reaction?",Ease the tension,Laugh first
+*-*-Lo-Sw-L2,Lo-Sw-L2-00262,B26-00262,"연인 모닝콜, 뭐가 더 설레는 건?",어쩌다 한번씩 모닝콜,매일 정기적 모닝콜,"Partner's wake-up call, which is more exciting?",Occasional call,Daily routine
+*-*-Lo-Sw-L2,Lo-Sw-L2-00263,B26-00263,"데이트 약속 확인, 더 편한 쪽은?",데이트 약속 확인 전화,변경될 때만 연락,"Confirming a date, which is easier?",Confirmation call,Only if changing
+*-*-Fa-Fs-L3,Fa-Fs-L3-00264,B26-00264,잠 깨울 때 더 효과적인 방법은?,부모님이 자녀 깨워주기,단호한 이불 뺏기,Best way to wake someone up?,Parents wake kids,Blanket yank
+*-*-Fa-Fs-L3,Fa-Fs-L3-00265,B26-00265,"깨워줘'라는 말, 더 가까운 뜻은?",자녀의 모닝콜 부탁,일어날 때까지 무한 확인,'Wake me up' really means?,Kids asking for a call,Constant check-ins
+*-*-B-Sc-L2,B-Sc-L2-00266,B26-00266,"시험 날 모닝콜, 더 끌리는 방식은?",시험 날 같이 일어나기,약속한 시간 동시 콜,Morning call on test day: which do you prefer?,Wake up together,Simultaneous calls
+*-*-B-Sc-L2,B-Sc-L2-00267,B26-00267,친구 챙겨줄 때 내 스타일은?,지각 방지 모닝콜 약속,내가 알아서 먼저,"When taking care of a friend, my style?",Promise a wake-up call,I'll just do it
+*-*-Lo-Sw-L2,Lo-Sw-L2-00268,B26-00268,"연인 모닝콜, 뭐가 더 설레는 건?",연인의 다정한 아침 인사,함께 하루 시작,"Partner's wake-up call, which is more exciting?",Sweet morning message,Start the day together
+*-*-Lo-Sw-L2,Lo-Sw-L2-00269,B26-00269,"데이트 약속 확인, 더 편한 쪽은?",데이트 약속 확인 전화,변경될 때만 연락,"Confirming a date, which is easier?",Confirmation call,Only if changing
+*-*-Fa-Fs-L3,Fa-Fs-L3-00270,B26-00270,잠 깨울 때 더 효과적인 방법은?,부모님이 자녀 깨워주기,단호한 이불 뺏기,Best way to wake someone up?,Parents wake kids,Blanket yank
+*-*-Fa-Fs-L3,Fa-Fs-L3-00271,B26-00271,나의 '깨워줘'라는 말뜻에 더 가까운 쪽은?,자녀의 모닝콜 부탁,일어날 때까지 무한 확인,What's closer to what I mean by 'Wake me up'?,Kid's wake-up call,Endless check-ins
+*-*-B-Sc-L2,B-Sc-L2-00272,B26-00272,"시험 날 모닝알람, 더 끌리는 방식은?",5분간격으로 알람,시끄러운 알람 사운드,"Morning alarm on test day, which way to go?",Snooze every 5,Loud alarm sound
+*-*-B-Sc-L2,B-Sc-L2-00273,B26-00273,"친구가 모닝콜을 부탁한다면, 내 스타일은?",부탁받은 모닝콜만 하기,집요하게 모닝 대화하기,"If a friend asks for a wake-up call, my style?",Just the call,Persistent morning chat
+*-*-B-Sc-L2,B-Sc-L2-00274,B26-00274,맛집 고를 때 내 스타일은?,동네 맛집 탐방,나만 아는 동네 맛집,My style when choosing a great restaurant?,Neighborhood gems,Secret local spots
+*-*-B-Sc-L2,B-Sc-L2-00275,B26-00275,스트레스 받을 때 뭐가 더 당기는?,스트레스 해소용 먹방,달달한 디저트,What do I crave more when stressed?,Stress-eating binge,Sweet dessert
+*-*-B-Sc-L2,B-Sc-L2-00276,B26-00276,"오늘 점심, 내 스타일은?",점심 메뉴 고르기,새로운 맛집 도전,"Lunch today, my style?",Pick a menu,New restaurant challenge
+*-*-Fa-Fs-L3,Fa-Fs-L3-00277,B26-00277,"가족 외식, 뭐가 더 중요할까?",주말 가족 외식,내가 가고픈 SNS 핫플,"Family dinner, what's more important?",Weekend family dinner,Trendy spot I want
+*-*-Fa-Fs-L3,Fa-Fs-L3-00278,B26-00278,내 소울푸드 집밥은?,엄마가 해준 집밥,생일날 특별식,My soul food at home?,Mom's cooking,Birthday special meal
+*-*-Fa-Fs-L3,Fa-Fs-L3-00279,B26-00279,"내 생일파티, 더 좋은 곳은?",생일 기념 식사,배달음식 홈파티,"My birthday party, better where?",Birthday dinner,Delivery food at home
+*-*-Lo-Sw-L2,Lo-Sw-L2-00280,B26-00280,"데이트 맛집, 뭐가 더 중요한데?",맛집 데이트 코스,맛 보장된 찐 맛집,"Date restaurant, what matters more?",Perfect date course,Guaranteed deliciousness
+*-*-Lo-Sw-L2,Lo-Sw-L2-00281,B26-00281,"우리 기념일, 더 끌리는 곳은?",기념일 저녁 식사,추억 가득한 단골집,"Our anniversary, where to?",Anniversary dinner,Cherished regular spot
+*-*-Lo-Sw-L2,Lo-Sw-L2-00282,B26-00282,나의 ‘최애 음식’ 스타일은?,서로의 최애 음식 공유,나만 아는 꿀조합,My 'favorite food' style?,Share favorites,Secret combo
+*-*-B-Ar-L3,B-Ar-L3-00283,B26-00283,코 파다 걸렸을 때 내 반응은?,술자리 흑역사 배틀,필사적 모른 척,My reaction if caught picking my nose?,Awkward story battle,Desperate denial
+*-*-B-Ar-L3,B-Ar-L3-00284,B26-00284,친구가 코 파는 걸 봤을 때 나는?,오랜 친구와의 장난,조용히 눈 감아주기,If I see a friend picking their nose?,Playful teasing,Silent turn away
+*-*-B-Ar-L3,B-Ar-L3-00285,B26-00285,"찐친의 증거, 더 강력한 쪽은?",서로의 모든 것을 아는 사이,방귀 튼 사이,Stronger sign of true friendship?,Know everything,Fart freely
+*-*-Fa-Sb-L3,Fa-Sb-L3-00286,B26-00286,"코 파기 흑역사, 더 아찔한 순간은?",어릴 적 흑역사 폭로전,파서 먹다 딱 걸림,Picking your nose: worse cringe moment?,Childhood story time,Caught in the act
+*-*-Fa-Sb-L3,Fa-Sb-L3-00287,B26-00287,"가족 앞 코 파기, 최악의 타이밍은?",현실 남매의 일상 대화,TV 보다 말고 파기,Nose-picking in front of family: worst timing?,Casual sibling chat,Mid-TV watching
+*-*-Fa-Sb-L3,Fa-Sb-L3-00288,B26-00288,흑역사 썰 풀 때 내 스타일은?,가족 간의 편안한 장난,MSG 가득 꿀잼 각,Sharing embarrassing stories: my style?,Chill family banter,Exaggerate for laughs
+*-*-Lo-Hw-L4,Lo-Hw-L4-00289,B26-00289,배우자에게 코 파다 걸렸을 때 나는?,내숭 없는 현실 부부,"세상 태연, 마이웨이",Spouse catches you nose-picking: reaction?,"No shame, real couple","Play it cool, IDGAF"
+*-*-Lo-Hw-L4,Lo-Hw-L4-00290,B26-00290,"연인의 털털한 모습, 내 생각은?",오래된 연인의 일상,오히려 좋아! 찐사랑,Partner's chill/gross side: thoughts?,Normal in long-term,Love it! So real
+*-*-Lo-Hw-L4,Lo-Hw-L4-00291,B26-00291,연인 코에 코딱지! 내 선택은?,편안해진 관계의 증거,보이는 즉시 알려줌,Partner's got a booger: what to do?,Sign of comfort,Point it out ASAP
+*-*-B-Ar-L3,B-Ar-L3-00292,B26-00292,"친구 흑역사, 더 웃긴 쪽은?",친구의 술주정 흑역사,전 애인 붙잡고 눈물,Funniest friend fail?,Drunk antics,Crying over ex
+*-*-B-Ar-L3,B-Ar-L3-00293,B26-00293,"과음한 친구 연락, 진짜 이유는?",과음한 친구 걱정,놀릴 흑역사 탐색,Drunk friend calling: the REAL reason?,Genuine concern,Ammo for teasing
+*-*-B-Ar-L3,B-Ar-L3-00294,B26-00294,"친구 술버릇 조언, 내 스타일은?",술버릇에 대한 지적,돌려 말하며 눈치 주기,Giving friend drinking advice: my style?,Direct feedback,Subtle hints only
+*-*-Fa-Fs-L4,Fa-Fs-L4-00295,B26-00295,"부모님 음주, 더 걱정되는 점은?",부모님의 주사에 대한 걱정,눈에 띄는 건강 악화,Parents drinking: bigger worry?,Their drunk behavior,Visible health decline
+*-*-Fa-Fs-L4,Fa-Fs-L4-00296,B26-00296,"성인 자녀 음주, 더 걱정되는 습관은?",자녀의 음주 습관 훈계,한 번에 들이붓는 폭음,Adult child drinking: worse habit?,Lecture on habits,Downing drinks fast
+*-*-Fa-Fs-L4,Fa-Fs-L4-00297,B26-00297,"가족 음주 문제, 우선할 해결책은?",가족의 음주 문제 상담,바로 전문가 상담,Family drinking problem: first step?,Family discussion,Professional help now
+*-*-Lo-Sw-L3,Lo-Sw-L3-00298,B26-00298,"연인 술버릇, 더 힘든 쪽은?",연인의 술버릇에 대한 불만,매번 물건 분실하는 주사,Partner's drunk habits: harder to deal with?,General annoyance,Always losing stuff
+*-*-Lo-Sw-L3,Lo-Sw-L3-00299,B26-00299,"연인 술자리 실수, 어디까지 선 넘는 건?",술자리 실수로 인한 다툼,"말없이 연락두절, 잠수",Partner's drunk mistake: where's the line?,Drunk fight,Silent treatment / Ghosting
+*-*-Lo-Sw-L3,Lo-Sw-L3-00300,B26-00300,"연인 음주 조절, 더 나은 방식은?",음주 문제에 대한 대화,믿고 자율에 맡기기,Partner's drinking: better approach?,Open discussion,Trust and freedom
+*-*-B-Dc-L2,B-Dc-L2-00301,B26-00301,"오늘 저녁, 더 끌리는 곳은?",저녁 약속 장소 정하기,새로 생긴 신상 핫플,"Dinner tonight, which is more appealing?",Pick a place,New hot spot
+*-*-B-Dc-L2,B-Dc-L2-00302,B26-00302,"귀찮은 날, 저녁 해결법은?",간단한 식사 메뉴 고민,5분 컷 밀키트,Lazy day dinner solution?,Easy meal idea,5-min meal kit
+*-*-B-Dc-L2,B-Dc-L2-00303,B26-00303,"배달 음식, 내 선택 기준은?",배달음식 메뉴 고르기,내 취향 존중 1인 1피자,"Delivery food, what's the priority?",Menu selection,Personal pizza
+*-*-Fa-Fs-L2,Fa-Fs-L2-00304,B26-00304,"가족 외식, 더 좋은 곳은?",가족 외식 메뉴 선정,내가 찜한 SNS 핫플,"Family dinner out, where to go?",Menu choice,Trendy spot
+*-*-Fa-Fs-L2,Fa-Fs-L2-00305,B26-00305,"오늘 저녁, 더 끌리는 메뉴는?",오늘의 저녁 메뉴 회의,고민없이 시키는 배달,"Tonight's dinner, what sounds better?",Group decision,Easy takeout
+*-*-Fa-Fs-L2,Fa-Fs-L2-00306,B26-00306,"마트 장보기, 내 스타일은?",장보기 전 메뉴 결정,끌리는 대로 즉흥 쇼핑,Grocery shopping style?,Plan ahead,Impulse buys
+*-*-Lo-Sw-L2,Lo-Sw-L2-00307,B26-00307,"데이트 맛집, 뭐가 더 중요할까?",데이트 저녁 식사,맛만 있으면 웨이팅 OK,"Date night restaurant, what's key?",The meal,Worth the wait
+*-*-B-Sc-L4,B-Sc-L4-00308,B26-00308,"마지막 기회, 덜 후회할 선택은?",친구의 연애 고민 상담,추억으로 간직,"Last chance, which regret less?",Friend's drama,Cherish memories
+*-*-Fa-Sw-L3,Fa-Sw-L3-00309,B26-00309,"기분 꿀꿀할 때, 뭐가 더 편해?",자녀의 상실감 이해하기,맛난 거 먹으러 감,"Feeling down, what's easier?",Empathy,Treat yourself
+*-*-Fa-Sw-L3,Fa-Sw-L3-00310,B26-00310,"멀어졌을 때, 선호하는 연락은?",앞으로의 자녀 관계 조언,가끔 안부만,"Grown apart, preferred contact?",Parenting advice,Casual check-ins
+*-*-Fa-Sw-L3,Fa-Sw-L3-00311,B26-00311,"힘들 때, 뭐가 더 힘이 되는?",부모로서의 역할 고민,기분 전환 용돈,"Tough times, what's more helpful?",Parenting worries,Retail therapy
+*-*-Lo-Sw-L3,Lo-Sw-L3-00312,B26-00312,"떨어져 있을 때, 원하는 연락은?",장거리 연애 시작,굵직한 하루 요약,"When apart, desired communication?",Long distance,Daily highlights
+*-*-B-Sc-L3,B-Sc-L3-00313,B26-00313,지금 더 끌리는 휴식은?,가치관 공유 대화,뇌 빼고 숏폼 정주행,Relaxation mode: which vibe?,Deep talks,Brainless scrolling
+*-*-Fa-Fs-L4,Fa-Fs-L4-00314,B26-00314,나를 더 잘 나타내는 말은?,자녀의 정체성 고민,유행 꽉 잡은 인싸,Describes you better?,Identity issues,Trendsetter
+*-*-Lo-Sw-L4,Lo-Sw-L4-00315,B26-00315,오늘 더 끌리는 데이트는?,연인 간 가치관 공유,서로 태그하며 릴스,"Date night, which sounds better?",Shared values,Share reels
+*-*-Lo-Sw-L4,Lo-Sw-L4-00316,B26-00316,더 탐나는 나의 매력은?,서로의 특별함에 대한 대화,밈 섭렵한 힙한 센스,What's your more tempting charm?,Deep talks about uniqueness,Internet-savvy wit
+*-*-Lo-Sw-L4,Lo-Sw-L4-00317,B26-00317,더 나누고 싶은 대화는?,지적인 교감 형성,무릎 탁 치는 유쾌함,What kind of conversation do you want more of?,Intellectual connection,Hilarious banter
+*-*-B-Ar-L4,B-Ar-L4-00318,B26-00318,지금 더 마음이 가는 삶은?,진로 고민 상담,맘 편한 현실,Which life resonates more right now?,Career advice,Easy reality
+*-*-B-Ar-L4,B-Ar-L4-00319,B26-00319,둘 중 뭘 더 놓치기 싫은 건?,현실적 어려움 토로,빛나는 추억,Which one do you hate to lose more?,Venting about struggles,Shining memories
+*-*-B-Ar-L4,B-Ar-L4-00320,B26-00320,지금 나를 더 잘 표현하는 말은?,오랜 친구와의 깊은 대화,성숙한 지금,What word better describes me right now?,Deep talk with old friend,Mature self
+*-*-Fa-Fs-L4,Fa-Fs-L4-00321,B26-00321,삶에서 더 중요하신 태도는?,부모님과의 인생 상담,새로운 모험,What's a more important life attitude?,Life advice from parents,New adventure
+*-*-Lo-Sw-L4,Lo-Sw-L4-00322,B26-00322,우리 관계에 더 필요한 것은?,연인에게 속마음 고백,솔직한 빈틈,What is needed more in our relationship?,Confessing feelings,Honest flaws
+*-*-B-Ar-L4,B-Ar-L4-00323,B26-00323,"진로, 둘 중 더 끌리는 삶은?",진로 고민 상담,가슴 뛰는 꿈,"Career-wise, which life is more appealing?",Career advice,Passionate dream
+*-*-B-Ar-L4,B-Ar-L4-00324,B26-00324,"돈 관리할 때, 내가 더 중요하게 생각하는 건?",현실적 어려움 토로,미래의 통장,What do I value more when it comes to money management?,Venting about struggles,Future savings
+*-*-B-Ar-L4,B-Ar-L4-00325,B26-00325,"나를 볼 때, 더 와닿는 느낌은?",오랜 친구와의 깊은 대화,익숙한 현모습,What feeling do you relate to more when looking at me?,Deep talk with old friend,Familiar present
+*-*-Fa-Fs-L4,Fa-Fs-L4-00326,B26-00326,"지나온 삶, 더 가까웠던 길은?",부모님과의 인생 상담,꿈을 향한 도전,"Looking back, which path was closer?",Life advice from parents,Chasing dreams
+*-*-Lo-Sw-L4,Lo-Sw-L4-00327,B26-00327,너에게 보여주고 싶은 내 모습은?,연인에게 속마음 고백,솔직한 모습,What side of me do I want to show you?,Confessing feelings,Authentic self
+*-*-B-Ar-L4,B-Ar-L4-00328,B26-00328,기분 들켰을 때 내 반응은?,오랜 친구와의 통화,끝까지 오리발,"When my mood's exposed, my reaction is?",Call an old friend,Deny everything
+*-*-B-Ar-L4,B-Ar-L4-00329,B26-00329,"내 속 꿰뚫는 친구, 비결은?",척하면 척하는 죽마고우,빅데이터 분석,"My friend knows me so well, the secret is?",Intuitive bestie,Big data analysis
+*-*-B-Ar-L4,B-Ar-L4-00330,B26-00330,더 울컥하는 연락 타이밍은?,힘든 걸 눈치챈 친구의 연락,톡 확인하자마자,Which text hits harder?,Friend noticing your struggle,Instant reply
+*-*-Fa-Ms-L4,Fa-Ms-L4-00331,B26-00331,부모님의 걱정에 내 대답은?,걱정 담긴 부모님의 전화,피곤하다 핑계,"Parents are worried, my response?",Worried call,Feigning tired
+*-*-Lo-Sw-L4,Lo-Sw-L4-00332,B26-00332,기분 다운됐을 때 바라는 것은?,연인과의 자기 전 통화,모른 척해주길,What is it I want when I'm feeling down?,Nightly call,Leave me be
+*-*-Lo-Sw-L4,Lo-Sw-L4-00333,B26-00333,더 감동적인 애인의 위로는?,목소리만 듣고도 걱정하는 애인,장문의 위로 톡,More touching comfort from a partner?,Worried by voice alone,Long comforting text
+*-*-Lo-Sw-L4,Lo-Sw-L4-00334,B26-00334,싸우고 통화할 때 내 말투는?,다툰 후의 어색한 통화,딱딱한 로봇,"Fighting, how do you talk?",Awkward post-fight call,Stiff robot
+*-*-M-Sc-L2,M-Sc-L2-00335,B26-00335,"오랜만의 동창회, 대화 주제는?",졸업 후 동창회에서의 어색한 재회,달라진 근황 토크,"Long time no see reunion, conversation starter?",Awkward reunion,Catching up
+*-*-M-Sc-L2,M-Sc-L2-00336,B26-00336,결혼식장에서 동창 만나면 기분은?,결혼식장에서 우연히 마주친 상황,일단 뷔페 공략,How do I feel when I run into a classmate at a wedding?,Chance encounter,Hit the buffet
+*-*-M-Sc-L2,M-Sc-L2-00337,B26-00337,"길에서 SNS 친구 마주치면, 어떤 기분?",SNS로만 보던 친구를 길에서 만났을 때,못 본 척 패스,What's the feeling when I see an SNS friend on the street?,IRL meeting,Walk on by
+*-*-B-Sc-L2,B-Sc-L2-00338,B26-00338,"동호회 첫 정모, 내 포지션은?",취미 동호회 첫 정모,일단 관찰 모드,"First club meetup, your role?",First meetup,Observe first
+*-*-B-Sc-L2,B-Sc-L2-00339,B26-00339,"프로젝트 첫 만남, 우선순위는?",사이드 프로젝트 팀 첫 만남,친목과 네트워킹,"First project meeting, priority?",Project kickoff,Socialize and network
+*-*-B-Sc-L2,B-Sc-L2-00340,B26-00340,"친구의 친구 소개받는 자리, 나는?",친구의 친구를 소개받는 자리,무한 리액션,"Meeting a friend's friend, you are?",Meeting them,Enthusiastic reaction
+*-*-B-Sc-L2,B-Sc-L2-00341,B26-00341,"새 학기 첫 자기소개, 내 스타일은?",새 학기 첫날 어색한 자기소개,신비주의 컨셉,"First day self-introduction, your style?",Awkward intro,Mystery concept
+*-*-B-Sc-L2,B-Sc-L2-00342,B26-00342,"수업 시작 전 10분, 나는?",수업 시작 전 조용한 교실,엎드려 꿀잠,"10 minutes before class, you?",Quiet classroom,Nap time
+*-*-B-Sc-L2,B-Sc-L2-00343,B26-00343,"조별 과제, 내 포지션은?",조별 과제 때문에 처음 말 트는 상황,조용히 묻어감,"Group project, your position?",Breaking the ice,Blend in
+*-*-Fa-Co-L2,Fa-Co-L2-00344,B26-00344,"친척들 모인 자리, 내 전략은?",다 같이 거실에 모여 과일 먹는 상황,질문 폭격 방어,"Family gathering, your strategy?",Eating fruit together,Dodge questions
+*-*-Fa-Co-L2,Fa-Co-L2-00345,B26-00345,"명절 노동, 하나만 고르라면 뭐는?",명절 음식 준비로 분주한 부엌,하루종일 설거지,"If I had to pick only one holiday chore, what would it be?",Cooking frenzy,Dishes all day
+*-*-Fa-Co-L2,Fa-Co-L2-00346,B26-00346,친척들에게 자랑하고 싶은 것은?,서로의 자녀 근황을 궁금해하는 어른들,여유로운 갓생,Brag to relatives about...?,Kids' updates,"Chill, productive life"
+*-*-Fa-Co-L2,Fa-Co-L2-00347,B26-00347,SNS 친구 사촌 만났을 때는?,SNS로만 보던 사촌과의 만남,현실 팩트 체크,What's it like meeting a SNS friend's cousin?,SNS version,Reality check
+*-*-Fa-Co-L2,Fa-Co-L2-00348,B26-00348,사촌끼리 몰래 하는 이야기는?,어른들 몰래 우리끼리 나누는 대화,내 연애썰 풀기,Secret cousin talk?,Private chats,Spill my love life
+*-*-Fa-Co-L2,Fa-Co-L2-00349,B26-00349,"오랜만에 본 사촌, 대화 주제는?",어릴 때와 달라진 서로의 모습,알짜 재테크 정보,Catching up with a cousin: topic?,How we've changed,Money tips
+*-*-Fa-Co-L2,Fa-Co-L2-00350,B26-00350,결혼식장 가면 제일 먼저 보는 건?,결혼식장에서 오랜만에 만난 친지,하객 패션 구경,What's the first thing I look at when I go to a wedding?,Long-lost relatives,Guest fashion
+*-*-Fa-Co-L2,Fa-Co-L2-00351,B26-00351,장례식장에서 내가 하는 일은?,장례식장에서 조심스럽게 건네는 안부,손님 맞이 돕기,"At a funeral, I'm...",Offering condolences,Helping guests
+*-*-Fa-Co-L2,Fa-Co-L2-00352,B26-00352,"돌잔치 분위기, 내 역할은?",왁자지껄한 돌잔치 풍경,물개박수 알바,"Baby's first birthday party, my role?",Lively scene,Enthusiastic clapper
+*-*-Lo-Sw-L1,Lo-Sw-L1-00353,B26-00353,소개팅 정적 흐를 때 주제는?,어색한 침묵이 흐르는 순간,MBTI부터 물어봄,Awkward silence on a blind date?,The silence itself,Drop the MBTI bomb
+*-*-Lo-Sw-L1,Lo-Sw-L1-00354,B26-00354,"음식 나오면, 뭐부터 하는 편?",주문한 메뉴가 나온 직후,대화에 집중,"Food arrives, what's my first move?",Take pics!,Engage in chat
+*-*-Lo-Sw-L1,Lo-Sw-L1-00355,B26-00355,첫인상 볼 때 뭐가 더 중요한 것 같아?,서로의 첫인상에 대해 말한 뒤,목소리 톤,What seems more important when it comes to first impressions?,Their words,Voice tone
+*-*-Lo-Sw-L1,Lo-Sw-L1-00356,B26-00356,"주말 데이트, 더 좋은 것은?",주말 계획을 묻기 전,집콕하며 힐링,"Weekend date, better?",Out and about,Stay at home
+*-*-Lo-Sw-L1,Lo-Sw-L1-00357,B26-00357,더 끌리는 이성 스타일은?,공통 관심사를 찾으려는 대화 중,완전 반대 매력,More attractive type?,Shared interests,Opposites attract
+*-*-Lo-Sw-L1,Lo-Sw-L1-00358,B26-00358,밤늦게 대화 소재 떨어지면 어떡해?,밤에 카톡 하다가 대화가 끊겼을 때,아무말 대잔치,What happens when the late night convo dies out?,The silence,Random ramblings
+*-*-Lo-Sw-L1,Lo-Sw-L1-00359,B26-00359,"썸녀(남) 인스타 스토리 보면, 무슨 생각 들어?",인스타 스토리 보고 연락할 때,DM으로 말 걸기,What thoughts come to mind when I see my crush's Insta story?,React to it,Slide into DMs
+*-*-Lo-Sw-L1,Lo-Sw-L1-00360,B26-00360,데이트 코스 짤 때 나는?,다음 약속을 잡기 전,몸만 가면 됨,"Planning a date, I...",Plan it all!,Just show up
+*-*-Lo-Sw-L1,Lo-Sw-L1-00361,B26-00361,"주말 저녁, 갑자기 보고 싶을 땐 뭘 보는데?",주말 저녁 심심할 때,참았다 나중에 봄,What do I watch when I suddenly want to watch something on a weekend night?,Bored on a weekend night,Hold off 'til later
+*-*-Lo-Sw-L1,Lo-Sw-L1-00362,B26-00362,"퇴근길 연락, 뭐가 더 좋은 건?",퇴근길에 연락하며,카톡으로 수다,"After-work contact, which one is better?",Call on the commute,Chat via text
+*-*-Lo-Sw-L1,Lo-Sw-L1-00363,B26-00363,"번호 따고 첫 연락, 언제가 적절할까?",번호 받고 하루 지난 점심시간,뜸 들이다 나중에,When's the right time to text after getting their number?,Lunch the next day,Wait a bit
+*-*-Lo-Sw-L1,Lo-Sw-L1-00364,B26-00364,첫 카톡 보낼 때 스타일은?,퇴근 시간 맞춰 보내는 첫 카톡,질문 던져서 유도,First text style?,Timing it with quitting time,Ask a question
+*-*-Lo-Sw-L1,Lo-Sw-L1-00365,B26-00365,"호감 표현, 내 스타일은?",만났던 날을 다시 언급하며,은근히 챙겨줌,How do I show interest?,Mention the date again,Subtle care
+*-*-Lo-Sw-L1,Lo-Sw-L1-00366,B26-00366,어색할 때 꺼낼 주제는?,어색함을 깨기 위한 첫 질문,취미나 관심사,Awkward silence? Topic?,Icebreaker question,Hobbies/interests
+*-*-Lo-Sw-L1,Lo-Sw-L1-00367,B26-00367,"썸남썸녀 프사가 바뀌었다면, 무슨 의미일까?",프로필 사진이 바뀌었을 때,모른 척 딴소리,"If your crush changes their profile pic, what does it mean?",Mention it,Ignore it
+*-*-B-Sc-L1,B-Sc-L1-00368,B26-00368,평소 디저트 취향은?,새 학기 짝꿍,담백하고 고소한 맛,Dessert preference?,New semester vibes,Nutty & savory
+*-*-B-Sc-L1,B-Sc-L1-00369,B26-00369,배불러도 디저트는?,점심 후 카페 탐색,하나로 나눠 먹기,Dessert even when full?,Post-lunch cafe hunt,Share one
+*-*-B-Sc-L1,B-Sc-L1-00370,B26-00370,"일하다 당 떨어질 땐, 뭐가 최고일까?",어색한 동료와 친해지기,살기 위한 카페인,"Low energy at work, what's the best pick-me-up?",Bond with a coworker,Caffeine fix
+*-*-Fa-Co-L1,Fa-Co-L1-00371,B26-00371,"카페 메뉴, 내 선택은?",오랜만에 만난 사촌,실패 없는 아는 맛,Cafe drink choice?,Catching up with a cousin,Tried & true
+*-*-Fa-Co-L1,Fa-Co-L1-00372,B26-00372,"명절 후식, 뭐가 더 끌리는 건?",명절 디저트 준비,남녀노소 좋아하는 빵,"Holiday dessert, which one is more tempting?",Holiday dessert prep,Crowd-pleasing bread
+*-*-Fa-Co-L1,Fa-Co-L1-00373,B26-00373,더 선호하는 식감은?,어색한 친척과 대화,입에서 녹는 부드러움,Preferred texture?,Awkward family talk,Melt-in-your-mouth
+*-*-Lo-Sw-L2,Lo-Sw-L2-00374,B26-00374,카페 고를 때 1순위는?,소개팅 첫 만남,디저트가 찐맛집,Top cafe priority?,First date spot,Amazing desserts
+*-*-Lo-Sw-L1,Lo-Sw-L1-00375,B26-00375,"데이트 카페, 내 스타일은?",데이트 코스 정하기,웨이팅 없이 바로 입장,Date cafe style?,Plan the route,No wait
+*-*-Lo-Sw-L1,Lo-Sw-L1-00376,B26-00376,메뉴 고를 때 내 스타일은?,썸 단계 취향 파악,실패 없는 아는 맛,"Ordering food, what's your style?",Flirting stage vibes,"Safe bet, familiar taste"
+*-*-B-Dc-L2,B-Dc-L2-00377,B26-00377,폭우 쏟아지는 날 약속은?,약속 당일 날씨 불평,맑은 날로 연기,Torrential downpour on date night?,Complain about the weather,Reschedule for sunnier days
+*-*-B-Dc-L2,B-Dc-L2-00378,B26-00378,"축 처지는 날씨, 회복법은?",더위/추위로 인한 피로감 공유,이불속 꿀잠,Gloomy weather got you down? Quick fix?,Misery loves company,Cozy nap
+*-*-B-Dc-L2,B-Dc-L2-00379,B26-00379,"날씨 꿀꿀한 날, 어디로 기분 전환하러 갈까?",날씨 핑계로 만남 제안,아늑한 카페,"Crappy weather, where should we go to cheer up?","Blame the weather, suggest hangout",Snug cafe
+*-*-Fa-Br-L2,Fa-Br-L2-00380,B26-00380,"집안이 꿉꿉할 때, 어떤 해결법이 좋을까?",집안 습도/온도 불평,보일러 풀가동,"House feels damp, what's a good solution?",Gripe about humidity,Crank up the heat
+*-*-Fa-Br-L2,Fa-Br-L2-00381,B26-00381,"날씨 험한 날 외출할 때, 뭘 조심해야 할까?",악천후 속 외출 걱정,완전무장 외출,"Heading out in bad weather, what precautions should we take?",Dread the journey,"Gear up, go out"
+*-*-Fa-Br-L2,Fa-Br-L2-00382,B26-00382,"컨디션 꽝일 때, 나만의 특효약은?",날씨와 컨디션 연관 푸념,맛있는 배달음식,Feeling under the weather? What's your go-to cure?,Blame the weather,Delivery noms
+*-*-Lo-Sw-L2,Lo-Sw-L2-00383,B26-00383,"비 와서 일정 변경해야 한다면, 어디가 좋을까?",데이트 계획 차질,오붓한 집콕,"Rain changed plans, where should we go instead?",Ruined date vibes,"Stay in, chill"
+*-*-Lo-Sw-L2,Lo-Sw-L2-00384,B26-00384,"악천후 속 연인, 어떻게 챙겨주는 게 좋을까?",궂은 날씨 속 서로 걱정,영상통화로 안부,"Partner in bad weather, how best to take care of them?",Complain together,Video call check-in
+*-*-Lo-Sw-L2,Lo-Sw-L2-00385,B26-00385,날씨 탓에 우울할 때 위로는?,날씨로 인한 기분 공유,빵 터지는 개그,Weather got you feeling blue? Comfort?,Share the feels,Good laugh
+*-*-B-Sc-L2,B-Sc-L2-00386,B26-00386,새 친구 사ꈈ 때 내 방식은?,새 학기 친목 도모,지켜보며 추측함,"Making new friends, your style?",Social butterfly,Observe and assess
+*-*-B-Sc-L2,B-Sc-L2-00387,B26-00387,"팀플 역할 분담, 뭘 제일 중요하게 생각하는 편이야?",팀 프로젝트 아이스브레이킹,능력치 위주 배정,"Group project roles, what do you value most?",Ice breaker vibes,Skills-based roles
+*-*-B-Sc-L2,B-Sc-L2-00388,B26-00388,"친구 볼 때, 어떤 게 더 재밌을 것 같아?",동기들과의 성격 유형 분석,예상 밖의 반전미,"Hanging with friends, what sounds more fun?",Personality type breakdown,Unexpected twists
+*-*-Fa-Br-L3,Fa-Br-L3-00389,B26-00389,우리 가족 성격 유형은?,가족 성격 유형 토크,완전 딴판 남남,Your family's personality types?,Personality type talk,Total opposites
+*-*-Fa-Br-L3,Fa-Br-L3-00390,B26-00390,"여행 갈 때, 뭐가 더 편할까?",성격 차이로 인한 다툼 분석,발 닿는 대로 즉흥,"Traveling, what would be more convenient?",Analyze clashes,Wing it
+*-*-Fa-Br-L3,Fa-Br-L3-00391,B26-00391,가족에게 바라는 상담은?,서로의 연애 스타일 조언,무조건적인 내 편,What kind of family advice do you prefer?,Dating style tips,Unconditional support
+*-*-Lo-Sw-L2,Lo-Sw-L2-00392,B26-00392,"썸탈 때, 뭘 보고 더 신뢰하게 될까?",서로를 알아가는 소개팅,나의 느낌과 촉,"While dating, what makes you trust someone more?",Blind date vibe,Gut feeling
+*-*-Lo-Sw-L2,Lo-Sw-L2-00393,B26-00393,우리 관계에서 더 믿고 싶은 건?,연인 간 궁합 확인,우리가 느끼는 감정,What do you want to trust more in our relationship?,Relationship compatibility,Our feelings
+*-*-Lo-Sw-L2,Lo-Sw-L2-00394,B26-00394,우리 커플의 매력 포인트는?,친구 커플과 MBTI 비교,비슷해서 편안함,What's our couple's charm?,MBTI comparison,Easy comfort
+*-*-B-Sc-L1,B-Sc-L1-00395,B26-00395,공강 시간에 어디 가는 게 더 끌리는?,새 학기 첫 만남,조용한 카페,Where are you more drawn to go during free time?,New semester vibes,Quiet cafe
+*-*-B-Sc-L1,B-Sc-L1-00396,B26-00396,우리 모임 장소로 어디가 좋은?,새로운 모임,감성 뿜뿜 맛집,Where is good for our group to meet?,New faces,Trendy restaurant
+*-*-B-Sc-L1,B-Sc-L1-00397,B26-00397,더 마음이 가는 장소는?,서로 알아가기,나만의 아지트,Which place appeals more?,Getting to know each other,My hideout
+*-*-Fa-Co-L1,Fa-Co-L1-00398,B26-00398,오랜만에 만났는데 어디 가는 게 좋을까?,오랜만에 만난 친척,의자 편한 카페,Where should we go after not seeing each other for a long time?,Long-lost relatives,Comfy cafe
+*-*-Fa-Co-L1,Fa-Co-L1-00399,B26-00399,바람 쐬러 갈 때 선호하는 곳은?,어색한 가족 모임,쾌적한 실내,Preferred place to get fresh air?,Awkward family time,Indoor comfort
+*-*-Fa-Co-L1,Fa-Co-L1-00400,B26-00400,둘 중 더 끌리는 나들이는?,공통 관심사 찾기,입이 즐거운 맛집,Which outing is more appealing?,Shared interests,Foodie heaven
+*-*-Lo-Sw-L1,Lo-Sw-L1-00401,B26-00401,"첫 만남, 더 편한 분위기는?",소개팅 첫 만남,차분한 조용한 곳,First meeting: comfy vibes?,Blind date energy,"Calm, quiet spot"
+*-*-Lo-Sw-L1,Lo-Sw-L1-00402,B26-00402,오늘 데이트는 어디로 가는?,어색함 깨기,익숙한 단골집,Where are we going on a date today?,Break the ice,Familiar spot
+*-*-Lo-Sw-L1,Lo-Sw-L1-00403,B26-00403,이번 데이트에 뭐 하고 싶은 건?,데이트 장소 정하기,여유로운 힐링,What do you want to do on this date?,Plan a spot,"Relax, unwind"
+*-*-B-Ar-L1,B-Ar-L1-00404,B26-00404,오랜만에 보면 뭐가 더 편한?,밥 먹으며 수다,술 마시며 회포,"Catching up after a while, what's easier?",Chat over food,Drinks and stories
+*-*-B-Ar-L2,B-Ar-L2-00405,B26-00405,"딱 한 시절로 돌아간다면, 언제가 좋은 쪽은?",철없던 초등학생,감성충만 중학생,"If you could go back to one era, when would it be?",Carefree elementary,Emotional middle school
+*-*-B-Ar-L3,B-Ar-L3-00406,B26-00406,더 견디기 힘든 친구는?,돈 아까워하는 짠돌이,매일 취하는 주정뱅이,Which friend is harder to deal with?,Super stingy,Always drunk
+*-*-B-Ar-L4,B-Ar-L4-00407,B26-00407,친구가 사업자금 1000만원 부탁하면 어떨 거 같아?,믿고 빌려준다,절대 안 된다,"Friend asks for a $10k business loan, what would you do?",Trust them and lend it,Absolutely not
+*-*-B-Ar-L5,B-Ar-L5-00408,B26-00408,"친구가 큰 범죄를 저질렀다면, 어떻게 할 거 같아?",자수 권유 후 신고,무덤까지 비밀,"Friend commits a major crime, what would you do?","Advise confession, then report",Secret to the grave
+*-*-B-Sc-L1,B-Sc-L1-00409,B26-00409,시험 기간 내 스타일은?,도서관에서 혼자 집중,카페에서 친구랑 같이,Your study style during exam season?,Focus alone at the library,Study with friends at a cafe
+*-*-B-Sc-L2,B-Sc-L2-00410,B26-00410,팀플 빌런 중에 누가 더 싫은 쪽은?,연락 두절 잠수부,독불장군 리더,Which team project slacker is worse?,Disappearing act,Know-it-all leader
+*-*-B-Sc-L3,B-Sc-L3-00411,B26-00411,"친구가 내 짝녀/짝남을 좋아한다면, 기분이 어떨 거 같아?",깔끔하게 포기,정정당당 경쟁,How would you feel if your friend likes your crush?,Gracefully give up,Fair competition
+*-*-B-Sc-L4,B-Sc-L4-00412,B26-00412,"퇴사나 자퇴 고민할 때, 뭘 원하는 걸까?",현실적인 뜯어말림,무조건적인 응원,"Venting about quitting job/school, what do you want?",Realistic discouragement,Unconditional support
+*-*-B-Sc-L5,B-Sc-L5-00413,B26-00413,평생 한 명만 남는다면 누구일까는?,마음 통하는 너,돈 많은 부자 친구,"If only one person can stay in your life, who would it be?",Like-minded soulmate,Filthy rich friend
+*-*-B-Or-L1,B-Or-L1-00414,B26-00414,점심시간의 힐링은?,동료들과 맛집 탐방,혼자 조용한 샌드위치,Lunch break bliss?,Restaurant with coworkers,Quiet sandwich solo
+*-*-B-Or-L2,B-Or-L2-00415,B26-00415,상사를 고를 수 있다면 누구를 고를까?,일 못해도 천사표,싸가지 없는 엘리트,"If you could pick your boss, who would you pick?",Incompetent but sweet,Elite but rude
+*-*-B-Or-L3,B-Or-L3-00416,B26-00416,내 뒷담화 현장을 목격했다면 기분은?,그 자리에서 따진다,모른 척 넘어간다,"Witness someone talking smack about you, how would you feel?",Confront them then and there,Pretend you didn't hear
+*-*-B-Or-L4,B-Or-L4-00417,B26-00417,"연봉 2배 이직 제안, 조건은?",나 혼자 간다,너랑 같이 간다,"Job offer: 2x salary, but...",Go alone,Go with you
+*-*-B-Or-L5,B-Or-L5-00418,B26-00418,사내 연애 들키면 제일 먼저 할 일은?,당당하게 공개,끝까지 잡아뗀다,"How to handle a workplace romance being exposed, what's the first thing you do?",Publicly announce it,Deny it to the end
+*-*-B-Dc-L1,B-Dc-L1-00419,B26-00419,우리 만날 때 네가 선호하는 스타일은?,활동적인 볼링/운동,수다 떠는 맛집/카페,"When we hang out, what kind of style do you prefer?",Active: bowling/sports,Chatty: cafe/restaurant
+*-*-B-Dc-L2,B-Dc-L2-00420,B26-00420,지금 당장 5만원 빌려달라면 빌려줄 수 있나?,바로 송금 가능,곤란해서 거절,"If I asked to borrow $50 right now, would you lend it?",Venmo immediately,Politely decline
+*-*-B-Dc-L3,B-Dc-L3-00421,B26-00421,내 애인과 단둘이 술 마신다면 괜찮을까는?,쿨하게 가능,절대 불가능,"Partner grabbing drinks with my significant other, just the two of them, is that okay?",Totally cool,No way
+*-*-B-Dc-L4,B-Dc-L4-00422,B26-00422,친구가 집안일로 힘들 때 해줄 수 있는 것은?,적극적으로 돕기,묵묵히 위로하기,"Friend struggling with chores, what can you do to help?","Jump in, help out",Silent support
+*-*-B-Dc-L5,B-Dc-L5-00423,B26-00423,너랑 나랑 룸메이트 한다면 어떨 거 같아?,베스트 프렌드 가능,바로 절교각,"If we were roommates, what do you think it would be like?",BFFs for life,Instant breakup
+*-*-Fa-Br-L1,Fa-Br-L1-00424,B26-00424,단둘이 밥 먹을 때 분위기는?,수다 떨며 먹기,폰만 보며 먹기,Dinner date vibes?,Chatty time,Phone zone
+*-*-Fa-Br-L2,Fa-Br-L2-00425,B26-00425,집안일 분담 스타일은?,칼같이 나눈다,눈치껏 알아서,Housework division style?,Strictly divided,Feel it out
+*-*-Fa-Br-L3,Fa-Br-L3-00426,B26-00426,부모님 몰래 사고쳤을 때 어떻게 넘길까는?,일단 숨겨준다,바로 고자질,"Mess up, gotta hide it from the parents, how would you get away with it?",Cover it up,Spill the beans
+*-*-Fa-Br-L4,Fa-Br-L4-00427,B26-00427,큰 빚이 생기면 누구한테 제일 먼저 말할까는?,형제에게 먼저,부모님께 먼저,"Massive debt, who would you tell first?",Siblings first,Parents first
+*-*-Fa-Br-L5,Fa-Br-L5-00428,B26-00428,신장 이식이 필요하다면 누구에게 부탁할까는?,당장 해준다,솔직히 고민된다,"Need a kidney transplant, who would you ask?",Take mine now,Gotta think about it
+*-*-Fa-Sb-L1,Fa-Sb-L1-00429,B26-00429,"TV 채널권, 양보 못 하는 채널은?",스포츠/게임 방송,드라마/예능,"TV channel control, which channel are you fighting for?",Sports/Gaming,Dramas/Shows
+*-*-Fa-Sb-L2,Fa-Sb-L2-00430,B26-00430,내 옷 몰래 입고 나갔다면 뭐라고 할까는?,한 번은 봐준다,바로 전쟁 시작,"Borrowed my clothes without asking, what would you say?",One free pass,War declared
+*-*-Fa-Sb-L3,Fa-Sb-L3-00431,B26-00431,내 친구랑 사귄다고 하면 기분이 어떨 거 같아?,적극 밀어준다,뜯어말린다,"Dating my friend, how would you feel?",Full support,Shut it down
+*-*-Fa-Sb-L4,Fa-Sb-L4-00432,B26-00432,일이 잘 안 풀릴 때 원하는 것은?,용돈과 위로,따끔한 조언,"Rough patch at work, what do you need?",Cash and comfort,Tough love
+*-*-Fa-Sb-L5,Fa-Sb-L5-00433,B26-00433,나중에 결혼해서 살 곳은?,같은 동네 이웃,멀리 떨어져 살기,Future married life location?,Same neighborhood,Far apart
+*-*-Fa-Co-L1,Fa-Co-L1-00434,B26-00434,명절에 만나면 우리는 어떤 사이는?,어색한 안부 인사,만나자마자 롤/수다,"Holiday meetup vibes, what are we?",Awkward greetings,Game time/Gossip
+*-*-Fa-Co-L2,Fa-Co-L2-00435,B26-00435,"어른들의 비교, 어떻게 대처하는?",한 귀로 흘린다,은근 스트레스,"Dealing with comparisons from elders, how?",Let it go,Low-key stress
+*-*-Fa-Co-L3,Fa-Co-L3-00436,B26-00436,우리끼리 여행 간다면 어디로 가는?,꿀잼 예상,어색해서 불편,"Trip with just the crew, where to?",Guaranteed fun,Awkward vibes
+*-*-Fa-Co-L4,Fa-Co-L4-00437,B26-00437,큰돈 빌려달라고 한다면 빌려주는?,사정 들어보고 가능,가족끼린 절대 안 됨,"Huge loan request, would you give it?",Hear them out,Never lend to family
+*-*-Fa-Co-L5,Fa-Co-L5-00438,B26-00438,친형제보다 더 편한 사촌은?,있다,없다,"Cousin closer than a sibling, who is it?",Yup,Nope
+*-*-Fa-Pc-L1,Fa-Pc-L1-00439,B26-00439,주말 아침 식사는?,다 같이 모여서,각자 알아서 해결,Weekend breakfast?,Family meal,Everyone on their own
+*-*-Fa-Pc-L2,Fa-Pc-L2-00440,B26-00440,"내 방 청소, 어떻게 하는?",부모님이 깔끔하게,내 물건은 내가,"Room cleaning, how to do it?",Parents take over,Handle my own stuff
+*-*-Fa-Pc-L3,Fa-Pc-L3-00441,B26-00441,결혼 반대하시면 어떻게 하는?,끝까지 설득,결국 헤어짐,"Parents hate your partner, what to do?",Keep trying to convince,Inevitable breakup
+*-*-Fa-Pc-L4,Fa-Pc-L4-00442,B26-00442,부모님 노후는 어디서 보내는?,함께 모시고 산다,편한 실버타운,"Parents' retirement, where to spend it?",Live with me,Nice retirement home
+*-*-Fa-Pc-L5,Fa-Pc-L5-00443,B26-00443,다시 태어난다면 뭐가 되고 싶은?,부모님의 자녀로,완전히 다른 삶,"Reincarnation, what do you want to be?",Their kid again,Totally new life
+*-*-Fa-Gr-L1,Fa-Gr-L1-00444,B26-00444,할머니댁 가면 주로 뭐 하는?,TV/폰 보기 바쁨,계속 말동무 하기,"At grandma's house, what do you usually do?",Phone/TV time,Keep her company
+*-*-Fa-Gr-L2,Fa-Gr-L2-00445,B26-00445,용돈 주실 때 반응은?,죄송해서 거절,감사히 받음,Reaction to getting money?,Politely decline,Gratefully accept
+*-*-Fa-Gr-L3,Fa-Gr-L3-00446,B26-00446,옛날이야기 해주실 때 리액션은?,신기하고 재밌다,솔직히 지루하다,"Old stories, what's your reaction?",Cool and fun,Kinda boring
+*-*-Fa-Gr-L4,Fa-Gr-L4-00447,B26-00447,편찮으실 때, 내가 해드릴 것은?,매주 찾아만 뵙기,매주 현금 보내기,"They're not feeling well, what should I do?","Just visit weekly","Send cash weekly"
+*-*-Fa-Gr-L5,Fa-Gr-L5-00448,B26-00448,누구를 더 존경하는 편이야?,부모님,조부모님,Who do you respect more?,Parents,Grandparents
+*-*-Lo-Sw-L1,Lo-Sw-L1-00449,B26-00449,데이트 비용 분담은?,깔끔하게 반반,여유 있는 쪽이 더,Splitting the date bill?,Exactly 50/50,Whoever has more
+*-*-Lo-Sw-L2,Lo-Sw-L2-00450,B26-00450,"연락 스타일, 선호하는 스타일은?",하루 종일 카톡,용건/통화 위주,Preferred communication style?,Text all day,Just the facts/calls
+*-*-Lo-Sw-L3,Lo-Sw-L3-00451,B26-00451,"내 과거 연애사, 어디까지 말해야 할까?",속속들이 알기,모르는 게 약,How much of my past relationship history should I reveal?,All the details,Better unknown
+*-*-Lo-Sw-L4,Lo-Sw-L4-00452,B26-00452,결혼 후 시가/처가 살이는?,가능하다,절대 불가능,In-law living situation after marriage?,I'm game,Absolutely not
+*-*-Lo-Sw-L5,Lo-Sw-L5-00453,B26-00453,지금 당장 결혼하자고 한다면?,바로 OK,아직은 시기상조,What if they asked me to marry them right now?,Instant yes,Too soon
+*-*-Lo-Hw-L1,Lo-Hw-L1-00454,B26-00454,치약 짜는 스타일은?,중간부터 팍팍,끝에서부터 차곡,Toothpaste squeezing style?,Squeeze the middle,From the end
+*-*-Lo-Hw-L2,Lo-Hw-L2-00455,B26-00455,부부 돈 관리는?,각자 관리/생활비만,한 명이 통합 관리,Managing finances as a couple?,Separate / split bills,One person manages
+*-*-Lo-Hw-L3,Lo-Hw-L3-00456,B26-00456,물에 빠지면 누구 먼저 구할 거야?,배우자 먼저,아이들 먼저,Who would you save first if they were drowning?,Partner first,Kids first
+*-*-Lo-Hw-L4,Lo-Hw-L4-00457,B26-00457,"도박 빚이나 외도, 한 번은?",용서하고 산다,바로 이혼 도장,"Gambling debt or cheating, one time?",Forgive and stay,Instant divorce
+*-*-Lo-Hw-L5,Lo-Hw-L5-00458,B26-00458,다시 태어나면 우리는?,또 결혼한다,다른 사람 만난다,"If we were reincarnated, would we meet again?",Marry again,Different person

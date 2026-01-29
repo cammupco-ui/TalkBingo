@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart'; // For kIsWeb
 
 class AdState {
   static final ValueNotifier<bool> showAd = ValueNotifier<bool>(true);
+  static final ValueNotifier<bool> isGameActive = ValueNotifier<bool>(false);
   
   // Test Ad Unit IDs
   static String get interstitialAdUnitId {

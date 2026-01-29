@@ -9,12 +9,12 @@ TalkBingo의 키워드 시스템은 유저 간의 관계를 정의하여 적합�
 ## 🔧 키워드 시스템 구조
 
 ### 기본 구조
-- **MP (Main Player):** 메인 플레이어 성별 (M/F)
-- **CP (Companion Player):** 컴패니언 플레이어 성별 (M/F)
+- **MP (Main Player):** `*` (Wildcard) - 성별은 Variants로 처리
+- **CP (Companion Player):** `*` (Wildcard) - 성별은 Variants로 처리
 - **IR (Intimate Relationship):** 친밀한 관계 유형 (B: 친구, L: 연인, F: 가족)
 - **SubRel (Sub Relationship):** 세부 관계 유형
 - **Intimacy:** 친밀도 레벨 (L1~L5)
-- **CodeName:** 고유 코드네임 (예: M-M-B-Ar-L1)
+- **CodeName:** 타겟팅용 와일드카드 코드네임 (예: `*-*-B-Ar-L1`)
 - **Keywords:** 관계별 맞춤 키워드 5개
 
 ---

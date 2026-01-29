@@ -1,0 +1,110 @@
+[
+  {
+    "topic": "비오는날",
+    "category": "Friend",
+    "order_code_prefix": "BDcL2",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "막걸리와 파전 약속",
+        "base_content": "비 오는 날 막걸리에 파전 어때?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "퇴근길 갑자기 쏟아지는 비|동네 전집에서 급만남|파전 막걸리 조합 인증샷|배달 시킬까 말까 고민|약속 취소되고 집 가는 길",
+          "enrichment_trending_keywords": "국룰|근본 조합|치트키|땡긴다|번개|ㄱ?|콜",
+          "enrichment_psychological_tensions": "나가기 귀찮음 vs 먹고 싶음|갑작스러운 약속 부담|다이어트 중|이미 다른 약속 있음|술은 안 땡김|지갑 사정",
+          "enrichment_conversation_friendly_terms": "혹시|~어때?|괜찮으면|생각 있어?|가볍게 한잔|땡기지 않아?"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "비오는날",
+    "category": "Friend",
+    "order_code_prefix": "BDcL2",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "비 오는 날의 감성 공유",
+        "base_content": "비 오는 날은 어떤 감성이 드는 편이야?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "창밖 보며 멍 때리기|인스타 스토리에 비 영상 올리기|감성 플레이리스트 공유|빗소리 들으며 잠들기|집에서 뒹굴거리기|눅눅한 이불 속",
+          "enrichment_trending_keywords": "센치하다|감성 폭발|플리 추천|빗소리 ASMR|집콕|우중충|갬성",
+          "enrichment_psychological_tensions": "비 오는 날 싫음|감성적인 거 오글거림|우울감 vs 차분함|딱히 아무 생각 없음|공감받고 싶은 마음|겉바속촉 파전 생각",
+          "enrichment_conversation_friendly_terms": "~하는 편이야?|주로 어때|문득|괜히|왠지|너는 어때|그런 날 있잖아"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "비오는날",
+    "category": "Family",
+    "order_code_prefix": "FaMsL3",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "우산 챙겼는지 안부 연락",
+        "base_content": "오늘 비 오는데 우산은 잘 챙겼어?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "아침 출근/등교 시간 정신없는 상황|갑자기 쏟아지는 오후 소나기|대중교통에 우산 두고 내리는 일|가족 중 유독 우산 잘 잃어버리는 사람|마중 나갈까 물어보는 상황",
+          "enrichment_trending_keywords": "필수템|깜빡|장마철|게릴라성 호우|뚜벅이|뽀송뽀송",
+          "enrichment_psychological_tensions": "걱정 vs 잔소리|고마움 vs 귀찮음|다 컸는데 하는 생각|알아서 하겠지 믿음과 불안 사이",
+          "enrichment_conversation_friendly_terms": "혹시|깜빡했을까 봐|걱정돼서|~는 괜찮아?|조심해서 다녀"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "비오는날",
+    "category": "Family",
+    "order_code_prefix": "FaMsL3",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "어릴 적 비 오던 날 추억",
+        "base_content": "비 오는 날 하면 떠오르는 어린 시절 추억 있어?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "엄마가 부쳐주던 부침개 냄새|일부러 물웅덩이에서 첨벙거리기|비 쫄딱 맞고 혼났던 기억|창밖으로 비 오는 거 구경하기|가족 다 같이 방에 모여 있기",
+          "enrichment_trending_keywords": "추억 소환|감성 폭발|빗소리 ASMR|파전|라떼는 말이야|센치한 날",
+          "enrichment_psychological_tensions": "행복했던 기억 vs 아쉬운 기억|기억의 미화|서로 다르게 기억하는 같은 사건|그때는 몰랐던 부모님 마음",
+          "enrichment_conversation_friendly_terms": "문득 생각났는데|혹시 기억나?|그때 그랬지|생각해 보니|왠지 모르게|아련하다"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "비오는날",
+    "category": "Lover",
+    "order_code_prefix": "LoSwL2",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "감성적인 분위기 형성",
+        "base_content": "비 오는 날은 어떤 분위기가 좋아?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "창밖으로 비 내리는 풍경 감상|따뜻한 음료와 함께하는 대화|빗소리를 배경으로 음악 듣기|포근한 담요 덮고 영화 보기|차 안에서 와이퍼 구경",
+          "enrichment_trending_keywords": "감성|센치|낭만|아늑함|빗소리 ASMR|재즈|LP",
+          "enrichment_psychological_tensions": "차분함 vs 우울함|감성 vs 현실|함께 vs 혼자만의 감상|나가고 싶은 마음 vs 머물고 싶은 마음",
+          "enrichment_conversation_friendly_terms": "왠지|문득|어떤 느낌|~하는 편|끌리는|상상하면"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "비오는날",
+    "category": "Lover",
+    "order_code_prefix": "LoSwL2",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "실내 데이트 계획",
+        "base_content": "비 오니까 실내에서 뭐 하고 놀까?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "배달 음식 시켜서 영화 정주행|만화 카페에서 뒹굴거리기|보드게임 카페에서 시간 보내기|대형 쇼핑몰에서 아이쇼핑|공방 원데이 클래스 체험",
+          "enrichment_trending_keywords": "실내 데이트|정주행|뒹굴뒹굴|이색 체험|호캉스|넷플릭스|킬링타임",
+          "enrichment_psychological_tensions": "활동적인 것 vs 쉬는 것|집 데이트 vs 밖에서의 실내 데이트|계획 vs 즉흥|비용 부담|나가기 귀찮음",
+          "enrichment_conversation_friendly_terms": "뭐 할까|~하는 건 어때|같이|함께|제일 끌리는 건|혹시 하고 싶은 거"
+        }
+      }
+    ]
+  }
+]

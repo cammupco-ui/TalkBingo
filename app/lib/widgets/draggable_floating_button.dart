@@ -1,0 +1,236 @@
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:talkbingo_app/styles/app_colors.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'dart:async';
+
+class DraggableFloatingButton extends StatefulWidget {
+  final bool isOnChatTab;
+  final int unreadCount;
+  final VoidCallback onTap;
+  final String? latestMessage;
+  final Color themeColor;
+
+  const DraggableFloatingButton({
+    super.key,
+    required this.isOnChatTab,
+    required this.unreadCount,
+    required this.onTap,
+    this.latestMessage,
+    this.themeColor = AppColors.hostPrimary,
+  });
+
+  @override
+  State<DraggableFloatingButton> createState() => _DraggableFloatingButtonState();
+}
+
+class _DraggableFloatingButtonState extends State<DraggableFloatingButton> {
+  Offset _position = const Offset(300, 500); // Default off-center
+  bool _isDragging = false;
+  bool _initialized = false;
+  Timer? _previewTimer;
+  bool _showPreview = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedPosition();
+  }
+  
+  @override
+  void didUpdateWidget(DraggableFloatingButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Show preview if new message arrived while NOT on chat tab
+    if (widget.latestMessage != oldWidget.latestMessage && widget.latestMessage != null) {
+      if (!widget.isOnChatTab) { 
+        setState(() {
+          _showPreview = true;
+        });
+        _previewTimer?.cancel();
+        _previewTimer = Timer(const Duration(seconds: 5), () {
+          if (mounted) setState(() => _showPreview = false);
+        });
+      }
+    }
+  }
+  
+  @override
+  void dispose() {
+    _previewTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadSavedPosition() async {
+    // Wait for frame to get valid MediaQuery
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final prefs = await SharedPreferences.getInstance();
+      final double? x = prefs.getDouble('floating_button_x');
+      final double? y = prefs.getDouble('floating_button_y');
+      
+      if (!mounted) return;
+
+      final size = MediaQuery.of(context).size;
+      final padding = MediaQuery.of(context).padding;
+      
+      setState(() {
+         if (x != null && y != null) {
+            // CRITICAL: Clamp loaded position to current screen size
+            // This prevents the button from disappearing if loaded on a smaller screen
+            double safeX = x.clamp(16.0, size.width - 70.0); // 70 is max width approx
+            double safeY = y.clamp(padding.top + 60, size.height - 100);
+            _position = Offset(safeX, safeY);
+         } else {
+            // Default bottom-right
+            double dx = size.width > 100 ? size.width - 80 : 20;
+            double dy = size.height > 200 ? size.height - 180 : 200;
+            _position = Offset(dx, dy);
+         }
+         _initialized = true;
+      });
+    });
+  }
+
+  Future<void> _savePosition() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('floating_button_x', _position.dx);
+    await prefs.setDouble('floating_button_y', _position.dy);
+  }
+
+  void _onPanUpdate(DragUpdateDetails details) {
+    setState(() {
+      _position += details.delta;
+      _isDragging = true;
+    });
+  }
+
+  void _onPanEnd(DragEndDetails details) {
+    final size = MediaQuery.of(context).size;
+    final padding = MediaQuery.of(context).padding;
+    final buttonSize = 70.0;
+    
+    // Calculate safe boundaries
+    double minX = 16.0;
+    double maxX = size.width - buttonSize - 16.0;
+    double minY = padding.top + 60.0; // Avoid header
+    double maxY = size.height - buttonSize - 50.0; // Avoid bottom input
+
+    double targetX = _position.dx.clamp(minX, maxX);
+    double targetY = _position.dy.clamp(minY, maxY);
+    
+    // Snap to closest side horizontally for tidiness
+    if (targetX + buttonSize/2 < size.width/2) {
+       targetX = minX; // Snap Left
+    } else {
+       targetX = maxX; // Snap Right
+    }
+
+    setState(() {
+      _isDragging = false;
+      _position = Offset(targetX, targetY);
+    });
+    _savePosition();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_initialized) return const SizedBox.shrink();
+
+    final bool isChat = widget.isOnChatTab;
+    final Color bgColor = isChat 
+        ? Colors.grey.withOpacity(0.7) 
+        : widget.themeColor.withOpacity(0.85);
+
+    return Positioned(
+      left: _position.dx,
+      top: _position.dy,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque, // Ensure touches are captured
+        onPanUpdate: _onPanUpdate,
+        onPanEnd: _onPanEnd,
+        onTap: () {
+           // Prevent tap if just finished dragging (though GestureDetector usually handles this)
+           if (!_isDragging) {
+              widget.onTap();
+           }
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: _isDragging ? 70 : (_showPreview && !isChat ? 220 : 60), 
+          height: _isDragging ? 70 : 60,
+          curve: Curves.easeOutBack,
+          decoration: BoxDecoration(
+            color: _isDragging ? bgColor.withOpacity(0.95) : bgColor,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(_isDragging ? 0.4 : 0.2),
+                blurRadius: _isDragging ? 16 : 8,
+                offset: Offset(0, _isDragging ? 8 : 4),
+              )
+            ],
+          ),
+          child: Stack(
+            children: [
+               // Content
+               Center(
+                 child: isChat 
+                 ? Column(
+                     mainAxisSize: MainAxisSize.min,
+                     children: const [
+                       Icon(Icons.sports_esports, color: Colors.white, size: 28),
+                       Text("보드", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold))
+                     ],
+                   )
+                 : (_showPreview 
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        child: Row(
+                          children: [
+                             Icon(Icons.chat_bubble, color: Colors.white.withOpacity(0.9), size: 24),
+                             const SizedBox(width: 8),
+                             Expanded(
+                               child: Text(
+                                 widget.latestMessage ?? "", 
+                                 style: const TextStyle(color: Colors.white, fontSize: 11), // Increased font size slightly since title is gone
+                                 maxLines: 2, // Allow 2 lines since we have space
+                                 overflow: TextOverflow.ellipsis
+                               ),
+                             )
+                          ],
+                        ),
+                      )
+                    : const Icon(Icons.chat_bubble, color: Colors.white, size: 30) // Simple Icon
+                   )
+               ),
+               
+               // Badge
+               if (!isChat && widget.unreadCount > 0)
+                 Positioned(
+                   right: 0,
+                   top: 0,
+                   child: IgnorePointer(
+                     child: Container( // Wrap to ensure it doesn't block hits if large
+                       padding: const EdgeInsets.all(6),
+                       decoration: const BoxDecoration(
+                         color: Colors.red,
+                         shape: BoxShape.circle,
+                       ),
+                       constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                       child: Center(
+                         child: Text(
+                           "${widget.unreadCount}",
+                           style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                         ),
+                       ),
+                     ).animate(key: ValueKey(widget.unreadCount)).scale(duration: 300.ms, curve: Curves.elasticOut),
+                   ),
+                 ),
+            ],
+          ),
+        )
+        .animate(target: (widget.unreadCount > 0 && !isChat) ? 1 : 0)
+        .shake(delay: 500.ms, hz: 4, curve: Curves.easeInOut), // Shake if unread
+      ),
+    );
+  }
+}

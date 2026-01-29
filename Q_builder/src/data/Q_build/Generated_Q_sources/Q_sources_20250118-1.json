@@ -1,0 +1,102 @@
+[
+    {
+        "topic": "모닝콜",
+        "category": "Lover",
+        "order_code_prefix": "LoSwL2",
+        "gender_policy": "neutral",
+        "questions": [
+            {
+                "context_variant": "연인의 다정한 아침 인사",
+                "base_content": "잘 잤어?",
+                "enrichment_materials": {
+                    "enrichment_community_contexts": "갓 잠에서 깬 목소리 | 출근/등교 준비시키는 아침 | 하루의 시작을 함께하는 통화 | 비몽사몽한 연인의 반응",
+                    "enrichment_trending_keywords": "꿀잠 | 모닝 엔젤 | 비몽사몽 | 굿모닝 키스 | 내 목소리",
+                    "enrichment_psychological_tensions": "깨우는 것에 대한 미안함 | 졸린데도 반가운 척 | 목소리만으로 기분 파악하기 | 의무감 vs 애정표현",
+                    "enrichment_conversation_friendly_terms": "혹시 | 푹 | 좋은 꿈 | ~했어? | 더 자고 싶지"
+                }
+            }
+        ]
+    },
+    {
+        "topic": "모닝콜",
+        "category": "Lover",
+        "order_code_prefix": "LoSwL2",
+        "gender_policy": "neutral",
+        "questions": [
+            {
+                "context_variant": "데이트 약속 확인 전화",
+                "base_content": "오늘 데이트 약속, 다시 한번 확인해볼까?",
+                "enrichment_materials": {
+                    "enrichment_community_contexts": "데이트 계획 최종 점검 | 약속 시간/장소 재확인 | 만남을 앞둔 설렘 표현 | 잊어버렸을까 봐 걱정되는 마음",
+                    "enrichment_trending_keywords": "이따 봐 | 최종 확인 | 깜빡 | 변동사항 | 준비물",
+                    "enrichment_psychological_tensions": "잊었을까 봐 불안함 | 재촉하는 것처럼 보일까 봐 걱정 | 계획 변경에 대한 눈치 | 설렘과 귀찮음 사이",
+                    "enrichment_conversation_friendly_terms": "까먹었을까 봐 | 다시 한번 | 그대로 | 혹시나 해서 | 잊은 건 아니지?"
+                }
+            }
+        ]
+    },
+    {
+        "topic": "모닝콜",
+        "category": "Family",
+        "order_code_prefix": "FaFsL3",
+        "gender_policy": "neutral",
+        "questions": [
+            {
+                "context_variant": "부모님이 자녀 깨워주기",
+                "base_content": "이제 일어날까?",
+                "enrichment_materials": {
+                    "enrichment_community_contexts": "5분만 더 자겠다는 자녀|학교 늦었다고 소리치는 상황|아침밥 냄새로 깨우는 아침|이불 걷어차며 깨우는 상황|알람 여러 개 끄고 계속 자는 자녀",
+                    "enrichment_trending_keywords": "인간 알람|5분만 더|등짝 스매싱|지각|K-장남/장녀",
+                    "enrichment_psychological_tensions": "짜증 vs 미안함|늦을까 봐 걱정되는 마음|애정과 단호함 사이의 줄다리기|더 자고 싶은 유혹",
+                    "enrichment_conversation_friendly_terms": "우리 똥강아지|얼른|어서|~해야지|해 뜨겠다"
+                }
+            }
+        ]
+    },
+    {
+        "topic": "모닝콜",
+        "category": "Family",
+        "order_code_prefix": "FaFsL3",
+        "gender_policy": "neutral",
+        "questions": [
+            {
+                "context_variant": "자녀의 모닝콜 부탁",
+                "base_content": "내일 아침에 깨워줄 수 있을까?",
+                "enrichment_materials": {
+                    "enrichment_community_contexts": "중요한 시험이나 면접 전날 밤|스마트폰 알람을 믿을 수 없을 때|절대 늦으면 안 되는 약속이 있을 때|자기 직전에 거실에 있는 부모님에게 부탁|못 일어나면 큰일 난다고 신신당부하는 상황",
+                    "enrichment_trending_keywords": "인간 알람|제발|꼭|N중 알람|핵중요",
+                    "enrichment_psychological_tensions": "늦잠에 대한 불안감|부모님에 대한 미안함과 의존|부탁하는 것에 대한 부담감|잊어버릴까 봐 걱정되는 마음",
+                    "enrichment_conversation_friendly_terms": "혹시|~해주면 안 될까?|미안한데|부탁 좀 할게|꼭 깨워줘야 해"
+                }
+            }
+        ]
+    },
+    {
+        "topic": "모닝콜",
+        "category": "Friend",
+        "order_code_prefix": "BScL2",
+        "gender_policy": "neutral",
+        "questions": [
+            {
+                "context_variant": "시험 날 같이 일어나기",
+                "base_content": "시험 날 같이 깨워줄까?",
+                "enrichment_materials": {
+                    "enrichment_community_contexts": "밤샘 공부 후 시험 당일 아침 | 도서관 자리 선점 미션 | 같은 과목 시험이라 서로 챙기는 상황",
+                    "enrichment_trending_keywords": "인간 알람 | 기상 요정 | 전화 폭탄 | 필승 기상",
+                    "enrichment_psychological_tensions": "깨웠는데 못 일어나면 내 책임? | 고마운 배려 vs 부담스러운 부탁 | 전화 한 통 vs 일어날 때까지 확인",
+                    "enrichment_conversation_friendly_terms": "혹시 | 괜찮으면 | 같이 ~할까 | 서로 챙겨주자"
+                }
+            },
+            {
+                "context_variant": "지각 방지 모닝콜 약속",
+                "base_content": "지각 안 하게 모닝콜 해줄까?",
+                "enrichment_materials": {
+                    "enrichment_community_contexts": "상습 지각러 친구와의 약속 | 중요한 발표나 면접이 있는 날 | 전날 늦게까지 같이 놀았을 때",
+                    "enrichment_trending_keywords": "프로 지각러 | 기상 미션 | 생명의 은인 | 확인 사살",
+                    "enrichment_psychological_tensions": "선의가 오지랖으로 비칠까 걱정 | 친구 관계에 개입된 책임감 | 반복되는 부탁의 부담감",
+                    "enrichment_conversation_friendly_terms": "필요하면 | 걱정돼서 | 내가 먼저 일어나면 | 잊지 않고"
+                }
+            }
+        ]
+    }
+]

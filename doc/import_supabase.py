@@ -45,30 +45,60 @@ class SupabaseImporter:
     def _prepare_row_data(self, row, quiz_type):
         q_id = row.get('q_id', '').strip()
         content = row.get('content', '').strip()
+        content_en = row.get('content_en', '').strip()
         order = row.get('Order', '').strip()
         
         # Parse CodeNames
-        # Input: "M-F-B-Ar-L2, M-F-Fa-*-L1"
         raw_codes = row.get('CodeName', '').split(',')
         code_names = [c.strip() for c in raw_codes if c.strip()]
         
         details = {}
+        details_en = {}
+        
         if quiz_type == 'Truth':
             details['answers'] = row.get('answers', '')
+            details_en['answers'] = row.get('answers_en', '')
         elif quiz_type == 'Balance':
             details['choice_a'] = row.get('choice_a', '')
             details['choice_b'] = row.get('choice_b', '')
+            details_en['choice_a'] = row.get('choice_a_en', '')
+            details_en['choice_b'] = row.get('choice_b_en', '')
         
-        details['order'] = order # Keep order in details if useful
+        details['order'] = order 
         if q_id:
              details['legacy_q_id'] = q_id
 
+        # Parse Gender Variants (Korean)
+        gender_variants = {}
+        for key in ['var_m_f', 'var_f_m', 'var_m_m', 'var_f_f']:
+            val = row.get(key, '').strip()
+            if val: gender_variants[key] = val
+
+        # Parse Gender Variants (English)
+        gender_variants_en = {}
+        for key in ['var_m_f_en', 'var_f_m_en', 'var_m_m_en', 'var_f_f_en']:
+            # Store with simplified keys (e.g., 'var_m_f') inside the EN object, or keep detailed keys?
+            # Decision: Keep consistent logic. If app expects { "var_m_f": ... }, then details_en should mimic structure?
+            # BUT GameSession.dart parses `gender_variants` column. It doesn't look for `gender_variants_en` column yet!
+            # Wait, I proposed adding `gender_variants_en` column to DB.
+            # So I should populate it here.
+            # And keys inside should be `var_m_f` etc (without _en suffix) so the logic can be reused?
+            # "key.replace('_en', '')" -> 'var_m_f'
+            val = row.get(key, '').strip()
+            if val: 
+                clean_key = key.replace('_en', '')
+                gender_variants_en[clean_key] = val
+
         return {
             'q_id': q_id, 
-            'type': quiz_type,
+            'type': quiz_type.lower(),
             'content': content,
-            'details': details, # JSONB automatically handled by client usually, or dict
-            'code_names': code_names
+            'content_en': content_en,
+            'details': details, 
+            'details_en': details_en,
+            'code_names': code_names,
+            'gender_variants': gender_variants,
+            'gender_variants_en': gender_variants_en
         }
 
 if __name__ == "__main__":
@@ -81,8 +111,8 @@ if __name__ == "__main__":
     importer = SupabaseImporter(SUPABASE_URL, SUPABASE_KEY)
 
     # Import Truth Quiz
-    importer.import_csv('doc/TruthQuizData.csv', 'Truth')
+    importer.import_csv('doc/TruthQuizData_v2.csv', 'Truth')
     
     # Import Balance Quiz
-    importer.import_csv('doc/BalanceQuizData.csv', 'Balance') # Check filename availability
+    importer.import_csv('doc/BalanceQuizData_v2.csv', 'Balance')
 

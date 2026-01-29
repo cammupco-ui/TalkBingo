@@ -1,0 +1,92 @@
+[
+  {
+    "topic": "자극적인 유행 영상 대신 철학 책을 읽거나 필사하는 모습이 획일화된 또래와 구별되는 차별점이라 여기는 상황",
+    "category": "Friend",
+    "order_code_prefix": "BScL3",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "가치관 공유 대화",
+        "base_content": "요즘 자극적인 유행보다 철학책을 읽는 게 더 의미 있다고 느껴질 때가 있어?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "카페에서 각자 책 읽다가 나누는 대화|숏폼 영상 보다가 현타 온 친구와의 카톡|새해 다짐으로 인문학 서적 구매 후 인증하는 SNS|유튜브 알고리즘에 대해 불평하는 상황",
+          "enrichment_trending_keywords": "도파민 디톡스|갓생|숏폼 중독|마음챙김|지적 허영심",
+          "enrichment_psychological_tensions": "나만 뒤처지는 듯한 불안감|취향 강요처럼 보일까 봐 걱정|유난 떤다고 생각할까 봐 눈치 봄|나의 깊이를 알아주길 바라는 마음|잘난 척으로 비칠까 봐 우려",
+          "enrichment_conversation_friendly_terms": "요즘 들어|가끔은|문득|~하는 편이야?|어떤 것 같아?|나만 그런가"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "자극적인 유행 영상 대신 철학 책을 읽거나 필사하는 모습이 획일화된 또래와 구별되는 차별점이라 여기는 상황",
+    "category": "Family",
+    "order_code_prefix": "FaFsL4",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "자녀의 정체성 고민",
+        "base_content": "요즘 철학 책을 읽고 필사하는 게 너의 정체성을 찾아가는 데 어떤 의미가 있을까?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "자녀 방에서 우연히 발견한 필사 노트 | 서점 철학 코너에서 자녀를 마주친 상황 | 진로 문제로 대화하다가 나온 주제",
+          "enrichment_trending_keywords": "자아탐색 | 나다움 | 소신 | 본캐 | 인생의 의미",
+          "enrichment_psychological_tensions": "정체성 탐색 과정에 대한 인정 욕구 | 부모의 섣부른 판단에 대한 경계심 | 또래와 다르다는 불안감과 자부심",
+          "enrichment_conversation_friendly_terms": "어떤 의미인지 | 어떻게 다가오는지 | 너만의 생각 | 네 마음속에서는 | 어떤 계기가 있었는지"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "자극적인 유행 영상 대신 철학 책을 읽거나 필사하는 모습이 획일화된 또래와 구별되는 차별점이라 여기는 상황",
+    "category": "Lover",
+    "order_code_prefix": "LoSwL4",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "연인 간 가치관 공유",
+        "base_content": "유행하는 영상보다 철학 책을 읽거나 필사하는 것에 어떤 가치를 두는지 궁금해.",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "카페 데이트 중 한 명은 릴스 보고 한 명은 책 읽는 모습|자기계발에 대한 대화를 나누는 순간|연인이 SNS에 올린 필사 문구|주말 저녁을 어떻게 보낼지 이야기하는 상황",
+          "enrichment_trending_keywords": "도파민 디톡스|지적 허영심|깊이 있는 대화|아날로그 감성",
+          "enrichment_psychological_tensions": "진심 vs 허세|내가 너무 가벼워 보일까 하는 걱정|취향 존중과 취향 강요 사이|지적 우월감에 대한 반감",
+          "enrichment_conversation_friendly_terms": "끌리는 이유|특별한 의미|생각의 깊이|영감을 얻는 순간"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "자극적인 유행 영상 대신 철학 책을 읽거나 필사하는 모습이 획일화된 또래와 구별되는 차별점이라 여기는 상황",
+    "category": "Lover",
+    "order_code_prefix": "LoSwL4",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "서로의 특별함에 대한 대화",
+        "base_content": "요즘 유행보다는 철학 책을 찾아 읽거나 필사하는 모습에서 스스로 특별하다고 느끼는 부분이 있어?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "남들과는 다른 우리 커플의 데이트 방식|자존감에 대해 이야기하는 상황|연인의 남다른 취미를 칭찬해줄 때|'나는 이런 사람이야'라고 정의 내리는 모습",
+          "enrichment_trending_keywords": "마이웨이|줏대|남다른 결|확고한 세계관",
+          "enrichment_psychological_tensions": "잘난 척으로 비춰질까 하는 걱정|평범함에 대한 불안감|개성과 고집 사이|나를 이해해줄까 하는 의문",
+          "enrichment_conversation_friendly_terms": "문득 드는 생각|매력 포인트|자신만의 색깔|왠지 모르게"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "자극적인 유행 영상 대신 철학 책을 읽거나 필사하는 모습이 획일화된 또래와 구별되는 차별점이라 여기는 상황",
+    "category": "Lover",
+    "order_code_prefix": "LoSwL4",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "지적인 교감 형성",
+        "base_content": "철학 책을 읽거나 필사하면서 얻는 생각이나 깨달음이 있다면 어떤 것들이야?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "인상 깊었던 책 구절을 공유하는 순간|함께 서점에서 각자 책을 고르는 시간|책 내용을 현실 문제에 대입해보는 대화|인생 책을 서로에게 추천하는 상황",
+          "enrichment_trending_keywords": "인사이트|생각의 전환|내면의 성장|지적 유희",
+          "enrichment_psychological_tensions": "내 생각을 드러내는 것에 대한 두려움|똑똑해 보여야 한다는 압박감|상대방이 지루해할까 봐 걱정|공감받고 싶은 생각",
+          "enrichment_conversation_friendly_terms": "인상 깊었던 구절|기억에 남는 생각|삶에 적용해 본 경험|가볍게 떠오른 생각"
+        }
+      }
+    ]
+  }
+]

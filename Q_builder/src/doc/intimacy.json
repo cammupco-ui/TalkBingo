@@ -1,0 +1,217 @@
+{
+  "intimacy_levels": [
+    {
+      "level": 1,
+      "label": "First Meeting",
+      "description": "서로를 탐색하고 예의를 갖추는 단계",
+      "by_category": {
+        "Friend": {
+          "state": "막 알게 된 어색한 사이",
+          "allowed_topics": [
+            "취미",
+            "호불호",
+            "가벼운 일상"
+          ],
+          "examples": [
+            "새 학기 첫 짝꿍",
+            "입사 첫 주 동료",
+            "소모임 신입 회원"
+          ]
+        },
+        "Family": {
+          "state": "가족이지만 자주 보지 않아 어색한 관계",
+          "allowed_topics": [
+            "안부",
+            "건강",
+            "근황"
+          ],
+          "examples": [
+            "명절에만 보는 먼 친척",
+            "오랫동안 떨어져 지낸 사촌"
+          ]
+        },
+        "Lover": {
+          "state": "소개팅 직후 또는 썸 초기",
+          "allowed_topics": [
+            "첫인상",
+            "가벼운 관심사"
+          ],
+          "examples": [
+            "소개팅 첫 만남",
+            "번호 교환 직후"
+          ]
+        }
+      }
+    },
+    {
+      "level": 2,
+      "label": "Getting Comfortable",
+      "description": "일상 대화가 자연스러워진 단계",
+      "by_category": {
+        "Friend": {
+          "state": "연락이 부담스럽지 않은 사이",
+          "allowed_topics": [
+            "일상",
+            "주말",
+            "취미"
+          ],
+          "examples": [
+            "점심 같이 먹는 직장 동료",
+            "가끔 연락하는 동창",
+            "취미 메이트"
+          ]
+        },
+        "Family": {
+          "state": "기본적인 성향을 알고 편하게 대화하는 사이",
+          "allowed_topics": [
+            "학교",
+            "직장",
+            "근황"
+          ],
+          "examples": [
+            "가끔 안부 전하는 친척",
+            "또래 사촌과 SNS 소통"
+          ]
+        },
+        "Lover": {
+          "state": "연애 초반 또는 썸 확신 단계",
+          "allowed_topics": [
+            "데이트",
+            "하루 일과"
+          ],
+          "examples": [
+            "썸 타는 중",
+            "연애 1~3개월 차"
+          ]
+        }
+      }
+    },
+    {
+      "level": 3,
+      "label": "Close Relationship",
+      "description": "솔직한 감정 표현과 농담이 가능한 단계",
+      "by_category": {
+        "Friend": {
+          "state": "스스럼없는 친한 친구",
+          "allowed_topics": [
+            "과거 이야기",
+            "연애사",
+            "가벼운 고민"
+          ],
+          "examples": [
+            "단짝 친구",
+            "여행을 함께 가는 친구",
+            "퇴사 후에도 만나는 동료"
+          ]
+        },
+        "Family": {
+          "state": "서로를 잘 알고 농담이 가능한 가족",
+          "allowed_topics": [
+            "추억",
+            "가족 에피소드"
+          ],
+          "examples": [
+            "자주 연락하는 형제자매",
+            "친구 같은 부모-자녀"
+          ]
+        },
+        "Lover": {
+          "state": "안정된 연애 관계",
+          "allowed_topics": [
+            "직장 스트레스",
+            "가벼운 미래"
+          ],
+          "examples": [
+            "연애 6개월 이상",
+            "편안한 연인 관계"
+          ]
+        }
+      }
+    },
+    {
+      "level": 4,
+      "label": "Deep Trust",
+      "description": "약점과 상처를 공유하는 깊은 유대 단계",
+      "by_category": {
+        "Friend": {
+          "state": "중요한 고민을 맡길 수 있는 친구",
+          "allowed_topics": [
+            "진로",
+            "이별",
+            "가정사"
+          ],
+          "examples": [
+            "10년 지기 베프",
+            "가장 먼저 떠오르는 친구"
+          ]
+        },
+        "Family": {
+          "state": "삶에 깊이 관여하는 가족",
+          "allowed_topics": [
+            "경제",
+            "결혼",
+            "진로"
+          ],
+          "examples": [
+            "부모와 인생 상담",
+            "서로 의지하는 형제"
+          ]
+        },
+        "Lover": {
+          "state": "인생의 동반자로 인식하는 관계",
+          "allowed_topics": [
+            "결혼",
+            "가치관",
+            "트라우마"
+          ],
+          "examples": [
+            "결혼 전제 연애",
+            "장수 커플"
+          ]
+        }
+      }
+    },
+    {
+      "level": 5,
+      "label": "Complete Bond",
+      "description": "완전한 신뢰와 수용의 단계",
+      "by_category": {
+        "Friend": {
+          "state": "가족보다 가까운 평생 친구",
+          "allowed_topics": [
+            "비밀",
+            "금전",
+            "인생 계획"
+          ],
+          "examples": [
+            "죽마고우",
+            "모든 흑역사를 아는 친구"
+          ]
+        },
+        "Family": {
+          "state": "절대적 사랑과 헌신의 가족",
+          "allowed_topics": [
+            "상속",
+            "생사",
+            "유언"
+          ],
+          "examples": [
+            "헌신적인 부모",
+            "세상에 둘도 없는 형제자매"
+          ]
+        },
+        "Lover": {
+          "state": "완전한 일심동체의 관계",
+          "allowed_topics": [
+            "경제 공동체",
+            "평생 약속"
+          ],
+          "examples": [
+            "부부",
+            "영혼의 파트너"
+          ]
+        }
+      }
+    }
+  ]
+}

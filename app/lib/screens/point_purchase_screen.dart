@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -170,14 +171,20 @@ class _PointPurchaseScreenState extends State<PointPurchaseScreen> {
              Container(
                   margin: const EdgeInsets.only(bottom: 24),
                   width: double.infinity,
-                  child: OutlinedButton.icon(
+                  child: AnimatedOutlinedButton(
                       onPressed: _showPaymentInputModal,
-                      icon: const Icon(Icons.add_card),
-                      label: const Text("Add Payment Method"),
                       style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           foregroundColor: AppColors.hostPrimary,
                           side: const BorderSide(color: AppColors.hostPrimary)
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.add_card),
+                          SizedBox(width: 8),
+                          Text("Add Payment Method"),
+                        ],
                       ),
                   ),
              ),
@@ -633,7 +640,7 @@ class _PointPurchaseScreenState extends State<PointPurchaseScreen> {
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: AnimatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.hostPrimary,

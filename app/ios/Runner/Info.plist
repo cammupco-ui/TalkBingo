@@ -24,6 +24,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>TalkBingo needs speech recognition to transcribe your chat messages.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>TalkBingo needs microphone access to listen to your voice commands.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

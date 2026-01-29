@@ -3,7 +3,7 @@
 ## 📋 API 개요
 
 TalkBingo 서비스의 핵심 기능별 API 요구사항을 정의합니다.
-**최신 PRD (`doc/TalkBingoPRD_MVP.md`)**의 내용을 반영하여 **MP/CP 용어**, **승인(Approval) 시스템**, **승리 단계(Victory Stages)**, **새로운 점수 체계(VP/AP/EP/TS)**를 포함합니다.
+**최신 PRD (`doc/TalkBingoPRD.md`)**의 내용을 반영하여 **Dynamic Gender Variants**, **Supabase Wildcard Fetching**, **승인(Approval) 시스템**, **승리 단계(Victory Stages)**, **새로운 점수 체계(VP/AP/EP/TS)**를 포함합니다.
 
 ---
 
@@ -71,43 +71,31 @@ TalkBingo 서비스의 핵심 기능별 API 요구사항을 정의합니다.
 
 ## 2. Game (게임방 생성/참여)
 
-### 2.1 사용자 정보 저장 및 CodeName 선별
-- **기능:** MP(호스트) 또는 CP(게스트) 정보를 Supabase에 저장하고 CodeName 선별
+### 2.1 사용자 정보 저장 및 타겟팅 설정 (Targeting Setup)
+- **기능:** MP(호스트)의 입력 정보를 바탕으로 타겟팅 태그(Wildcard CodeName)를 생성
 - **입력 (MP - Host):**
-  - `nickname`: 닉네임
-  - `age`: 나이
-  - `gender`: 성별 (M/F) - **필수**
-  - `role`: "mp"
-  - `birthCity`: 고향도시
-  - `relationshipType`: 관계 유형
-  - `intimacyLevel`: 친밀도 레벨
-- **입력 (CP - Guest):**
-  - `nickname`: 닉네임
-  - `age`: 나이
-  - `gender`: 성별 (M/F) - **필수**
-  - `role`: "cp"
-  - `gameId`: 게임 ID
-  - `birthCity`: 고향도시
-  - `locationConsent`: 접속지역 공유 동의
-  - `relationshipType`: 관계 유형
-  - `intimacyLevel`: 친밀도 레벨
-- **출력:**
-  - `success`: 성공 여부
-  - `userId`: 사용자 ID
-  - `codename`: 선별된 CodeName (예: M-F-B-Ar-L3)
-- **HTTP Method:** POST
-- **Endpoint:** `/api/users/save-and-select-codename`
+  - `gender`: 성별 (M/F)
+  - `relationshipType`: 관계 유형 (예: "Friend")
+  - `subRelationship`: 하위 관계 (예: "Ar")
+  - `intimacyLevel`: 친밀도 레벨 (예: 3)
+- **출력 (Client Logic / Helper):**
+  - `targetTag`: `*-*-B-Ar-L3` (성별 무관, 관계/친밀도 기반 와일드카드)
+  - `broadTag`: `*-*-B-*-L3` (Fallback용 광범위 태그)
+- **HTTP Method:** (Client Internal or Supabase RPC)
+- **Endpoint:** N/A (Client-Side Logic)
 
-### 2.2 CodeName 기반 질문 조회
-- **기능:** CodeName을 기반으로 Supabase에서 질문 조회
+### 2.2 질문 조회 (Question Fetching)
+- **기능:** 타겟팅 태그를 기반으로 Supabase에서 질문 조회 (Wildcard Matching)
 - **입력:**
-  - `codename`: CodeName
-  - `limit`: 조회할 질문 수 (기본 50개)
+  - `tags`: 조회할 태그 배열 (`['*-*-B-Ar-L3', '*-*-B-*-L3']`)
+  - `limit`: 조회할 질문 수 (25 + Alpha)
 - **출력:**
   - `success`: 성공 여부
-  - `data.questions`: 질문 리스트 (50개)
-- **HTTP Method:** GET
-- **Endpoint:** `/api/questions/by-codename`
+  - `data.questions`: 질문 리스트
+    - `content`: 기본 텍스트
+    - `gender_variants`: { "M_to_F": "...", "F_to_M": "..." } (JSONB)
+- **HTTP Method:** GET (Supabase Query)
+- **Endpoint:** `/rest/v1/questions` (Supabase)
 
 ### 2.3 게임방 생성
 - **기능:** 새로운 게임방 생성 및 초대 링크 생성
@@ -153,7 +141,8 @@ TalkBingo 서비스의 핵심 기능별 API 요구사항을 정의합니다.
   - `cell_coordinates`: 좌표 (x, y)
 - **출력:**
   - `cell_type`: **T** (Truth), **B** (Balance), **M** (Mini - Lock된 경우)
-  - `question`: 질문 내용 (연휴/트렌드 반영)
+  - `question`: 질문 내용 (기본 텍스트)
+  - `variants`: 동적 텍스트 변형 데이터 (JSONB, Client Rendering용)
   - `choices`: 선택지 (B Type인 경우)
   - `time_limit`: 제한 시간 (기본 30초)
 - **HTTP Method:** POST

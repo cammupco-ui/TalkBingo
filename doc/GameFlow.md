@@ -19,12 +19,15 @@
     *   유저가 좌우로 스와이프하여 **빙고 보드**와 **채팅** 화면을 오갈 수 있습니다.
     *   **빙고 보드 (`BingoGrid`)**: 5x5 그리드. 상태별 애니메이션(Hover/Press, Pulse)과 역할별 색상(Host: Pink, Guest: Purple)이 적용됩니다.
     *   **인터랙션 레이어 (Interaction Layer)**: `Stack` 최상단에 조건부로 렌더링됩니다.
-        *   `QuizOverlay`: 밸런스/진실게임 질문 및 대화창.
+        *   `QuizOverlay`: 밸런스/진실게임 질문 및 대화창. **(Dynamic Content Adaptation: 턴과 성별에 따라 질문 텍스트가 자동 변환됨)**
         *   **Inline Mini-Games**: `StartInteraction` 시 전체 화면 오버레이가 아닌 보드 위 **인라인 형태**로 미니게임(승부차기 등)이 로드되어 양쪽 플레이어가 동시에 같은 UI를 공유합니다.
 
 *   **플로팅 오버레이 (Floating Overlays)**:
     *   **점수/알림**: 획득 시 일시적으로 나타나는 `Positioned` 위젯.
     *   **승리 효과**: 빙고 달성 시 Confetti(꽃가루) 효과.
+    *   **입장 알림 (Entrance Toast)**:
+        *   호스트 입장 시(게스트 화면): "초대자가 입장하셨습니다" 모달.
+        *   게스트 입장 시(호스트 화면): "ooo님이 입장하셨습니다" 모달.
     *   **광고 대기 (`Ad Handshake`)**: `paused_ad` 상태일 때 "상대방을 기다리는 중" 쉴드가 표시됩니다.
 
 ### 1.2 채팅 및 티커 (Chat & Ticker)
@@ -42,7 +45,10 @@
 
 1.  **선택 및 포커스 모드 (Selection & Focus Mode)**:
     *   턴을 가진 플레이어가 타일을 탭하면 `QuizOverlay`가 열립니다.
-    *   **맥락 유지 (Context Preservation)**: '대기 중'인 플레이어에게도 추상적인 아이콘(모래시계 등)이 아닌, **질문과 선택지가 질문자와 동일하게 표시**됩니다. 이를 통해 양쪽 유저가 항상 같은 주제에 집중할 수 있습니다.
+    *   **동적 렌더링 (Dynamic Rendering)**:
+        *   **Board**: 공간 제약상 `content`(기본 질문)가 표시됩니다.
+        *   **Overlay**: 현재 턴의 **Attacker(질문자)와 Defender(응답자)** 성별 조합에 맞춰, `variants` 필드에서 가장 적합한 텍스트(예: "누나/동생...")를 찾아 표시합니다.
+    *   **맥락 유지 (Context Preservation)**: 상대방에게도 동일한 변형 텍스트가 표시되어 완벽한 대화 맥락을 공유합니다.
 2.  **답변 및 대화 (Answer & Discussion)**:
     *   **질문자 (Requester)**: 답변을 입력하거나(T-Type) 선택지를 고릅니다(B-Type). 선택 시 해당 항목이 강조됩니다.
     *   **가이드**: 하단 버튼 영역에 **"공감 할수 있게 대화 해 보세요"**라는 가이드 문구가 표시되어, 단순 입력보다 채팅/음성 대화를 유도합니다.
@@ -72,11 +78,9 @@
 1.  **소스**: Supabase의 `public.questions` 테이블.
 2.  **트리거**: 호스트가 `WaitingScreen`에 진입할 때 발생.
 3.  **쿼리 로직** (`GameSession.fetchQuestionsFromSupabase`):
-    *   **입력**: `targetCode` (예: 남녀-레벨3을 의미하는 `M-F-L3`).
+    *   **입력**: `targetCode` (예: `*-*-B-Ar-L3` - 성별 무관 Wildcard 사용).
     *   **필터링**: `code_names` 컬럼에 대해 Postgres 배열 포함 연산자(`@>`)를 사용하여 일치하는 질문을 찾습니다.
-    *   **언어 처리**: `GameSession.language`를 확인합니다.
-        *   `en`인 경우: `content_en`, `details_en`을 가져옵니다.
-        *   `ko`인 경우: `content`, `details`를 가져옵니다.
+    *   **다이내믹 페칭**: 성별을 고정하지 않고 **관계와 친밀도**만으로 질문을 넓게 가져옵니다.
     *   **밸런스 알고리즘**: 약 100개의 후보를 가져와 사용한 질문(Local `SharedPreferences` 확인)을 필터링하고, 무작위로 **진실 13개**, **밸런스 12개**를 선택합니다.
 
 ### 3.2 데이터 전달 및 동기화 (Data Delivery)
@@ -85,7 +89,7 @@
 1.  **초기 핸드셰이크 ("업로드")**:
     *   호스트는 질문을 하나씩 보내지 않습니다.
     *   **동작**: 호스트가 `uploadInitialQuestions()`를 호출합니다.
-    *   **페이로드**: 호스트는 선택된 25개의 질문 리스트를 직렬화하여 `game_sessions` 테이블의 `game_state` JSON 컬럼에 저장합니다.
+    *   **페이로드**: 호스트는 선택된 25개의 질문 리스트(Variant 포함)를 직렬화하여 `game_sessions` 테이블의 `game_state` JSON 컬럼에 저장합니다.
     *   *이유*: 이를 통해 두 플레이어가 전체 세션 동안 *정확히 동일한* 보드 레이아웃과 질문 세트를 공유하게 됩니다.
 
 2.  **전송 데이터 구조**:
@@ -93,7 +97,12 @@
     // game_sessions.game_state 내부
     {
       "questions": [
-        { "id": "...", "content": "질문 내용...", "type": "truth" },
+        { 
+          "id": "...", 
+          "content": "질문 내용...", 
+          "type": "truth",
+          "gender_variants": { "M_to_F": "...", "F_to_M": "..." } 
+        },
         ... 25 items
       ],
       "tileOwnership": [null, "A", null, ...],
@@ -127,7 +136,15 @@
     *   **목적**: 보안. 포인트는 클라이언트에서 테이블에 직접 쓰지 않고 서버 측 함수를 통해 업데이트하여 변조를 방지합니다.
     *   **익명 유저**: 익명 사용자의 VP/History도 `profiles`에 저장되나, 안전한 보존을 위해 **계정 연동(Link)**이 권장됩니다.
 
-4.  **계정 전환 및 데이터 이관 (Account Conversion & Migration)**:
-    *   **시점**: 익명 상태에서 `Settings -> Link Account` 실행 시.
-    *   **프로세스**: `MigrationManager`가 `migration_user_history` RPC를 호출하여 기존 익명 ID의 모든 게임 기록, 포인트, 프로필 정보를 새로운 인증 ID(Google/Email)로 **Safe Transfer** 합니다.
     *   **지속성**: 이 과정 후 로컬(`SharedPreferences`) 데이터도 동기화되어 유저는 끊김 없는 경험을 유지합니다.
+
+### 3.5 게임 저장 및 종료 흐름 (Save & Exit Flow)
+*   **게임 저장 (Save)**: "저장하기" 클릭 시 현재 상태를 **임시 저장** 상태로 플래그합니다.
+*   **게임 종료 (End)**:
+    *   **호스트**: `game_sessions` 상태를 즉시 `saved`로 확정하고 종료 절차를 밟습니다. (영구 저장)
+    *   **게스트**: `temporary_saved` 상태로 마킹하고 **리워드 페이지**로 이동합니다.
+    *   **게스트 전환 (Conversion)**: 리워드 페이지에서 "회원가입"을 완료하면, 해당 임시 저장된 게임이 유저의 프로필에 연결되어 **영구 저장**됩니다.
+*   **오류 복구 (Error Recovery)**:
+    *   시스템 크래시나 예기치 않은 종료 발생 시, 앱 재실행 -> 스플래시 -> 오류 메시지 -> 홈 화면으로 이동합니다.
+    *   이전 상태가 `temporary_saved`나 `playing`으로 남아있다면, 홈 화면의 "이어하기(Resume)" 기능을 통해 복구를 시도할 수 있습니다.
+    *   **정산 보장**: 빙고 완성 후 강제 종료 시, 완성 시점의 점수는 이미 DB/Session에 반영되어 있으므로 리워드 페이지에서 올바르게 표시됩니다.

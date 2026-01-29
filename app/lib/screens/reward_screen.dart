@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/models/game_session.dart';
@@ -126,7 +127,7 @@ class _RewardScreenState extends State<RewardScreen> {
                 SizedBox(
                   width: double.infinity,
                   height: 44, // Strict 44px
-                  child: ElevatedButton(
+                  child: AnimatedButton(
                     onPressed: () {
                       Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -192,7 +193,7 @@ class _RewardScreenState extends State<RewardScreen> {
                   SizedBox(
                     width: double.infinity,
                     height: 44, // Strict 44px
-                    child: ElevatedButton(
+                    child: AnimatedButton(
                       onPressed: () async {
                         await session.submitGuestRating(_currentRating);
                         if (mounted) {

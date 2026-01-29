@@ -1,0 +1,92 @@
+[
+  {
+    "topic": "이상적인 이미지와 평범한 내 현실 사이의 괴리감 느낌",
+    "category": "Friend",
+    "order_code_prefix": "BArL4",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "진로 고민 상담",
+        "base_content": "네가 생각하는 이상적인 모습이랑 지금 진로가 좀 다르게 느껴질 때 없어?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "퇴근 후 동료와의 술자리|이직 준비하며 나누는 고민|대학 동기 모임|SNS에서 잘 나가는 친구 소식 볼 때",
+          "enrichment_trending_keywords": "갓생|현타|번아웃|커리어패스|롤모델|N잡러",
+          "enrichment_psychological_tensions": "현실 안주 vs 새로운 도전|안정적인 길 vs 하고 싶은 일|친구의 성공에 대한 부러움 vs 진심 어린 응원",
+          "enrichment_conversation_friendly_terms": "문득|솔직히|가끔|혹시|어떤 기분이야"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "이상적인 이미지와 평범한 내 현실 사이의 괴리감 느낌",
+    "category": "Friend",
+    "order_code_prefix": "BArL4",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "현실적 어려움 토로",
+        "base_content": "이상적인 모습은 이런데 현실적인 어려움 때문에 좀 힘든 순간은 없어?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "월급날 통장 잔고 확인할 때|친구 경조사비 낼 때|부모님 용돈 드릴 때|치솟는 물가 얘기할 때",
+          "enrichment_trending_keywords": "영끌|짠테크|경제적 자유|생활비 압박|벼락거지",
+          "enrichment_psychological_tensions": "꿈을 좇는 것 vs 돈 버는 현실|포기하고 싶은 마음 vs 버텨야 한다는 압박감|나만 뒤처지는 기분|친구에게 털어놓고 싶은 욕구 vs 징징대는 것처럼 보일까 봐 걱정",
+          "enrichment_conversation_friendly_terms": "사실|솔직히 말해서|그럴 때|힘들겠다|어떤 순간에"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "이상적인 이미지와 평범한 내 현실 사이의 괴리감 느낌",
+    "category": "Friend",
+    "order_code_prefix": "BArL4",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "오랜 친구와의 깊은 대화",
+        "base_content": "오랜만에 깊은 얘기인데, 네가 꿈꾸던 모습이랑 지금 현실 사이에 괴리감이 들 때는 어떤 기분이야?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "새벽 감성 터지는 밤|함께 여행 갔을 때|옛날 사진 보다가|조용한 단골 술집에서",
+          "enrichment_trending_keywords": "자아성찰|어른이|버킷리스트|추억 소환|그때 그 시절",
+          "enrichment_psychological_tensions": "과거의 나 vs 현재의 나|변한 것 vs 변하지 않은 것|후회와 아쉬움 vs 현재에 대한 만족|어디까지 솔직해야 할까 고민",
+          "enrichment_conversation_friendly_terms": "돌이켜보면|문득 궁금해졌는데|우리 어릴 때|솔직하게 말하면|괜한 얘긴가"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "이상적인 이미지와 평범한 내 현실 사이의 괴리감 느낌",
+    "category": "Family",
+    "order_code_prefix": "FaFsL4",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "부모님과의 인생 상담",
+        "base_content": "살면서 꿈꾸던 모습과 현실이 달라서 고민했던 경험이 혹시 있으셨나요?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "진로 문제로 부모님과 대화할 때 | 명절에 친척들과 비교될 때 | 부모님의 기대에 대해 솔직하게 말할 때",
+          "enrichment_trending_keywords": "현타 | 갓생 | 번아웃",
+          "enrichment_psychological_tensions": "부모님을 실망시킬까 봐 걱정 | 세대 차이에서 오는 가치관 충돌 | 나만 뒤처지는 기분",
+          "enrichment_conversation_friendly_terms": "솔직히 말씀드리면 | 어떤 마음이셨을지 궁금해요 | 조심스럽게 여쭤봐도 될까요"
+        }
+      }
+    ]
+  },
+  {
+    "topic": "이상적인 이미지와 평범한 내 현실 사이의 괴리감 느낌",
+    "category": "Lover",
+    "order_code_prefix": "LoSwL4",
+    "gender_policy": "neutral",
+    "questions": [
+      {
+        "context_variant": "연인에게 속마음 고백",
+        "base_content": "혹시 이상적인 모습과 실제 모습 사이에서 괴리감을 느낄 때가 있어?",
+        "enrichment_materials": {
+          "enrichment_community_contexts": "SNS 속 완벽해 보이는 커플 피드 | 로맨스 영화 속 주인공과 나를 비교할 때 | 친구의 화려한 연애 이야기를 들을 때",
+          "enrichment_trending_keywords": "현타 | 자존감 도둑 | 이상과 현실 | 꾸며진 모습",
+          "enrichment_psychological_tensions": "실망시키고 싶지 않은 마음 | 솔직한 내 모습을 보여줄 용기 | 상대방에게 완벽하게 보이고 싶은 욕심",
+          "enrichment_conversation_friendly_terms": "솔직히 말하면 | 가끔 그럴 때 | 나만 그런 건지 | 문득 그런 생각"
+        }
+      }
+    ]
+  }
+]

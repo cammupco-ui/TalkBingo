@@ -1,0 +1,67 @@
+[
+  {
+    "topic": "첫사랑이 전학가는상황",
+    "category": "Friend",
+    "order_code_prefix": "BScL4",
+    "gender_policy": "directional",
+    "questions": [
+      {
+        "context_variant": "친구의 연애 고민 상담",
+        "base_content": "첫사랑이 전학 가게 돼서 요즘 어떤 고민이 있어?",
+        "enrichment_materials": {}
+      }
+    ]
+  },
+  {
+    "topic": "첫사랑이 전학가는상황",
+    "category": "Family",
+    "order_code_prefix": "FaSwL3",
+    "gender_policy": "directional",
+    "questions": [
+      {
+        "context_variant": "자녀의 상실감 이해하기",
+        "base_content": "첫사랑이 전학 간다는 소식에 마음이 많이 허전했니?",
+        "enrichment_materials": {}
+      }
+    ]
+  },
+  {
+    "topic": "첫사랑이 전학가는상황",
+    "category": "Family",
+    "order_code_prefix": "FaSwL3",
+    "gender_policy": "directional",
+    "questions": [
+      {
+        "context_variant": "앞으로의 자녀 관계 조언",
+        "base_content": "그 친구랑 앞으로 어떻게 지낼지 생각해본 적 있니?",
+        "enrichment_materials": {}
+      }
+    ]
+  },
+  {
+    "topic": "첫사랑이 전학가는상황",
+    "category": "Family",
+    "order_code_prefix": "FaSwL3",
+    "gender_policy": "directional",
+    "questions": [
+      {
+        "context_variant": "부모로서의 역할 고민",
+        "base_content": "이럴 때 어떤 도움이 필요하니?",
+        "enrichment_materials": {}
+      }
+    ]
+  },
+  {
+    "topic": "첫사랑이 전학가는상황",
+    "category": "Lover",
+    "order_code_prefix": "LoSwL3",
+    "gender_policy": "directional",
+    "questions": [
+      {
+        "context_variant": "장거리 연애 시작",
+        "base_content": "이제 장거리 연애를 시작하는데, 우리가 잘 해낼 수 있을까?",
+        "enrichment_materials": {}
+      }
+    ]
+  }
+]

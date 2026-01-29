@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
@@ -62,7 +63,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.98),
+        color: Colors.white.withOpacity(0.98), // Nearly Opaque for readability
       ),
       child: Stack(
         children: [
@@ -98,22 +99,90 @@ class _QuizOverlayState extends State<QuizOverlay> {
                       style: GoogleFonts.alexandria(fontSize: 16, color: Colors.grey),
                     ),
                     const SizedBox(height: 32),
-                     ElevatedButton.icon(
+                     AnimatedButton(
                       onPressed: () => GameSession().togglePause(),
-                      icon: const Icon(Icons.play_arrow_rounded, color: Colors.white),
-                      label: const Text("RESUME GAME", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.hostPrimary,
                         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.play_arrow_rounded, color: Colors.white),
+                          SizedBox(width: 8),
+                          Text("RESUME GAME", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
             ),
+          
+          // Report Button (Bottom-Left)
+          Positioned(
+            left: 16,
+            bottom: 16,
+            child: IconButton(
+              icon: const Icon(Icons.flag_rounded, color: Colors.grey, size: 20),
+              tooltip: 'Report Content',
+              onPressed: _showReportDialog,
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  void _showReportDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("질문 신고하기"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.text_format),
+              title: const Text("맞춤법 오류 (Typo)"),
+              onTap: () => _submitReport("Typo"),
+            ),
+            ListTile(
+              leading: const Icon(Icons.help_outline),
+              title: const Text("내용 이상함 (Weird)"),
+              onTap: () => _submitReport("Weird Content"),
+            ),
+            ListTile(
+              leading: const Icon(Icons.bug_report),
+              title: const Text("기타 (Other)"),
+              onTap: () => _submitReport("Other"),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _submitReport(String reason) {
+    Navigator.pop(context); // Close Dialog
+    
+    // Resolve Question ID if possible (from Session or Widget)
+    // Widget doesn't have ID directly, but Session does.
+    // Or we can assume active interaction index.
+    final session = GameSession();
+    final String qId = session.interactionState?['question'] ?? 'Unknown';
+    
+    session.reportContent(qId, reason);
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("신고가 접수되었습니다. (Report Sent)")),
     );
   }
 
@@ -211,7 +280,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
           child: Text(
             widget.question,
             style: GoogleFonts.doHyeon(
-              fontSize: 16,
+              fontSize: 24, // Increased from 16 for better readability
               fontWeight: FontWeight.w500,
               color: Colors.black87,
               height: 1.3,
@@ -244,11 +313,12 @@ class _QuizOverlayState extends State<QuizOverlay> {
                 Expanded(
                   child: SizedBox(
                     height: 48,
-                    child: OutlinedButton(
+                    child: AnimatedOutlinedButton(
                       onPressed: () => widget.onOptionSelected('REJECT'),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.grey, width: 2),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        foregroundColor: Colors.grey,
                       ),
                       child: const Text('비공감', style: TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.bold)),
                     ),
@@ -259,7 +329,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
                 Expanded(
                   child: SizedBox(
                     height: 48,
-                    child: ElevatedButton(
+                    child: AnimatedButton(
                       onPressed: () => widget.onOptionSelected(widget.submittedAnswer ?? 'APPROVED'), 
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.hostPrimary,
@@ -415,7 +485,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
           SizedBox(
             width: double.infinity,
             height: 32, 
-            child: ElevatedButton(
+            child: AnimatedButton(
               onPressed: () {
                  if (_answerController.text.isEmpty) return;
                  widget.onOptionSelected(_answerController.text);
@@ -462,7 +532,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
 
     return Opacity(
       opacity: contentOpacity,
-      child: ElevatedButton(
+      child: AnimatedButton(
         onPressed: enabled ? () => widget.onOptionSelected(value) : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: color.withOpacity(0.2),

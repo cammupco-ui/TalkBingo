@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:talkbingo_app/utils/ad_state.dart';
@@ -361,45 +362,67 @@ class _HomeScreenState extends State<HomeScreen> {
 // ... helper widgets ...
 
   Widget _buildJoinSection(Color accentColor) {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      padding: const EdgeInsets.only(left: 16, right: 4),
-      child: Row(
-         children: [
-           Expanded(
-             child: TextField(
-               controller: _inviteCodeController,
-               style: const TextStyle(color: Colors.black87),
-               decoration: InputDecoration(
-                 hintText: AppLocalizations.get('enter_invite'),
-                 border: InputBorder.none,
-                 hintStyle: const TextStyle(color: Colors.grey)
+    return Column(
+      children: [
+        Container(
+          height: 50,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.95),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: accentColor.withOpacity(0.5), width: 1.5),
+            boxShadow: [
+              BoxShadow(color: accentColor.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 4))
+            ]
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12), // Adjusted padding
+          child: Row(
+             children: [
+               // Removed Key Icon
+               Expanded(
+                 child: TextField(
+                   controller: _inviteCodeController,
+                   style: GoogleFonts.sourceCodePro(
+                      fontSize: 14, 
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87
+                   ), 
+                   decoration: InputDecoration(
+                     hintText: AppLocalizations.get('enter_invite_placeholder'),
+                     border: InputBorder.none,
+                     hintStyle: GoogleFonts.alexandria(fontSize: 12, color: Colors.grey[500]),
+                     isDense: true,
+                     contentPadding: EdgeInsets.zero,
+                   ),
+                 ),
                ),
-             ),
-           ),
-           const SizedBox(width: 10),
-           ElevatedButton(
-             onPressed: () {
-               if (_inviteCodeController.text.length >= 6) {
-                   Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => InviteCodeScreen(initialCode: _inviteCodeController.text)),
-                    );
-               }
-             },
-             style: ElevatedButton.styleFrom(
-               backgroundColor: accentColor,
-               foregroundColor: Colors.black,
-               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-             ),
-              child: Text(AppLocalizations.get('join'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.w900, fontFamily: 'NURA'))),
-           )
-         ],
-      ),
+               // Removed Paste Button
+               
+               // Divider
+               Container(width: 1, height: 24, color: Colors.grey[300]),
+               const SizedBox(width: 8),
+               
+               // Join Button (Vivid Color)
+               AnimatedTextButton(
+                 onPressed: () {
+                   if (_inviteCodeController.text.length >= 2) {
+                       Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => InviteCodeScreen(initialCode: _inviteCodeController.text)),
+                       );
+                   }
+                 },
+                 style: TextButton.styleFrom(
+                   foregroundColor: const Color(0xFFF6005E), // Vivid Pink
+                   padding: const EdgeInsets.symmetric(horizontal: 16),
+                 ),
+                  child: Text(
+                    AppLocalizations.get('join'), 
+                    style: const TextStyle(fontWeight: FontWeight.w900, fontFamily: 'NURA', fontSize: 16)
+                  ),
+               )
+             ],
+          ),
+        ),
+      ],
     );
   }
 

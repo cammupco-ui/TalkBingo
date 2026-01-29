@@ -1,0 +1,461 @@
+[
+  {
+    "type": "balance",
+    "topic": "저녁루틴",
+    "category": "Lover",
+    "context_variant": "하루 마무리 연락",
+    "question": "오늘 하루 마무리 잘하고 있어?",
+    "options": [
+      "피곤 서운하게 하고 싶지 않",
+      "피곤 서운하게 하고 싶지 않"
+    ],
+    "intimacy_level": 2,
+    "source_order_code": "LoSwL2",
+    "base_content": "오늘 하루 마무리 잘하고 있어?",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "퇴근 후 지친 몸으로 침대에 누웠을 때|야근 중 잠깐의 통화|자기 전 마지막 카톡",
+      "enrichment_trending_keywords": "방전|충전|힐링타임|고생했어",
+      "enrichment_psychological_tensions": "의무적인 연락에 대한 부담감|피곤함과 서운하게 하고 싶지 않은 마음 사이|TMI와 침묵 사이의 고민",
+      "enrichment_conversation_friendly_terms": "궁금해서|고생 많았지|목소리 듣고 싶어서"
+    }
+  },
+  {
+    "id": "T-LoSwL2-1",
+    "intimacyLevel": 2,
+    "question": "오늘 하루 마무리 잘하고 있어?",
+    "expectedAnswers": [
+      "의무적인 연락 부담감",
+      "피곤 서운하게 하고 싶지 않",
+      "TMI 침묵 사 고민",
+      "궁금해서"
+    ],
+    "type": "truth",
+    "topic": "저녁루틴",
+    "category": "Lover",
+    "context_variant": "하루 마무리 연락",
+    "source_order_code": "LoSwL2",
+    "base_content": "오늘 하루 마무리 잘하고 있어?",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "퇴근 후 지친 몸으로 침대에 누웠을 때|야근 중 잠깐의 통화|자기 전 마지막 카톡",
+      "enrichment_trending_keywords": "방전|충전|힐링타임|고생했어",
+      "enrichment_psychological_tensions": "의무적인 연락에 대한 부담감|피곤함과 서운하게 하고 싶지 않은 마음 사이|TMI와 침묵 사이의 고민",
+      "enrichment_conversation_friendly_terms": "궁금해서|고생 많았지|목소리 듣고 싶어서"
+    },
+    "expected_answers": [
+      "의무적인 연락 부담감",
+      "피곤 서운하게 하고 싶지 않",
+      "TMI 침묵 사 고민",
+      "궁금해서"
+    ]
+  },
+  {
+    "type": "balance",
+    "topic": "저녁루틴",
+    "category": "Lover",
+    "context_variant": "함께 보낼 저녁 계획",
+    "question": "오늘 저녁에 함께 뭘 하면 좋을까?",
+    "options": [
+      "솔직한 취향 표현 어려움",
+      "솔직한 취향 표현 어려움 아"
+    ],
+    "intimacy_level": 2,
+    "source_order_code": "LoSwL2",
+    "base_content": "오늘 저녁에 함께 뭘 하면 좋을까?",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "갑작스러운 저녁 약속|퇴근 후 동네 데이트|배달음식 시켜먹는 집데이트",
+      "enrichment_trending_keywords": "맛집|분위기|집데이트|핫플",
+      "enrichment_psychological_tensions": "집 vs 밖|가성비 vs 분위기|솔직한 취향 표현의 어려움",
+      "enrichment_conversation_friendly_terms": "뭐 땡겨?|~는 어때?|같이 찾아볼까?"
+    }
+  },
+  {
+    "id": "T-LoSwL2-1",
+    "intimacyLevel": 2,
+    "question": "오늘 저녁에 함께 뭘 하면 좋을까?",
+    "expectedAnswers": [
+      "집",
+      "밖",
+      "가성비",
+      "분위기"
+    ],
+    "type": "truth",
+    "topic": "저녁루틴",
+    "category": "Lover",
+    "context_variant": "함께 보낼 저녁 계획",
+    "source_order_code": "LoSwL2",
+    "base_content": "오늘 저녁에 함께 뭘 하면 좋을까?",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "갑작스러운 저녁 약속|퇴근 후 동네 데이트|배달음식 시켜먹는 집데이트",
+      "enrichment_trending_keywords": "맛집|분위기|집데이트|핫플",
+      "enrichment_psychological_tensions": "집 vs 밖|가성비 vs 분위기|솔직한 취향 표현의 어려움",
+      "enrichment_conversation_friendly_terms": "뭐 땡겨?|~는 어때?|같이 찾아볼까?"
+    },
+    "expected_answers": [
+      "집",
+      "밖",
+      "가성비",
+      "분위기"
+    ]
+  },
+  {
+    "type": "balance",
+    "topic": "저녁루틴",
+    "category": "Lover",
+    "context_variant": "서로의 생활 패턴 파악",
+    "question": "서로의 저녁 시간은 보통 어떤지 궁금해.?",
+    "options": [
+      "께하 시간",
+      "혼자만 시간"
+    ],
+    "intimacy_level": 2,
+    "source_order_code": "LoSwL2",
+    "base_content": "서로의 저녁 시간은 보통 어떤지 궁금해.",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "연애 초반 서로를 알아갈 때|생활 패턴이 다른 커플의 대화|장거리 연애 중인 상황",
+      "enrichment_trending_keywords": "저녁 루틴|워라밸|집돌이/집순이|자기계발",
+      "enrichment_psychological_tensions": "함께하는 시간 vs 혼자만의 시간|서로 다른 패턴에 대한 이해와 존중|솔직한 공유에 대한 부담감",
+      "enrichment_conversation_friendly_terms": "평소에 뭐해?|부담 갖지 말고|너의 하루가 궁금해서"
+    }
+  },
+  {
+    "id": "T-LoSwL2-1",
+    "intimacyLevel": 2,
+    "question": "서로 저녁 시간은 보통 어떤지 궁금해.?",
+    "expectedAnswers": [
+      "께하 시간",
+      "혼자만 시간",
+      "서 다른 패턴 이해 존중",
+      "솔직한 공유 부담감"
+    ],
+    "type": "truth",
+    "topic": "저녁루틴",
+    "category": "Lover",
+    "context_variant": "서로의 생활 패턴 파악",
+    "source_order_code": "LoSwL2",
+    "base_content": "서로의 저녁 시간은 보통 어떤지 궁금해.",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "연애 초반 서로를 알아갈 때|생활 패턴이 다른 커플의 대화|장거리 연애 중인 상황",
+      "enrichment_trending_keywords": "저녁 루틴|워라밸|집돌이/집순이|자기계발",
+      "enrichment_psychological_tensions": "함께하는 시간 vs 혼자만의 시간|서로 다른 패턴에 대한 이해와 존중|솔직한 공유에 대한 부담감",
+      "enrichment_conversation_friendly_terms": "평소에 뭐해?|부담 갖지 말고|너의 하루가 궁금해서"
+    },
+    "expected_answers": [
+      "께하 시간",
+      "혼자만 시간",
+      "서 다른 패턴 이해 존중",
+      "솔직한 공유 부담감"
+    ]
+  },
+  {
+    "type": "balance",
+    "topic": "저녁루틴",
+    "category": "Friend",
+    "context_variant": "퇴근 후 일과 공유",
+    "question": "퇴근하고 보통 뭐 하면서 시간 보내?",
+    "options": [
+      "남들 어떻게 사는지 궁금",
+      "남들 어떻게 사는지 궁금 아"
+    ],
+    "intimacy_level": 2,
+    "source_order_code": "BDcL2",
+    "base_content": "퇴근하고 보통 뭐 하면서 시간 보내?",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "칼퇴 후 동네 친구와 급만남 | 유튜브 보면서 저녁 먹는 상황 | 씻고 바로 침대에 누워버리는 모습 | 야근 후 녹초가 된 상태 | 주말을 위해 밀린 집안일 하기",
+      "enrichment_trending_keywords": "갓생 | 번아웃 | 루틴 | 힐링 | 소확행 | 멍때리기 | 디지털 디톡스",
+      "enrichment_psychological_tensions": "생산성과 휴식 사이의 갈등 | 아무것도 안 하고 싶은 무기력함 | 남들은 어떻게 사는지 궁금함 | 나의 저녁이 초라하게 느껴질까봐 걱정",
+      "enrichment_conversation_friendly_terms": "소소하게 | 딱히 | 그냥 | 짬내서 | 보통 | 별거 없이"
+    }
+  },
+  {
+    "id": "T-BDcL2-1",
+    "intimacyLevel": 2,
+    "question": "퇴근하고 보통 뭐 하면서 시간 보내?",
+    "expectedAnswers": [
+      "생산성 휴식 사 갈등",
+      "아무것도 안 하고 싶 무기력",
+      "남들 어떻게 사는지 궁금",
+      "나 저녁 초라하게 느껴질까봐"
+    ],
+    "type": "truth",
+    "topic": "저녁루틴",
+    "category": "Friend",
+    "context_variant": "퇴근 후 일과 공유",
+    "source_order_code": "BDcL2",
+    "base_content": "퇴근하고 보통 뭐 하면서 시간 보내?",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "칼퇴 후 동네 친구와 급만남 | 유튜브 보면서 저녁 먹는 상황 | 씻고 바로 침대에 누워버리는 모습 | 야근 후 녹초가 된 상태 | 주말을 위해 밀린 집안일 하기",
+      "enrichment_trending_keywords": "갓생 | 번아웃 | 루틴 | 힐링 | 소확행 | 멍때리기 | 디지털 디톡스",
+      "enrichment_psychological_tensions": "생산성과 휴식 사이의 갈등 | 아무것도 안 하고 싶은 무기력함 | 남들은 어떻게 사는지 궁금함 | 나의 저녁이 초라하게 느껴질까봐 걱정",
+      "enrichment_conversation_friendly_terms": "소소하게 | 딱히 | 그냥 | 짬내서 | 보통 | 별거 없이"
+    },
+    "expected_answers": [
+      "생산성 휴식 사 갈등",
+      "아무것도 안 하고 싶 무기력",
+      "남들 어떻게 사는지 궁금",
+      "나 저녁 초라하게 느껴질까봐"
+    ]
+  },
+  {
+    "type": "balance",
+    "topic": "저녁루틴",
+    "category": "Friend",
+    "context_variant": "운동 및 건강 습관",
+    "question": "요즘 운동이나 건강 관리 뭐 특별히 하는 거 있어?",
+    "options": [
+      "같 운동하자 제안 부담감",
+      "같 운동하자 제안 부담감 아"
+    ],
+    "intimacy_level": 2,
+    "source_order_code": "BDcL2",
+    "base_content": "요즘 운동이나 건강 관리 뭐 특별히 하는 거 있어?",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "헬스장 등록만 하고 안 가는 상황 | '오운완' 피드 올리기 | 퇴근 후 홈트 영상 따라 하기 | 영양제 챙겨 먹는 모습 | 건강식 차려 먹으려다 배달음식 시키기",
+      "enrichment_trending_keywords": "오운완 | 헬린이 | 식단 관리 | 바디프로필 | 공복 유산소 | 인바디 | 3대 운동",
+      "enrichment_psychological_tensions": "운동 가기 귀찮음 | 친구 몸매와 비교될 때 | 건강 염려증 | 같이 운동하자는 제안에 대한 부담감 | 의지박약에 대한 자책감",
+      "enrichment_conversation_friendly_terms": "꾸준히 | 나름 | 챙겨서 | 가볍게 | 슬슬 | ~라도"
+    }
+  },
+  {
+    "id": "T-BDcL2-1",
+    "intimacyLevel": 2,
+    "question": "요즘 운동이나 건강 관리 뭐 특별히 하는 거 있어?",
+    "expectedAnswers": [
+      "운동 가기 귀찮음",
+      "친구 몸매 비교될 때",
+      "건강 염려증",
+      "같 운동하자 제안 부담감"
+    ],
+    "type": "truth",
+    "topic": "저녁루틴",
+    "category": "Friend",
+    "context_variant": "운동 및 건강 습관",
+    "source_order_code": "BDcL2",
+    "base_content": "요즘 운동이나 건강 관리 뭐 특별히 하는 거 있어?",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "헬스장 등록만 하고 안 가는 상황 | '오운완' 피드 올리기 | 퇴근 후 홈트 영상 따라 하기 | 영양제 챙겨 먹는 모습 | 건강식 차려 먹으려다 배달음식 시키기",
+      "enrichment_trending_keywords": "오운완 | 헬린이 | 식단 관리 | 바디프로필 | 공복 유산소 | 인바디 | 3대 운동",
+      "enrichment_psychological_tensions": "운동 가기 귀찮음 | 친구 몸매와 비교될 때 | 건강 염려증 | 같이 운동하자는 제안에 대한 부담감 | 의지박약에 대한 자책감",
+      "enrichment_conversation_friendly_terms": "꾸준히 | 나름 | 챙겨서 | 가볍게 | 슬슬 | ~라도"
+    },
+    "expected_answers": [
+      "운동 가기 귀찮음",
+      "친구 몸매 비교될 때",
+      "건강 염려증",
+      "같 운동하자 제안 부담감"
+    ]
+  },
+  {
+    "type": "balance",
+    "topic": "저녁루틴",
+    "category": "Friend",
+    "context_variant": "취미 생활 이야기",
+    "question": "요즘 새롭게 빠져 있는 취미나 관심사 있어?",
+    "options": [
+      "딱히 취미 없어서 민망",
+      "딱히 취미 없어서 민망 아님"
+    ],
+    "intimacy_level": 2,
+    "source_order_code": "BDcL2",
+    "base_content": "요즘 새롭게 빠져 있는 취미나 관심사 있어?",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "OTT 시리즈 밤새서 정주행하기 | 원데이 클래스 참여하기 | 장비만 사놓고 시작 안 한 취미 | 친구에게 내 '최애' 영업하기 | 콘솔 게임에 빠진 모습",
+      "enrichment_trending_keywords": "과몰입 | 입덕 | 정주행 | 최애 | 인생 드라마 | 취미 부자 | 팝업스토어",
+      "enrichment_psychological_tensions": "내 취미를 친구가 이해 못 할까 봐 걱정 | 취미에 돈을 너무 많이 쓰는 것에 대한 현타 | 딱히 취미가 없어서 민망함 | '힙한' 취미를 가져야 할 것 같은 압박",
+      "enrichment_conversation_friendly_terms": "푹 빠져있는 | 시간 가는 줄 모르는 | 문득 | 은근히 | 소소한 재미 | 별건 아니고"
+    }
+  },
+  {
+    "id": "T-BDcL2-1",
+    "intimacyLevel": 2,
+    "question": "요즘 새롭게 빠져 있는 취미나 관심사 있어?",
+    "expectedAnswers": [
+      "내 취미 친구 이해 못 할까",
+      "취미에 돈 너무 많 쓰 것 ",
+      "딱히 취미 없어서 민망",
+      "'힙한' 취미 가져야 할 것"
+    ],
+    "type": "truth",
+    "topic": "저녁루틴",
+    "category": "Friend",
+    "context_variant": "취미 생활 이야기",
+    "source_order_code": "BDcL2",
+    "base_content": "요즘 새롭게 빠져 있는 취미나 관심사 있어?",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "OTT 시리즈 밤새서 정주행하기 | 원데이 클래스 참여하기 | 장비만 사놓고 시작 안 한 취미 | 친구에게 내 '최애' 영업하기 | 콘솔 게임에 빠진 모습",
+      "enrichment_trending_keywords": "과몰입 | 입덕 | 정주행 | 최애 | 인생 드라마 | 취미 부자 | 팝업스토어",
+      "enrichment_psychological_tensions": "내 취미를 친구가 이해 못 할까 봐 걱정 | 취미에 돈을 너무 많이 쓰는 것에 대한 현타 | 딱히 취미가 없어서 민망함 | '힙한' 취미를 가져야 할 것 같은 압박",
+      "enrichment_conversation_friendly_terms": "푹 빠져있는 | 시간 가는 줄 모르는 | 문득 | 은근히 | 소소한 재미 | 별건 아니고"
+    },
+    "expected_answers": [
+      "내 취미 친구 이해 못 할까",
+      "취미에 돈 너무 많 쓰 것 ",
+      "딱히 취미 없어서 민망",
+      "'힙한' 취미 가져야 할 것"
+    ]
+  },
+  {
+    "type": "balance",
+    "topic": "저녁루틴",
+    "category": "Family",
+    "context_variant": "자녀의 귀가 후 일과",
+    "question": "집에 오면 주로 저녁 시간을 어떻게 보내고 있어요?",
+    "options": [
+      "간섭받는다 느낌",
+      ". 걱정하 마음"
+    ],
+    "intimacy_level": 3,
+    "source_order_code": "FaFsL3",
+    "base_content": "집에 오면 주로 저녁 시간을 어떻게 보내고 있어요?",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "학원 끝나고 지친 귀가길 | 오자마자 휴대폰만 보는 모습 | 저녁밥 먹으며 유튜브 시청 | 방에 들어가서 나오지 않음",
+      "enrichment_trending_keywords": "갓생 | 저녁 루틴 | 폰딧불이 | 멍때리기 | 순삭 | 소확행",
+      "enrichment_psychological_tensions": "간섭받는다는 느낌 vs. 걱정하는 마음 | 혼자만의 시간 존중 요구 | 학업 스트레스 해소 방식의 차이",
+      "enrichment_conversation_friendly_terms": "하루 마무리 | 재충전 | 너만의 시간 | 편안하게 | 궁금해서 | 슬쩍"
+    }
+  },
+  {
+    "id": "T-FaFsL3-1",
+    "intimacyLevel": 3,
+    "question": "집에 오면 주로 저녁 시간 어떻게 보내고 있어요?",
+    "expectedAnswers": [
+      "간섭받는다 느낌",
+      ". 걱정하 마음",
+      "혼자만 시간 존중 요구",
+      "학업 스트레스 해소 방식 차"
+    ],
+    "type": "truth",
+    "topic": "저녁루틴",
+    "category": "Family",
+    "context_variant": "자녀의 귀가 후 일과",
+    "source_order_code": "FaFsL3",
+    "base_content": "집에 오면 주로 저녁 시간을 어떻게 보내고 있어요?",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "학원 끝나고 지친 귀가길 | 오자마자 휴대폰만 보는 모습 | 저녁밥 먹으며 유튜브 시청 | 방에 들어가서 나오지 않음",
+      "enrichment_trending_keywords": "갓생 | 저녁 루틴 | 폰딧불이 | 멍때리기 | 순삭 | 소확행",
+      "enrichment_psychological_tensions": "간섭받는다는 느낌 vs. 걱정하는 마음 | 혼자만의 시간 존중 요구 | 학업 스트레스 해소 방식의 차이",
+      "enrichment_conversation_friendly_terms": "하루 마무리 | 재충전 | 너만의 시간 | 편안하게 | 궁금해서 | 슬쩍"
+    },
+    "expected_answers": [
+      "간섭받는다 느낌",
+      ". 걱정하 마음",
+      "혼자만 시간 존중 요구",
+      "학업 스트레스 해소 방식 차"
+    ]
+  },
+  {
+    "type": "balance",
+    "topic": "저녁루틴",
+    "category": "Family",
+    "context_variant": "부모님의 저녁 시간",
+    "question": "요즘 저녁에는 주로 어떤 시간을 보내고 계신가요?",
+    "options": [
+      "대화하고 싶 자녀",
+      ". 쉬고 싶 부모"
+    ],
+    "intimacy_level": 3,
+    "source_order_code": "FaFsL3",
+    "base_content": "요즘 저녁에는 주로 어떤 시간을 보내고 계신가요?",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "퇴근 후 녹초가 된 모습 | 소파와 한 몸 되어 TV 시청 | 밀린 집안일로 바쁜 저녁 | 부부끼리 조용히 보내는 시간",
+      "enrichment_trending_keywords": "힐링 타임 | 리모컨 전쟁 | 번아웃 | 건강 프로그램 | 소소한 낙 | K-직장인",
+      "enrichment_psychological_tensions": "대화하고 싶은 자녀 vs. 쉬고 싶은 부모 | 부모님의 사생활 존중 | 세대 차이 나는 취미 생활",
+      "enrichment_conversation_friendly_terms": "어떻게 지내시는지 | 두 분만의 시간 | 편히 쉬시는지 | 여쭤봐도 될까요 | 소소한 재미 | 요즘 부쩍"
+    }
+  },
+  {
+    "id": "T-FaFsL3-1",
+    "intimacyLevel": 3,
+    "question": "요즘 저녁에는 주로 어떤 시간 보내고 계신가요?",
+    "expectedAnswers": [
+      "대화하고 싶 자녀",
+      ". 쉬고 싶 부모",
+      "부모님 사생활 존중",
+      "세대 차 나 취미 생활"
+    ],
+    "type": "truth",
+    "topic": "저녁루틴",
+    "category": "Family",
+    "context_variant": "부모님의 저녁 시간",
+    "source_order_code": "FaFsL3",
+    "base_content": "요즘 저녁에는 주로 어떤 시간을 보내고 계신가요?",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "퇴근 후 녹초가 된 모습 | 소파와 한 몸 되어 TV 시청 | 밀린 집안일로 바쁜 저녁 | 부부끼리 조용히 보내는 시간",
+      "enrichment_trending_keywords": "힐링 타임 | 리모컨 전쟁 | 번아웃 | 건강 프로그램 | 소소한 낙 | K-직장인",
+      "enrichment_psychological_tensions": "대화하고 싶은 자녀 vs. 쉬고 싶은 부모 | 부모님의 사생활 존중 | 세대 차이 나는 취미 생활",
+      "enrichment_conversation_friendly_terms": "어떻게 지내시는지 | 두 분만의 시간 | 편히 쉬시는지 | 여쭤봐도 될까요 | 소소한 재미 | 요즘 부쩍"
+    },
+    "expected_answers": [
+      "대화하고 싶 자녀",
+      ". 쉬고 싶 부모",
+      "부모님 사생활 존중",
+      "세대 차 나 취미 생활"
+    ]
+  },
+  {
+    "type": "balance",
+    "topic": "저녁루틴",
+    "category": "Family",
+    "context_variant": "가족의 건강 습관 확인",
+    "question": "요즘 건강 관리를 위해 어떤 습관들을 챙기고 있나요?",
+    "options": [
+      "알면서도 실천 못 하 부담감",
+      "알면서도 실천 못 하 부담감"
+    ],
+    "intimacy_level": 3,
+    "source_order_code": "FaFsL3",
+    "base_content": "요즘 건강 관리를 위해 어떤 습관들을 챙기고 있나요?",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "다 같이 영양제 챙겨 먹기 | 밤늦게 시켜 먹는 야식 | 주말에 함께하는 등산이나 산책 | 서로 식단 감시해주기",
+      "enrichment_trending_keywords": "오운완 | 헬시플레저 | 식단관리 | 만보 걷기 | 건강기능식품 | 배달음식",
+      "enrichment_psychological_tensions": "건강에 대한 잔소리 vs. 진심 어린 걱정 | 서로 다른 건강 관리 방식 | 알면서도 실천 못 하는 부담감",
+      "enrichment_conversation_friendly_terms": "우리 건강을 위해 | 작은 것부터 | 서로 챙겨주기 | 혹시 | 신경 쓰이는 부분 | 같이 해볼까"
+    }
+  },
+  {
+    "id": "T-FaFsL3-1",
+    "intimacyLevel": 3,
+    "question": "요즘 건강 관리 위해 어떤 습관들 챙기고 있나요?",
+    "expectedAnswers": [
+      "건강 잔소리",
+      ". 진심 어린 걱정",
+      "서 다른 건강 관리 방식",
+      "알면서도 실천 못 하 부담감"
+    ],
+    "type": "truth",
+    "topic": "저녁루틴",
+    "category": "Family",
+    "context_variant": "가족의 건강 습관 확인",
+    "source_order_code": "FaFsL3",
+    "base_content": "요즘 건강 관리를 위해 어떤 습관들을 챙기고 있나요?",
+    "gender_policy": "neutral",
+    "enrichment_materials": {
+      "enrichment_community_contexts": "다 같이 영양제 챙겨 먹기 | 밤늦게 시켜 먹는 야식 | 주말에 함께하는 등산이나 산책 | 서로 식단 감시해주기",
+      "enrichment_trending_keywords": "오운완 | 헬시플레저 | 식단관리 | 만보 걷기 | 건강기능식품 | 배달음식",
+      "enrichment_psychological_tensions": "건강에 대한 잔소리 vs. 진심 어린 걱정 | 서로 다른 건강 관리 방식 | 알면서도 실천 못 하는 부담감",
+      "enrichment_conversation_friendly_terms": "우리 건강을 위해 | 작은 것부터 | 서로 챙겨주기 | 혹시 | 신경 쓰이는 부분 | 같이 해볼까"
+    },
+    "expected_answers": [
+      "건강 잔소리",
+      ". 진심 어린 걱정",
+      "서 다른 건강 관리 방식",
+      "알면서도 실천 못 하 부담감"
+    ]
+  }
+]
