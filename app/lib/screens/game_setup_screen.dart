@@ -427,7 +427,7 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
             DropdownButtonFormField<String>(
               isExpanded: true, // Ensure text fits
               dropdownColor: Colors.white, 
-              initialValue: _selectedSubRelation,
+              value: _selectedSubRelation,
               items: _getRelationList(_selectedMainRelation).map((sub) {
                 return DropdownMenuItem(value: sub, child: Text(sub, overflow: TextOverflow.ellipsis));
               }).toList(),
