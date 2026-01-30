@@ -28,6 +28,12 @@ jobs:
         working-directory: ./app
         run: flutter pub get
 
+      - name: Create .env
+        working-directory: ./app
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > .env
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
+
       - name: Build Web
         working-directory: ./app
         # Build with HTML renderer for better compatibility
