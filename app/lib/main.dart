@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'dart:ui'; // Required for PointerDeviceKind
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -71,6 +72,15 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       title: 'TalkBingo',
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'), // English
+        Locale('ko'), // Korean
+      ],
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.hostPrimary, brightness: Brightness.dark), // Force Dark Theme base?
         scaffoldBackgroundColor: const Color(0xFF121212), // Ensure global dark background
