@@ -22,9 +22,11 @@ jobs:
           # flutter-version: '3.19.x' # Optional: lock to specific version if needed
 
       - name: Get Dependencies
+        working-directory: ./app
         run: flutter pub get
 
       - name: Build Web
+        working-directory: ./app
         # Build with HTML renderer for better compatibility
         run: flutter build web --release --web-renderer html --base-href "/TalkBingo/"
 
@@ -32,4 +34,4 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/web
+          publish_dir: ./app/build/web
