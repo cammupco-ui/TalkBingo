@@ -19,7 +19,10 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          # flutter-version: '3.19.x' # Optional: lock to specific version if needed
+          flutter-version: '3.27.1'
+      
+      - name: Check Flutter Version
+        run: flutter --version
 
       - name: Get Dependencies
         working-directory: ./app
