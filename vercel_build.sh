@@ -10,13 +10,17 @@ echo "SUPABASE_URL=$SUPABASE_URL" > .env
 echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env
 
 # Install Flutter SDK if not available
-if [ ! -d "flutter" ]; then
-  echo "Cloning Flutter SDK..."
-  git clone https://github.com/flutter/flutter.git -b stable --depth 1
-else
-  echo "Updating Flutter SDK..."
-  cd flutter && git pull && cd ..
+# Always install fresh Flutter SDK to prevent stale version issues
+if [ -d "flutter" ]; then
+  echo "Removing existing Flutter directory..."
+  rm -rf flutter
 fi
+
+echo "Cloning Flutter SDK..."
+git clone https://github.com/flutter/flutter.git -b stable --depth 1
+
+echo "Flutter Version:"
+./flutter/bin/flutter --version
 
 # Configure and Build
 # Exit on error
