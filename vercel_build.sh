@@ -13,6 +13,9 @@ echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> .env
 if [ ! -d "flutter" ]; then
   echo "Cloning Flutter SDK..."
   git clone https://github.com/flutter/flutter.git -b stable --depth 1
+else
+  echo "Updating Flutter SDK..."
+  cd flutter && git pull && cd ..
 fi
 
 # Configure and Build
