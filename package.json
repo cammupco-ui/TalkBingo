@@ -2,6 +2,9 @@
   "devDependencies": {
     "firebase-tools": "^15.1.0"
   },
+  "scripts": {
+    "build": "bash vercel_build.sh"
+  },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "dotenv": "^17.2.3",

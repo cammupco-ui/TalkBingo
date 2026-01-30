@@ -56,7 +56,6 @@ class _GameScreenState extends State<GameScreen> {
   final List<Widget> _floatingScores = [];
   int _previousEp = 0;
   int _previousAp = 0;
-  int? _hoveredIndex; // Local hover tracking
   
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -1356,7 +1355,7 @@ class _GameScreenState extends State<GameScreen> {
   // Game State
   // Removed local _tileOwnership to use _session.tileOwnership
   // Removed local _currentTurn to use _session.currentTurn
-  int? _hoveredIndex; // For hover effect
+  // int? _hoveredIndex; // For hover effect - REMOVED
   int? _pressedIndex; // For touch/press effect
   // int? _activeQuizIndex; // For full-size overlay - REMOVED
 
@@ -1777,17 +1776,14 @@ class _GameScreenState extends State<GameScreen> {
 
   Widget _buildBingoTile(int index) {
     String owner = _session.tileOwnership[index];
-    bool isHovered = _hoveredIndex == index;
     
     return MouseRegion(
-      onEnter: (_) => setState(() => _hoveredIndex = index),
-      onExit: (_) => setState(() => _hoveredIndex = null),
       cursor: (owner == 'X') ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
       child: LiquidBingoTile(
         text: "", // Removed index number as per user request
         owner: owner,
         isHost: _isHost, 
-        isHovered: isHovered,
+        isHovered: false,
         isWinningTile: _winningTiles.contains(index),
         onTap: () {
         if (!_isHost && !_session.isGameActive) return; 
