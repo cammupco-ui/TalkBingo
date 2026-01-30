@@ -16,7 +16,18 @@ if [ ! -d "flutter" ]; then
 fi
 
 # Configure and Build
+# Exit on error
+set -e
+
+# Configure and Build
 echo "Building Flutter Web..."
 ./flutter/bin/flutter config --enable-web
 ./flutter/bin/flutter pub get
 ./flutter/bin/flutter build web --release
+
+# Ensure output is available for Vercel
+# Assuming Vercel Output Directory is set to 'public' or root. 
+# We copy to a root 'public' folder just in case.
+mkdir -p ../public
+cp -r build/web/* ../public/
+echo "Build complete. Output copied to public/"
