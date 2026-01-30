@@ -24,6 +24,15 @@ class _SplashScreenState extends State<SplashScreen> {
   String? _initialInviteCode;
   StreamSubscription<AuthState>? _authSubscription;
   
+  // Debug Logs
+  final List<String> _logs = [];
+  void _addLog(String msg) {
+    if (!mounted) return;
+    final log = "${DateTime.now().toString().substring(11, 19)} $msg";
+    setState(() => _logs.insert(0, log));
+    debugPrint("SPLASH_DEBUG: $msg");
+  }
+
   // Single Random Text State
   late int _randomIndex;
 
@@ -33,7 +42,6 @@ class _SplashScreenState extends State<SplashScreen> {
     "지금의 너로 시작하면 돼",
     "정답은 없어 네 이야기면 돼",
     "천천히 가도 방향은 맞아",
-    // "잘하려 하지 않아도 괜찮아", // Typo fix or keep as is? User provided list has it.
     "잘하려 하지 않아도 괜찮아",
     "이 순간은 너를 위한 시간이야",
     "비교하지 않아도 빛나",
@@ -59,10 +67,16 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    _addLog("InitState Started");
+    
     // 1. Capture URL state IMMEDIATELY
-    final uri = Uri.base;
-    _initialInviteCode = uri.queryParameters['code']?.trim();
-    debugPrint("SplashScreen: InitState captured code: $_initialInviteCode");
+    try {
+      final uri = Uri.base;
+      _initialInviteCode = uri.queryParameters['code']?.trim();
+      _addLog("Captured URL Code: $_initialInviteCode");
+    } catch (e) {
+      _addLog("Error capturing URL: $e");
+    }
 
     // Select random index once
     _randomIndex = DateTime.now().millisecondsSinceEpoch % _koreanTexts.length;
@@ -82,21 +96,29 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkExistingSession() async {
-      final session = Supabase.instance.client.auth.currentSession;
-      if (session != null) {
-          debugPrint("SplashScreen: Immediate Session Found. Navigating.");
-          await _handleAuthenticatedUser(session);
+      _addLog("Checking Existing Session...");
+      try {
+        final session = Supabase.instance.client.auth.currentSession;
+        if (session != null) {
+            _addLog("Immediate Session Found: ${session.user.id.substring(0,5)}...");
+            await _handleAuthenticatedUser(session);
+        } else {
+            _addLog("No Immediate Session");
+        }
+      } catch (e) {
+        _addLog("Session Check Error: $e");
       }
   }
 
   void _setupAuthListener() {
+    _addLog("Setting up Auth Listener");
     // 1. Listen to Auth State Changes
     _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
       if (!mounted) return;
       
       final session = data.session;
       final event = data.event;
-      debugPrint("SplashScreen: Auth Event: $event, Session: ${session != null}");
+      _addLog("Auth Event: $event");
 
       // Use _initialInviteCode if present, or check current URI
       final uri = Uri.base; 
@@ -105,7 +127,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
       // Handle Invite Code (Deep Link / URL Param)
       if (effectiveCode != null && effectiveCode.length == 6) {
-           debugPrint("SplashScreen: Listener - Invite Code Found: $effectiveCode");
+           _addLog("Invite Code Found: $effectiveCode -> Navigating");
            GameSession().pendingInviteCode = effectiveCode;
            Navigator.of(context).pushReplacement(
              MaterialPageRoute(builder: (_) => InviteCodeScreen(initialCode: effectiveCode)),
@@ -115,7 +137,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
       // Handle Auth Session
       if (session != null) {
-           debugPrint("SplashScreen: Listener - Session Found. Handling User.");
+           _addLog("Session Found in Listener. Handling User.");
            _handleAuthenticatedUser(session);
       }
     });
@@ -124,6 +146,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // Extended timeout to 4.0s for Mobile Web latency
     Future.delayed(const Duration(milliseconds: 4000), () async {
       if (!mounted) return;
+      _addLog("Timeout (4s) Reached. Checking State.");
       
       final session = Supabase.instance.client.auth.currentSession;
       String? inviteCode = _initialInviteCode; 
@@ -132,7 +155,7 @@ class _SplashScreenState extends State<SplashScreen> {
       bool isInviteCode = inviteCode != null && inviteCode.length == 6;
 
       if (isInviteCode) {
-         debugPrint("SplashScreen: Timeout Force-Navigating to InviteCodeScreen with $inviteCode");
+         _addLog("Navigating to Invite: $inviteCode");
          GameSession().pendingInviteCode = inviteCode;
          Navigator.of(context).pushReplacement(
            MaterialPageRoute(builder: (_) => InviteCodeScreen(initialCode: inviteCode)),
@@ -141,32 +164,33 @@ class _SplashScreenState extends State<SplashScreen> {
       }
 
       if (session == null && !isAuthCode) {
-         debugPrint("SplashScreen: No Session. Attempting Anonymous Sign-In...");
+         _addLog("No Session. Attempting Anon Sign-In...");
          try {
              await Supabase.instance.client.auth.signInAnonymously();
              // The auth listener will catch the new session and navigate.
          } catch (e) {
-             debugPrint("SplashScreen: Anonymous Auth Failed: $e");
+             _addLog("Anon Auth Failed: $e");
              // Fallback to Signup if anonymous auth fails (critical error)
              if (mounted) {
+                 _addLog("Redirecting to Signup (Fallback)");
                  Navigator.of(context).pushReplacement(
                    MaterialPageRoute(builder: (_) => const SignupScreen()),
                  );
              }
          }
       } else if (isAuthCode) {
-         debugPrint("SplashScreen: Detected Auth Code ($inviteCode). Waiting for session exchange...");
+         _addLog("Auth Code Detected. Waiting...");
       }
     });
 
     // Check 2: Safety Net (10s)
     Future.delayed(const Duration(seconds: 10), () {
         if (!mounted) return;
-        // If we are STILL here, something went wrong with Auth Exchange
-        debugPrint("SplashScreen: Safety Timeout (10s). Forcing unexpected state resolution.");
+        _addLog("Safety Net (10s) Reached.");
         
         final session = Supabase.instance.client.auth.currentSession;
         if (session == null) {
+            _addLog("Still No Session. Forced Signup.");
             Navigator.of(context).pushReplacement(
                MaterialPageRoute(builder: (_) => const SignupScreen()),
             );
@@ -175,6 +199,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _handleAuthenticatedUser(Session session) async {
+    _addLog("Handling Auth User. Migrating...");
     // 1. Attempt Migration (Guest -> Host) if pending
     await MigrationManager().attemptMigration();
 
@@ -183,13 +208,15 @@ class _SplashScreenState extends State<SplashScreen> {
     // 2. Load Host Info to check if profile exists
     final gameSession = GameSession();
     await gameSession.loadHostInfoFromPrefs();
+    _addLog("Host Nickname: ${gameSession.hostNickname}");
       
       if (gameSession.hostNickname == null) {
-         // Profile missing? Go to HostInfo to set it up.
+         _addLog("No Nickname. Going to HostInfoScreen.");
          Navigator.of(context).pushReplacement(
            MaterialPageRoute(builder: (_) => HostInfoScreen()), 
          );
       } else {
+         _addLog("Profile OK. Going to Home.");
          gameSession.myRole = 'A';
          Navigator.of(context).pushReplacementNamed('/home');
       }
@@ -207,59 +234,88 @@ class _SplashScreenState extends State<SplashScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Logo with Rotation Animation
-            SvgPicture.asset(
-              'assets/images/Logo Vector.svg',
-              width: 72,
-              height: 72,
-            )
-            .animate(onPlay: (controller) => controller.repeat())
-            .rotate(duration: 1000.ms, curve: Curves.linear), 
-            
-            const SizedBox(height: 40),
-            
-            // Progress Bar
-            SizedBox(
-              width: 200,
-              child: LinearProgressIndicator(
-                value: _progress,
-                backgroundColor: Colors.grey[200],
-                color: AppColors.hostPrimary, // Host Primary Color
-                minHeight: 4,
-              ),
+      body: Stack(
+        children: [
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo with Rotation Animation
+                SvgPicture.asset(
+                  'assets/images/Logo Vector.svg',
+                  width: 72,
+                  height: 72,
+                )
+                .animate(onPlay: (controller) => controller.repeat())
+                .rotate(duration: 1000.ms, curve: Curves.linear), 
+                
+                const SizedBox(height: 40),
+                
+                // Progress Bar
+                SizedBox(
+                  width: 200,
+                  child: LinearProgressIndicator(
+                    value: _progress,
+                    backgroundColor: Colors.grey[200],
+                    color: AppColors.hostPrimary, // Host Primary Color
+                    minHeight: 4,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                if (_progress > 0)
+                  Text(
+                    '${(_progress * 100).toInt()}%',
+                    style: const TextStyle(
+                      color: AppColors.hostPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                 const SizedBox(height: 20),
+                
+                // Static Random Text
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    displayText,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.black54, 
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      height: 1.5,
+                      fontFamily: 'NanumSquareRound', 
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 10),
-            if (_progress > 0)
-              Text(
-                '${(_progress * 100).toInt()}%',
-                style: const TextStyle(
-                  color: AppColors.hostPrimary,
-                  fontWeight: FontWeight.bold,
+          ),
+          
+          // --- DEBUG LOG OVERLAY ---
+          Positioned(
+            bottom: 20,
+            left: 20,
+            right: 20,
+            height: 200,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: SingleChildScrollView(
+                reverse: true,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: _logs.map((l) => Text(
+                    l, 
+                    style: const TextStyle(color: Colors.white, fontSize: 10, fontFamily: 'monospace')
+                  )).toList(),
                 ),
               ),
-             const SizedBox(height: 20),
-            
-            // Static Random Text
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                displayText,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.black54, 
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  height: 1.5,
-                  fontFamily: 'NanumSquareRound', // Optional: Use a nice font if available, else default
-                ),
-              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

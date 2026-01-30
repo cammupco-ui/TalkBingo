@@ -23,7 +23,7 @@ set -e
 echo "Building Flutter Web..."
 ./flutter/bin/flutter config --enable-web
 ./flutter/bin/flutter pub get
-./flutter/bin/flutter build web --release
+./flutter/bin/flutter build web --release --web-renderer html
 
 # Ensure output is available for Vercel
 # Assuming Vercel Output Directory is set to 'public' or root. 
