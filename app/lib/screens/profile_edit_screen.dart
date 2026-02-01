@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart'; // Added Import
 import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/styles/app_spacing.dart';
@@ -12,6 +13,10 @@ class ProfileEditScreen extends StatefulWidget {
   @override
   State<ProfileEditScreen> createState() => _ProfileEditScreenState();
 }
+
+import 'package:supabase_flutter/supabase_flutter.dart'; // Added for email // Wait, duplicate import if I replace whole file? No, I am replacing LINES. Import is at top. Need to assume import exists or add if not.
+// Ah, the file view showed duplicates if I am not careful.
+// Let's replace the State class and helpers completely.
 
 class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final _nicknameController = TextEditingController();
@@ -28,6 +33,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   bool _regionConsent = false;
   bool _isSaving = false;
   bool _hasChanges = false;
+  
+  String? _userEmail; // Added for email display
 
   final GameSession _session = GameSession();
 
@@ -35,6 +42,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   void initState() {
     super.initState();
     _loadUserData();
+    _loadUserEmail(); // Fetch Email
 
     _nicknameController.addListener(_checkForChanges);
     _birthDateController.addListener(_checkForChanges);
@@ -51,6 +59,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     _snsController.dispose();
     _addressController.dispose();
     super.dispose();
+  }
+  
+  void _loadUserEmail() {
+    final user = Supabase.instance.client.auth.currentUser;
+    setState(() {
+      _userEmail = user?.email;
+    });
   }
 
   void _loadUserData() {
@@ -77,7 +92,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         _regionConsent != (_session.hostRegionConsent ?? false) ||
         _selectedGender != _session.hostGender;
     
-    // Note: Add other fields to check if needed, simplified for main fields
     setState(() {
       _hasChanges = hasChanged;
     });
@@ -93,7 +107,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     _session.hostAddress = _addressController.text;
     _session.hostRegionConsent = _regionConsent;
     _session.hostGender = _selectedGender;
-    // Note: Province/City/Age logic kept simple or omitted if not in original fully
 
     await _session.saveProfile();
 
@@ -106,7 +119,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppLocalizations.get('settings_saved')), backgroundColor: AppColors.hostPrimary),
       );
-      Navigator.pop(context); // Go back after save
+      Navigator.pop(context); 
     }
   }
 
@@ -117,7 +130,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          title: Text(AppLocalizations.get('profile_settings'), style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+          title: SvgPicture.asset('assets/images/Logo Vector.svg', height: 32),
+          centerTitle: true,
           elevation: 0,
           backgroundColor: Colors.white,
           leading: IconButton(
@@ -133,126 +147,164 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     AppLocalizations.get('save_changes'), 
                     style: TextStyle(
                       color: _hasChanges ? AppColors.hostPrimary : Colors.grey,
-                      fontWeight: FontWeight.bold
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'NURA', // NURA font for Save button
                     )
                   ),
             )
           ],
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.screenPaddingHorizontal),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPaddingHorizontal, vertical: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-               // Nickname
-              _buildLabel(AppLocalizations.get('nickname'), isRequired: true),
-              TextField(
-                controller: _nicknameController,
-                decoration: _inputDecoration('Nickname'),
-                style: const TextStyle(fontSize: AppSpacing.inputFontSize),
-              ),
-              const SizedBox(height: AppSpacing.spacingXs),
-
-              // Gender
-              _buildLabel(AppLocalizations.get('gender'), isRequired: true),
-              Row(
-                children: [
-                  _buildGenderChip(AppLocalizations.get('male'), 'Male'),
-                  const SizedBox(width: 10),
-                  _buildGenderChip(AppLocalizations.get('female'), 'Female'),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.spacingXs),
-
-              // Birth Date
-              _buildLabel(AppLocalizations.get('birth_date'), isRequired: true),
-              TextField(
-                controller: _birthDateController,
-                decoration: _inputDecoration('YYYY-MM-DD'),
-                keyboardType: TextInputType.datetime,
-                style: const TextStyle(fontSize: AppSpacing.inputFontSize),
-              ),
-              const SizedBox(height: AppSpacing.spacingLg),
-              
-              Divider(color: Colors.grey[300], height: 1, thickness: 1),
-              const SizedBox(height: AppSpacing.spacingLg),
-
-              // SNS
-              _buildLabel(AppLocalizations.get('sns')),
-              TextField(
-                controller: _snsController,
-                decoration: _inputDecoration('@username'),
-                style: const TextStyle(fontSize: AppSpacing.inputFontSize),
-              ),
-              const SizedBox(height: AppSpacing.spacingXs),
-
-               // Address
-              _buildLabel(AppLocalizations.get('address')),
-              TextField(
-                controller: _addressController,
-                 decoration: _inputDecoration('City, District'),
-                style: const TextStyle(fontSize: AppSpacing.inputFontSize),
-              ),
-              const SizedBox(height: AppSpacing.spacingXs),
-              
-               // Phone
-              _buildLabel(AppLocalizations.get('phone_number')),
-              TextField(
-                controller: _phoneController,
-                decoration: _inputDecoration('010-1234-5678'),
-                keyboardType: TextInputType.phone,
-                style: const TextStyle(fontSize: AppSpacing.inputFontSize),
-              ),
-              const SizedBox(height: AppSpacing.spacingXs),
-              
-              // Region Consent
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.inputPaddingHorizontal, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
-                  borderRadius: BorderRadius.circular(AppSpacing.borderRadiusSm),
-                ),
+              // 1. Account Section
+              _buildSectionHeader(AppLocalizations.get('account') ?? 'Account', const Color(0xFF6B14EC)), // Purple
+              const SizedBox(height: 12),
+              _buildCard(
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                     Text(AppLocalizations.get('allow_region'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontSize: 14, color: Colors.black87))),
-                     SizedBox(
-                       height: 30, 
-                       child: Transform.scale(
-                         scale: 0.8,
-                         child: Switch(
-                          activeColor: AppColors.hostPrimary,
-                          activeTrackColor: AppColors.hostPrimary.withOpacity(0.2),
-                          inactiveThumbColor: Colors.white,
-                          inactiveTrackColor: Colors.grey[300],
-                          trackOutlineColor: MaterialStateProperty.all(Colors.transparent),
-                          value: _regionConsent, 
-                          onChanged: (val) {
-                            setState(() {
-                              _regionConsent = val;
-                              _checkForChanges();
-                            });
-                          }
-                         ),
-                       ),
-                     )
+                    const Icon(Icons.email_outlined, color: Colors.grey),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                         _userEmail ?? 'Guest User',
+                         style: const TextStyle(fontSize: 14, color: Colors.black87),
+                      ),
+                    ),
                   ],
-                ),
+                )
               ),
+              const SizedBox(height: 32),
 
-              // Personal Info Retention Consent
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                controlAffinity: ListTileControlAffinity.leading,
-                title: Text(AppLocalizations.get('agree_retention'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
-                subtitle: Text(AppLocalizations.get('retention_sub'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontSize: 12, color: Colors.grey))),
-                activeColor: AppColors.hostPrimary,
-                value: true, 
-                onChanged: (val) {},
+
+              // 2. Required Info Section
+              _buildSectionHeader(AppLocalizations.get('required_info') ?? 'Required Info', const Color(0xFFBD0558)), // Pink
+              const SizedBox(height: 12),
+              _buildCard(
+                child: Column(
+                  children: [
+                     // Nickname
+                    _buildLabel(AppLocalizations.get('nickname'), isRequired: true),
+                    TextField(
+                      controller: _nicknameController,
+                      decoration: _inputDecoration('Nickname'),
+                      style: const TextStyle(fontSize: AppSpacing.inputFontSize),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Gender
+                    _buildLabel(AppLocalizations.get('gender'), isRequired: true),
+                    Row(
+                      children: [
+                        _buildGenderChip(AppLocalizations.get('male'), 'Male'),
+                        const SizedBox(width: 10),
+                        _buildGenderChip(AppLocalizations.get('female'), 'Female'),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Birth Date
+                    _buildLabel(AppLocalizations.get('birth_date'), isRequired: true),
+                    TextField(
+                      controller: _birthDateController,
+                      decoration: _inputDecoration('YYYY-MM-DD'),
+                      keyboardType: TextInputType.datetime,
+                      style: const TextStyle(fontSize: AppSpacing.inputFontSize),
+                    ),
+                  ],
+                )
+              ),
+              const SizedBox(height: 32),
+
+
+              // 3. Optional Info Section
+              _buildSectionHeader(AppLocalizations.get('optional_info') ?? 'Optional Info', const Color(0xFF68CDFF)), // Blue
+              const SizedBox(height: 12),
+              _buildCard(
+                child: Column(
+                  children: [
+                    // SNS
+                    _buildLabel(AppLocalizations.get('sns')),
+                    TextField(
+                      controller: _snsController,
+                      decoration: _inputDecoration('@username'),
+                      style: const TextStyle(fontSize: AppSpacing.inputFontSize),
+                    ),
+                    const SizedBox(height: 16),
+
+                     // Address
+                    _buildLabel(AppLocalizations.get('address')),
+                    TextField(
+                      controller: _addressController,
+                      decoration: _inputDecoration('City, District'),
+                      style: const TextStyle(fontSize: AppSpacing.inputFontSize),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                     // Phone
+                    _buildLabel(AppLocalizations.get('phone_number')),
+                    TextField(
+                      controller: _phoneController,
+                      decoration: _inputDecoration('010-1234-5678'),
+                      keyboardType: TextInputType.phone,
+                      style: const TextStyle(fontSize: AppSpacing.inputFontSize),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Region Consent
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.inputPaddingHorizontal, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF5F5F5),
+                        borderRadius: BorderRadius.circular(AppSpacing.borderRadiusSm),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                           Text(AppLocalizations.get('allow_region'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontSize: 14, color: Colors.black87))),
+                           SizedBox(
+                             height: 30, 
+                             child: Transform.scale(
+                               scale: 0.8,
+                               child: Switch(
+                                activeColor: AppColors.hostPrimary,
+                                activeTrackColor: AppColors.hostPrimary.withOpacity(0.2),
+                                inactiveThumbColor: Colors.white,
+                                inactiveTrackColor: Colors.grey[300],
+                                trackOutlineColor: MaterialStateProperty.all(Colors.transparent),
+                                value: _regionConsent, 
+                                onChanged: (val) {
+                                  setState(() {
+                                    _regionConsent = val;
+                                    _checkForChanges();
+                                  });
+                                }
+                               ),
+                             ),
+                           )
+                        ],
+                      ),
+                    ),
+
+                    // Personal Info Retention Consent
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      title: Text(AppLocalizations.get('agree_retention'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
+                      subtitle: Text(AppLocalizations.get('retention_sub'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontSize: 12, color: Colors.grey))),
+                      activeColor: AppColors.hostPrimary,
+                      value: true, 
+                      onChanged: (val) {},
+                    ),
+                  ],
+                )
               ),
               
               const SizedBox(height: 32),
               
+              // Bottom Save Button
               SizedBox(
                 width: double.infinity,
                 height: AppSpacing.buttonHeight,
@@ -268,10 +320,60 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     : Text(AppLocalizations.get('save_changes'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: AppSpacing.buttonFontSize))),
                 ),
               ),
+              const SizedBox(height: 48), // Bottom padding
             ],
           ),
         ),
       ),
+    );
+  }
+
+  // --- Helpers ---
+
+  Widget _buildSectionHeader(String title, Color barColor) {
+    return Row(
+      children: [
+        Container(
+          width: 4, 
+          height: 18, 
+          decoration: BoxDecoration(
+            color: barColor, 
+            borderRadius: BorderRadius.circular(2)
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black, // Dark text for header
+            fontFamily: 'NURA', // Optional: Use NURA if desired for headers, or system font
+          ),
+        ),
+        const Spacer(),
+        Container(height: 1, width: 200, color: Colors.grey[200]), // Divider line effect? Or just spacer
+      ],
+    );
+  }
+
+  Widget _buildCard({required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+            spreadRadius: 0,
+          )
+        ],
+        border: Border.all(color: const Color(0xFFF0F0F0)),
+      ),
+      child: child,
     );
   }
 
@@ -283,9 +385,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           Text(
             text,
             style: const TextStyle(
-              fontSize: AppSpacing.labelFontSize,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              fontSize: 13, // Slightly smaller label
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF555555),
             ),
           ),
           if (isRequired)
@@ -320,10 +422,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           });
         },
         child: Container(
-          height: AppSpacing.toggleButtonHeight,
+          height: 44,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF0C0219) : Colors.white,
+            color: isSelected ? const Color(0xFF0C0219) : const Color(0xFFFAFAFA),
             borderRadius: BorderRadius.circular(AppSpacing.borderRadiusSm),
             border: Border.all(
               color: isSelected ? const Color(0xFF0C0219) : Colors.grey[300]!,
@@ -335,7 +437,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              color: isSelected ? Colors.white : Colors.black87,
+              color: isSelected ? Colors.white : Colors.black54,
             ),
           ),
         ),
@@ -346,21 +448,21 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       filled: true,
-      fillColor: Colors.white,
+      fillColor: const Color(0xFFFAFAFA), // Very light gray for input background
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppSpacing.borderRadiusSm),
-        borderSide: BorderSide(color: Colors.grey[300]!),
+        borderSide: BorderSide(color: Colors.grey[200]!),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppSpacing.borderRadiusSm),
-        borderSide: BorderSide(color: Colors.grey[300]!),
+        borderSide: BorderSide(color: Colors.grey[200]!),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppSpacing.borderRadiusSm),
-        borderSide: const BorderSide(color: AppColors.hostPrimary, width: 1),
+        borderSide: const BorderSide(color: AppColors.hostPrimary, width: 1.5),
       ),
       hintText: hint,
-      hintStyle: const TextStyle(color: Colors.black38),
+      hintStyle: const TextStyle(color: Colors.black26),
       contentPadding: AppSpacing.inputContentPadding,
       isDense: true,
     );

@@ -9,6 +9,8 @@ import 'package:talkbingo_app/utils/localization.dart';
 import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:flutter/foundation.dart'; // Added for kIsWeb
+
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
@@ -17,6 +19,7 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  // ... (controllers omitted) ...
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -56,9 +59,24 @@ class _SignupScreenState extends State<SignupScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // Determine Redirect URL
+      String? redirectUrl;
+      if (kIsWeb) {
+        // Fix for GitHub Pages subdirectory hosting
+        // If we are on "cammupco-ui.github.io/TalkBingo/", we must redirect back to that, not root.
+        final uri = Uri.base;
+        if (uri.path.contains('/TalkBingo')) {
+           redirectUrl = '${uri.origin}/TalkBingo/';
+        } else {
+           // Localhost or Custom Domain root
+           redirectUrl = uri.origin;
+        }
+      }
+
       final response = await Supabase.instance.client.auth.signUp(
         email: email,
         password: password,
+        emailRedirectTo: redirectUrl,
       );
 
       if (mounted) {

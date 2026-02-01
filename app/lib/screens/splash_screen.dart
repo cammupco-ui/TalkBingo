@@ -113,7 +113,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void _setupAuthListener() {
     _addLog("Setting up Auth Listener");
     // 1. Listen to Auth State Changes
-    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
       if (!mounted) return;
       
       final session = data.session;
@@ -233,8 +233,11 @@ class _SplashScreenState extends State<SplashScreen> {
       
       // If code is pending, SKIP HostInfo requirement to allow Fast Track
       // This is crucial for "Guest Mode" join where we don't want to force profile setup yet.
-      if (gameSession.hostNickname == null && gameSession.pendingInviteCode == null) {
-         _addLog("No Nickname. Going to HostInfoScreen.");
+      // If code is pending, SKIP HostInfo requirement to allow Fast Track
+      // This is crucial for "Guest Mode" join where we don't want to force profile setup yet.
+      // Also check for empty string to prevent false positives from stale/default data
+      if ((gameSession.hostNickname == null || gameSession.hostNickname!.isEmpty) && gameSession.pendingInviteCode == null) {
+         _addLog("No Nickname (Null or Empty). Going to HostInfoScreen.");
          Navigator.of(context).pushReplacement(
            MaterialPageRoute(builder: (_) => HostInfoScreen()), 
          );

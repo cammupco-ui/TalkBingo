@@ -155,6 +155,12 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Logo (Re-added to body for visibility)
+            Center(
+              child: SvgPicture.asset('assets/images/Logo Vector.svg', width: 60, height: 60),
+            ),
+            const SizedBox(height: 20),
+
             const Text(
               'MainPlayer',
               style: TextStyle(
