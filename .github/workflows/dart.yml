@@ -28,16 +28,14 @@ jobs:
         working-directory: ./app
         run: flutter pub get
 
-      - name: Create .env
-        working-directory: ./app
-        run: |
-          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > .env
-          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
-
       - name: Build Web
         working-directory: ./app
-        # Build with HTML renderer for better compatibility
-        run: flutter build web --release --web-renderer html --base-href "/TalkBingo/"
+        run: |
+          flutter build web --release \
+            --web-renderer html \
+            --base-href "/TalkBingo/" \
+            --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
+            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
