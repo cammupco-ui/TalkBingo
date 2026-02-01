@@ -164,20 +164,10 @@ class _SplashScreenState extends State<SplashScreen> {
       }
 
       if (session == null && !isAuthCode) {
-         _addLog("No Session. Attempting Anon Sign-In...");
-         try {
-             await Supabase.instance.client.auth.signInAnonymously();
-             // The auth listener will catch the new session and navigate.
-         } catch (e) {
-             _addLog("Anon Auth Failed: $e");
-             // Fallback to Signup if anonymous auth fails (critical error)
-             if (mounted) {
-                 _addLog("Redirecting to Signup (Fallback)");
-                 Navigator.of(context).pushReplacement(
-                   MaterialPageRoute(builder: (_) => const SignupScreen()),
-                 );
-             }
-         }
+         _addLog("No Session. Navigating to Signup...");
+         Navigator.of(context).pushReplacement(
+           MaterialPageRoute(builder: (_) => const SignupScreen()),
+         );
       } else if (isAuthCode) {
          _addLog("Auth Code Detected. Waiting...");
       }
@@ -311,30 +301,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
           ),
 
-          // --- DEBUG LOG OVERLAY ---
-          Positioned(
-            bottom: 20,
-            left: 20,
-            right: 20,
-            height: 200,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: SingleChildScrollView(
-                reverse: true,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: _logs.map((l) => Text(
-                    l, 
-                    style: const TextStyle(color: Colors.white, fontSize: 10, fontFamily: 'monospace')
-                  )).toList(),
-                ),
-              ),
-            ),
-          ),
+
         ],
       ),
     );

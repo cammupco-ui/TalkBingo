@@ -8,6 +8,8 @@ import 'package:talkbingo_app/screens/waiting_screen.dart';
 import 'package:talkbingo_app/screens/home_screen.dart';
 import 'package:talkbingo_app/utils/dev_config.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
+import 'package:talkbingo_app/styles/app_spacing.dart';
+
 
 class GuestInfoScreen extends StatefulWidget {
   final String? initialNickname;
@@ -83,7 +85,8 @@ class _GuestInfoScreenState extends State<GuestInfoScreen> {
         iconTheme: const IconThemeData(color: AppColors.hostPrimary),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(AppSpacing.screenPadding),
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -97,10 +100,11 @@ class _GuestInfoScreenState extends State<GuestInfoScreen> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.spacingLg),
 
             // Nickname
             _buildLabel('Nickname'),
+
             TextField(
               controller: _nicknameController,
               onChanged: (_) => setState(() {}),
@@ -112,8 +116,9 @@ class _GuestInfoScreenState extends State<GuestInfoScreen> {
                 suffixIcon: _nicknameController.text.trim().isNotEmpty 
                     ? const Icon(Icons.check_circle, color: Colors.green) 
                     : null,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                contentPadding: AppSpacing.inputContentPadding,
                 // isDense: true, // Removed for standard height
+
                 border: const OutlineInputBorder(),
                 enabledBorder: const OutlineInputBorder(
                   borderSide: BorderSide(color: AppColors.hostPrimary),
@@ -124,7 +129,8 @@ class _GuestInfoScreenState extends State<GuestInfoScreen> {
               ),
               style: const TextStyle(fontSize: 14),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.spacingLg),
+
 
             // Validation Message if Invalid
             if (!_isFormValid)
@@ -149,20 +155,20 @@ class _GuestInfoScreenState extends State<GuestInfoScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFBD0558),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 0),
-                  fixedSize: const Size.fromHeight(44),
+                  padding: EdgeInsets.zero,
+                  fixedSize: const Size.fromHeight(AppSpacing.buttonHeight),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
                   ),
                   disabledBackgroundColor: Colors.grey[300],
                 ),
                 child: const Text(
                   'Join Room',
-                  style: TextStyle(fontSize: 14, fontFamily: 'NURA', fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: AppSpacing.buttonFontSize, fontFamily: 'NURA', fontWeight: FontWeight.bold),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.spacingMd),
             
             // Home Button
             AnimatedOutlinedButton(
@@ -177,9 +183,10 @@ class _GuestInfoScreenState extends State<GuestInfoScreen> {
                style: OutlinedButton.styleFrom(
                  foregroundColor: AppColors.hostPrimary,
                  side: const BorderSide(color: AppColors.hostPrimary),
-                 fixedSize: const Size.fromHeight(44),
-                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                 fixedSize: const Size.fromHeight(AppSpacing.buttonHeight),
+                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.buttonRadius)),
                ),
+
                child: const Text("HOME", style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'NURA')),
             ),
           ],
@@ -190,7 +197,8 @@ class _GuestInfoScreenState extends State<GuestInfoScreen> {
 
   Widget _buildLabel(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+      padding: const EdgeInsets.only(bottom: AppSpacing.spacingXs),
+
       child: Text(
         text,
         style: const TextStyle(

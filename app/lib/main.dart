@@ -17,8 +17,11 @@ import 'package:flutter/services.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AdState.initialize(); // Initialize Ads
-  await SoundService().init(); // Initialize Sound Service
+  
+  // Fire and forget - don't block app startup
+  AdState.initialize(); 
+  SoundService().init(); 
+  
   // Hybrid Config: Check build-time args first (Web Release), then .env (Local Dev)
   String supabaseUrl = const String.fromEnvironment('SUPABASE_URL');
   String supabaseAnonKey = const String.fromEnvironment('SUPABASE_ANON_KEY');

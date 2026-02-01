@@ -1,4 +1,4 @@
-package com.talkbingo.talkbingo_app
+package com.talkbingo.app
 
 import io.flutter.embedding.android.FlutterActivity
 

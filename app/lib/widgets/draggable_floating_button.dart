@@ -46,10 +46,8 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton> {
         setState(() {
           _showPreview = true;
         });
+        // 5초 후 사라지는 타이머 제거 (항상 표시)
         _previewTimer?.cancel();
-        _previewTimer = Timer(const Duration(seconds: 5), () {
-          if (mounted) setState(() => _showPreview = false);
-        });
       }
     }
   }
@@ -96,11 +94,21 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton> {
     await prefs.setDouble('floating_button_y', _position.dy);
   }
 
+  double _dragDistance = 0;
+
+  void _onPanStart(DragStartDetails details) {
+    _dragDistance = 0;
+    _isDragging = false;
+  }
+
   void _onPanUpdate(DragUpdateDetails details) {
-    setState(() {
-      _position += details.delta;
-      _isDragging = true;
-    });
+    _dragDistance += details.delta.distance;
+    if (_dragDistance > 5.0) { // Threshold
+       setState(() {
+         _position += details.delta;
+         _isDragging = true;
+       });
+    }
   }
 
   void _onPanEnd(DragEndDetails details) {
@@ -135,102 +143,141 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton> {
   Widget build(BuildContext context) {
     if (!_initialized) return const SizedBox.shrink();
 
-    final bool isChat = widget.isOnChatTab;
-    final Color bgColor = isChat 
-        ? Colors.grey.withOpacity(0.7) 
-        : widget.themeColor.withOpacity(0.85);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Ensure position is within valid bounds of the PARENT, not the Window
+        final double parentWidth = constraints.maxWidth;
+        final double parentHeight = constraints.maxHeight;
 
-    return Positioned(
-      left: _position.dx,
-      top: _position.dy,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque, // Ensure touches are captured
-        onPanUpdate: _onPanUpdate,
-        onPanEnd: _onPanEnd,
-        onTap: () {
-           // Prevent tap if just finished dragging (though GestureDetector usually handles this)
-           if (!_isDragging) {
-              widget.onTap();
-           }
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: _isDragging ? 70 : (_showPreview && !isChat ? 220 : 60), 
-          height: _isDragging ? 70 : 60,
-          curve: Curves.easeOutBack,
-          decoration: BoxDecoration(
-            color: _isDragging ? bgColor.withOpacity(0.95) : bgColor,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(_isDragging ? 0.4 : 0.2),
-                blurRadius: _isDragging ? 16 : 8,
-                offset: Offset(0, _isDragging ? 8 : 4),
-              )
-            ],
-          ),
-          child: Stack(
-            children: [
-               // Content
-               Center(
-                 child: isChat 
-                 ? Column(
-                     mainAxisSize: MainAxisSize.min,
-                     children: const [
-                       Icon(Icons.sports_esports, color: Colors.white, size: 28),
-                       Text("보드", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold))
-                     ],
-                   )
-                 : (_showPreview 
-                    ? Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                        child: Row(
-                          children: [
-                             Icon(Icons.chat_bubble, color: Colors.white.withOpacity(0.9), size: 24),
-                             const SizedBox(width: 8),
-                             Expanded(
-                               child: Text(
-                                 widget.latestMessage ?? "", 
-                                 style: const TextStyle(color: Colors.white, fontSize: 11), // Increased font size slightly since title is gone
-                                 maxLines: 2, // Allow 2 lines since we have space
-                                 overflow: TextOverflow.ellipsis
-                               ),
-                             )
-                          ],
-                        ),
+        // Clamp immediately to ensure visibility if parent resized
+        // (e.g. window resize or mobile wrapper)
+        final double buttonSize = _isDragging ? 70 : ((_showPreview || (!widget.isOnChatTab && widget.unreadCount > 0)) ? 220 : 60);
+        final double safeX = _position.dx.clamp(0.0, parentWidth - buttonSize);
+        final double safeY = _position.dy.clamp(0.0, parentHeight - buttonSize);
+        
+        // If clamp changed status essentially, update _position (optional, avoided for perf during build)
+
+        final bool isChat = widget.isOnChatTab;
+        final Color bgColor = isChat 
+            ? Colors.grey.withOpacity(0.7) 
+            : widget.themeColor.withOpacity(0.85);
+
+        return Stack(
+          children: [
+            Positioned(
+              left: safeX,
+              top: safeY,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque, // Ensure touches are captured
+                onPanStart: _onPanStart,
+                onPanUpdate: _onPanUpdate,
+                onPanEnd: (details) {
+                    if (_isDragging) {
+                        // Logic to snap and save only if dragged
+                    // We use parentWidth/Height here instead of MediaQuery
+                    double finalX = _position.dx.clamp(16.0, parentWidth - 70.0 - 16.0);
+                    double finalY = _position.dy.clamp(60.0, parentHeight - 70.0 - 50.0);
+                    
+                    if (finalX + 35 < parentWidth/2) {
+                       finalX = 16.0;
+                    } else {
+                       finalX = parentWidth - 70.0 - 16.0;
+                    }
+
+                    setState(() {
+                      _isDragging = false;
+                      _position = Offset(finalX, finalY);
+                    });
+                     _savePosition();
+                    }
+                },
+                onTap: () {
+                   if (!_isDragging) {
+                      widget.onTap();
+                   }
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: _isDragging ? 70 : ((_showPreview || (!isChat && widget.unreadCount > 0)) ? 220 : 60), 
+                  height: _isDragging ? 70 : 60,
+                  curve: Curves.easeOutBack,
+                  decoration: BoxDecoration(
+                    color: _isDragging ? bgColor.withOpacity(0.95) : bgColor,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(_isDragging ? 0.4 : 0.2),
+                        blurRadius: _isDragging ? 16 : 8,
+                        offset: Offset(0, _isDragging ? 8 : 4),
                       )
-                    : const Icon(Icons.chat_bubble, color: Colors.white, size: 30) // Simple Icon
-                   )
-               ),
-               
-               // Badge
-               if (!isChat && widget.unreadCount > 0)
-                 Positioned(
-                   right: 0,
-                   top: 0,
-                   child: IgnorePointer(
-                     child: Container( // Wrap to ensure it doesn't block hits if large
-                       padding: const EdgeInsets.all(6),
-                       decoration: const BoxDecoration(
-                         color: Colors.red,
-                         shape: BoxShape.circle,
+                    ],
+                  ),
+                  child: Stack(
+                    children: [
+                       // Content
+                       Center(
+                         child: isChat 
+                         ? Column(
+                             mainAxisSize: MainAxisSize.min,
+                             children: const [
+                               Icon(Icons.sports_esports, color: Colors.white, size: 28),
+                               Text("보드", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold))
+                             ],
+                           )
+                          : ((_showPreview || widget.unreadCount > 0) 
+                            ? Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                child: Row(
+                                  children: [
+                                     Icon(Icons.chat_bubble, color: Colors.white.withOpacity(0.9), size: 24),
+                                     const SizedBox(width: 8),
+                                     Expanded(
+                                       child: Text(
+                                         widget.latestMessage ?? "", 
+                                         style: const TextStyle(color: Colors.white, fontSize: 11), // Increased font size slightly since title is gone
+                                         maxLines: 2, // Allow 2 lines since we have space
+                                         overflow: TextOverflow.ellipsis
+                                       ),
+                                     )
+                                  ],
+                                ),
+                              )
+                            : const Icon(Icons.chat_bubble, color: Colors.white, size: 30) // Simple Icon
+                           )
                        ),
-                       constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
-                       child: Center(
-                         child: Text(
-                           "${widget.unreadCount}",
-                           style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                       
+                       // Badge
+                       if (!isChat && widget.unreadCount > 0)
+                         Positioned(
+                           right: 0,
+                           top: 0,
+                           child: IgnorePointer(
+                             child: Container( // Wrap to ensure it doesn't block hits if large
+                               padding: const EdgeInsets.all(6),
+                               decoration: const BoxDecoration(
+                                 color: Colors.red,
+                                 shape: BoxShape.circle,
+                               ),
+                               constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                               child: Center(
+                                 child: Text(
+                                   "${widget.unreadCount}",
+                                   style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                 ),
+                               ),
+                             ).animate(key: ValueKey(widget.unreadCount)).scale(duration: 300.ms, curve: Curves.elasticOut),
+                           ),
                          ),
-                       ),
-                     ).animate(key: ValueKey(widget.unreadCount)).scale(duration: 300.ms, curve: Curves.elasticOut),
-                   ),
-                 ),
-            ],
-          ),
-        )
-        .animate(target: (widget.unreadCount > 0 && !isChat) ? 1 : 0)
-        .shake(delay: 500.ms, hz: 4, curve: Curves.easeInOut), // Shake if unread
-      ),
+                    ],
+                  ),
+                )
+                .animate(target: (widget.unreadCount > 0 && !isChat) ? 1 : 0)
+                .shake(delay: 500.ms, hz: 4, curve: Curves.easeInOut), // Shake if unread
+              ),
+            ),
+          ]
+        );
+      }
     );
   }
 }

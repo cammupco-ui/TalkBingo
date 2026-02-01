@@ -9,6 +9,8 @@ import 'package:talkbingo_app/screens/home_screen.dart';
 import 'package:talkbingo_app/screens/waiting_screen.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/utils/localization.dart';
+import 'package:talkbingo_app/styles/app_spacing.dart';
+
 class GameSetupScreen extends StatefulWidget {
   final String? initialGender;
   final String? initialMainRelation;
@@ -330,8 +332,14 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
         iconTheme: const IconThemeData(color: Color(0xFFBD0558)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.only(
+          left: AppSpacing.screenPadding,
+          right: AppSpacing.screenPadding,
+          top: AppSpacing.screenPadding,
+          bottom: AppSpacing.screenPadding + 100, // Extra space for Ad Banner
+        ),
         child: Column(
+
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
               Text(
@@ -346,13 +354,15 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
               ),
             const SizedBox(height: 10),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sectionSpacing),
+
 
             // Guest Info Section
             const SizedBox(height: 10),
             // Guest Info Section
-            const SizedBox(height: 10),
+            const SizedBox(height: AppSpacing.sectionSpacing),
             Row(
+
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
@@ -368,7 +378,8 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                 _buildLanguageChip('한국어', 'ko'),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.spacingMd),
+
 
             // Gender Section
             _buildSectionTitle(AppLocalizations.get('gender')),
@@ -379,7 +390,8 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                 _buildGenderToggle(AppLocalizations.get('female'), 'Female'),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.spacingMd),
+
 
             // Relationship Section
             _buildSectionTitle(AppLocalizations.get('relationship')),
@@ -398,11 +410,13 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                         });
                       },
                       child: Container(
-                        height: 38,
+                        height: AppSpacing.inputHeight,
                         alignment: Alignment.center,
+
                         decoration: BoxDecoration(
                           color: isSelected ? const Color(0xFFBD0558) : Colors.white,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+
                           border: Border.all(
                             color: isSelected ? const Color(0xFFBD0558) : Colors.grey,
                           ),
@@ -422,7 +436,8 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
                 );
               }).toList(),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.sectionSpacing),
+
             // Sub Relation Dropdown
             DropdownButtonFormField<String>(
               isExpanded: true, // Ensure text fits
@@ -436,8 +451,9 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFFBD0558))),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                contentPadding: AppSpacing.inputContentPadding,
                 // isDense: true,
+
                 hintStyle: TextStyle(fontSize: 14),
               ),
               hint: Text(AppLocalizations.get('select_relation')),
@@ -451,10 +467,12 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
 
           // Intimacy Section
           _buildSectionTitle(AppLocalizations.get('intimacy_level')),
-            const SizedBox(height: 10),
+            const SizedBox(height: AppSpacing.sectionSpacing),
+
             ..._intimacyLevels.map((levelData) => _buildIntimacyOption(levelData)),
             
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sectionSpacing),
+
 
             // Start Game Button
             AnimatedButton(
@@ -462,10 +480,10 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFBD0558),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 0), // Use fixedSize instead
-                fixedSize: const Size.fromHeight(44), // Strict 44px
+                padding: EdgeInsets.zero, // Use fixedSize instead
+                fixedSize: const Size.fromHeight(AppSpacing.buttonHeight), // Standard Height
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
                 ),
                 disabledBackgroundColor: Colors.grey[300],
               ),
@@ -482,7 +500,8 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4.0),
+      padding: const EdgeInsets.only(bottom: AppSpacing.labelSpacing),
+
       child: Text(
         title,
         style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(
@@ -500,11 +519,13 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
       child: GestureDetector(
         onTap: () => setState(() => _selectedGender = isSelected ? null : value),
         child: Container(
-          height: 38,
+          height: AppSpacing.inputHeight,
           alignment: Alignment.center,
+
           decoration: BoxDecoration(
             color: isSelected ? AppColors.hostPrimary : Colors.white,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+
             border: Border.all(
               color: isSelected ? AppColors.hostPrimary : Colors.grey,
             ),
@@ -528,10 +549,11 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
     final bool isSelected = _selectedIntimacyLevel == level;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0), // Reduced bottom padding
+      padding: const EdgeInsets.only(bottom: AppSpacing.spacingXs), // Reduced bottom padding
       child: InkWell(
         onTap: () => setState(() => _selectedIntimacyLevel = level),
-        borderRadius: BorderRadius.circular(8), // Slightly smaller radius
+        borderRadius: BorderRadius.circular(AppSpacing.buttonRadius), // Slightly smaller radius
+
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8), // Compact padding
           decoration: BoxDecoration(
@@ -540,8 +562,9 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
               color: isSelected ? const Color(0xFFBD0558) : Colors.grey.shade300,
               width: isSelected ? 0 : 1,
             ),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
           ),
+
           child: Row(
             children: [
               Container(
@@ -624,7 +647,7 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
             ),
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
         side: BorderSide(color: isSelected ? Colors.transparent : Colors.grey),
       ),
     );

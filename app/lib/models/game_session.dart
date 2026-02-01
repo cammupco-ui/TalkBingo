@@ -143,6 +143,24 @@ class GameSession with ChangeNotifier {
   ValueNotifier<int?> remoteHoverIndex = ValueNotifier(null);
   Timer? _hoverDebounce;
 
+  // Bingo Line Calculation (Live)
+  int get bingoLines {
+    int lines = 0;
+    // Rows
+    for (int row = 0; row < 5; row++) {
+       if ([0,1,2,3,4].every((c) => _tileOwnership[row * 5 + c] == myRole)) lines++;
+    }
+    // Cols
+    for (int col = 0; col < 5; col++) {
+       if ([0,1,2,3,4].every((r) => _tileOwnership[r * 5 + col] == myRole)) lines++;
+    }
+    // Diagonals
+    if ([0,6,12,18,24].every((i) => _tileOwnership[i] == myRole)) lines++;
+    if ([4,8,12,16,20].every((i) => _tileOwnership[i] == myRole)) lines++;
+    
+    return lines;
+  }
+
   
   // --- Methods ---
 
@@ -513,21 +531,58 @@ class GameSession with ChangeNotifier {
   
   // --- Persistence ---
 
-  Future<void> loadHostInfoFromPrefs() async {
+  // --- Persistence ---
+
+  Future<void> loadProfile() async {
     final prefs = await SharedPreferences.getInstance();
-    hostNickname = prefs.getString('hostNickname');
-    hostAge = prefs.getString('hostAge');
-    hostGender = prefs.getString('hostGender');
-    hostHometownProvince = prefs.getString('hostHometownProvince');
-    hostHometownCity = prefs.getString('hostHometownCity');
-    hostConsent = prefs.getBool('hostConsent');
     
-    // New Fields
-    hostSns = prefs.getString('hostSns');
-    hostBirthDate = prefs.getString('hostBirthDate');
-    hostAddress = prefs.getString('hostAddress');
-    hostPhone = prefs.getString('hostPhone');
-    hostRegionConsent = prefs.getBool('hostRegionConsent');
+    // 1. Try to fetch from Supabase first if logged in
+    final user = _supabase.auth.currentUser;
+    if (user != null && !user.isAnonymous) {
+      try {
+        // Fetch from 'users' table
+        // We assume 'users' table exists and has these columns.
+        // If not, we might need to handle specific errors, but for now we try.
+        final data = await _supabase.from('users').select().eq('id', user.id).maybeSingle();
+        
+        if (data != null) {
+          debugPrint("✅ Loaded Profile from Supabase: ${data['nickname']}");
+          hostNickname = data['nickname'];
+          hostAge = data['age'];
+          hostGender = data['gender'];
+          hostHometownProvince = data['hometown_province'];
+          hostHometownCity = data['hometown_city'];
+          // New Fields
+          hostSns = data['sns'];
+          hostBirthDate = data['birth_date'];
+          hostAddress = data['address'];
+          hostPhone = data['phone'];
+          
+          
+          // Sync back to Prefs so offline works next time
+          await saveProfileLocalOnly(); 
+        }
+      } catch (e) {
+        debugPrint("⚠️ Error fetching profile from Supabase: $e");
+        // Fallback to Prefs will happen below if variables are still null?
+        // Actually, if we fail to fetch, we should probably trust Prefs as cache.
+      }
+    }
+
+    // 2. Load from Prefs (Fallback or Offline)
+    // Only overwrite if null (meaning DB didn't provide it)
+    hostNickname ??= prefs.getString('hostNickname');
+    hostAge ??= prefs.getString('hostAge');
+    hostGender ??= prefs.getString('hostGender');
+    hostHometownProvince ??= prefs.getString('hostHometownProvince');
+    hostHometownCity ??= prefs.getString('hostHometownCity');
+    hostConsent ??= prefs.getBool('hostConsent');
+    
+    hostSns ??= prefs.getString('hostSns');
+    hostBirthDate ??= prefs.getString('hostBirthDate');
+    hostAddress ??= prefs.getString('hostAddress');
+    hostPhone ??= prefs.getString('hostPhone');
+    hostRegionConsent ??= prefs.getBool('hostRegionConsent');
     
     // Also load points if persisted
     vp = prefs.getInt('vp') ?? 0;
@@ -535,11 +590,10 @@ class GameSession with ChangeNotifier {
     ep = prefs.getInt('ep') ?? 0;
     
     // Trust Score
-    hostTrustScore = prefs.getDouble('hostTrustScore') ?? 5.0; // Default to 5.0? Or 0? Let's say 5.0 for positivity or 0.
+    hostTrustScore = prefs.getDouble('hostTrustScore') ?? 5.0; 
     hostTrustCount = prefs.getInt('hostTrustCount') ?? 0;
 
-    
-    await loadPaymentInfo(); // Ensure payment info is also loaded
+    await loadPaymentInfo(); 
     
     // Load History
     final historyJson = prefs.getString('pointHistory');
@@ -555,7 +609,36 @@ class GameSession with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> saveHostInfoToPrefs() async {
+  Future<void> saveProfile() async {
+    // 1. Save locally first
+    await saveProfileLocalOnly();
+
+    // 2. Sync to Supabase if logged in
+    final user = _supabase.auth.currentUser;
+    if (user != null && !user.isAnonymous) {
+      try {
+        await _supabase.from('users').upsert({
+          'id': user.id,
+          'updated_at': DateTime.now().toIso8601String(),
+          'nickname': hostNickname,
+          'age': hostAge,
+          'gender': hostGender,
+          'hometown_province': hostHometownProvince,
+          'hometown_city': hostHometownCity,
+          'sns': hostSns,
+          'birth_date': hostBirthDate,
+          'address': hostAddress,
+          'phone': hostPhone,
+          // 'region_consent': hostRegionConsent, // If we have this column
+        });
+        debugPrint("✅ Profile synced to Supabase");
+      } catch (e) {
+        debugPrint("❌ Error syncing profile to Supabase: $e");
+      }
+    }
+  }
+
+  Future<void> saveProfileLocalOnly() async {
     final prefs = await SharedPreferences.getInstance();
     if (hostNickname != null) await prefs.setString('hostNickname', hostNickname!);
     if (hostAge != null) await prefs.setString('hostAge', hostAge!);
@@ -564,7 +647,6 @@ class GameSession with ChangeNotifier {
     if (hostHometownCity != null) await prefs.setString('hostHometownCity', hostHometownCity!);
     if (hostConsent != null) await prefs.setBool('hostConsent', hostConsent!);
     
-    // New Fields
     if (hostSns != null) await prefs.setString('hostSns', hostSns!);
     if (hostBirthDate != null) await prefs.setString('hostBirthDate', hostBirthDate!);
     if (hostAddress != null) await prefs.setString('hostAddress', hostAddress!);
@@ -575,14 +657,15 @@ class GameSession with ChangeNotifier {
     await prefs.setInt('ap', ap);
     await prefs.setInt('ep', ep);
     
-    // Trust Score
     await prefs.setDouble('hostTrustScore', hostTrustScore);
     await prefs.setInt('hostTrustCount', hostTrustCount);
 
-    
-    // Save History
     await prefs.setString('pointHistory', jsonEncode(pointHistory));
   }
+
+  // --- Legacy Wrappers (Backward Compatibility) ---
+  Future<void> loadHostInfoFromPrefs() => loadProfile();
+  Future<void> saveHostInfoToPrefs() => saveProfile();
 
   Future<void> loadPaymentInfo() async {
     final prefs = await SharedPreferences.getInstance();

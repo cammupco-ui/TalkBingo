@@ -18,10 +18,10 @@ configurations.all {
 }
 
 android {
-    namespace = "com.talkbingo.talkbingo_app"
+    namespace = "com.talkbingo.app"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
-    buildToolsVersion = "35.0.0"
+    ndkVersion = "28.2.13676358"
+
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -30,10 +30,10 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.talkbingo.talkbingo_app"
+        applicationId = "com.talkbingo.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion // Explicitly set for Lottie/Plugins
+        minSdk = 23 // Updated for iamport_flutter
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

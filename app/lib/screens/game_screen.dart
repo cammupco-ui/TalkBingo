@@ -46,7 +46,7 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> {
+class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   late PageController _pageController;
   int _currentPage = 1;
   final GameSession _session = GameSession();
@@ -103,6 +103,10 @@ class _GameScreenState extends State<GameScreen> {
   bool _isPaused = false;
   final String _latestMessage = "Welcome to TalkBingo! Let's start.";
   final int _badgeCount = 0;
+  
+  // Bingo Line Animation
+  late AnimationController _bingoLineController;
+  int _previousLineCount = 0;
 
   // Animations State
   late ConfettiController _confettiController;
@@ -118,11 +122,22 @@ class _GameScreenState extends State<GameScreen> {
   bool _isListening = false;
   bool _speechEnabled = false;
 
+  // Sound Logic
+  String _previousText = "";
+
   @override
   void initState() {
     super.initState();
+    _hasInput = _chatController.text.trim().isNotEmpty;
     _speech = stt.SpeechToText();
     _initSpeech();
+    
+    // Initialize Sound Service
+    SoundService().init(); // Fire and forget initialization
+    _bingoLineController = AnimationController(
+       vsync: this,
+       duration: const Duration(milliseconds: 600),
+    );
     _confettiController = ConfettiController(duration: const Duration(seconds: 3));
     _pageController = PageController(initialPage: 1); 
     
@@ -178,6 +193,32 @@ class _GameScreenState extends State<GameScreen> {
           _session.refreshSession();
        }
     });
+
+    // Listen to chat controller for robust state updates (Fix for Web IME)
+    _chatController.addListener(() {
+       final text = _chatController.text;
+       final hasText = text.trim().isNotEmpty;
+       
+       if (_hasInput != hasText) {
+          setState(() => _hasInput = hasText);
+       }
+       
+       // Sound Logic (Heuristics)
+       if (text.length > _previousText.length) {
+         // Added character(s)
+         if (text.endsWith(' ')) {
+           SoundService().playSpaceSound();
+         } else if (text.endsWith('\n')) {
+           SoundService().playEnterSound();
+         } else {
+           SoundService().playTypingSound();
+         }
+       } else if (text.length < _previousText.length) {
+         // Deleted character(s)
+         SoundService().playDeleteSound();
+       }
+       _previousText = text;
+    });
   }
 
   Timer? _pollingTimer;
@@ -186,6 +227,7 @@ class _GameScreenState extends State<GameScreen> {
   void dispose() {
     AdState.isGameActive.value = false;
     _pollingTimer?.cancel();
+    _bingoLineController.dispose();
     _confettiController.dispose();
     _session.removeListener(_onSessionUpdate);
     _pageController.removeListener(_onPageChanged);
@@ -194,6 +236,8 @@ class _GameScreenState extends State<GameScreen> {
     _messageController.dispose();
     _scrollController.dispose();
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+    SoundService().stopBgm(); // Stop music when leaving screen
     super.dispose();
   }
 
@@ -289,6 +333,14 @@ class _GameScreenState extends State<GameScreen> {
     // 1. Check for Bingo State (Triggers Dialogs)
     if (_session.gameStatus == 'playing' || _session.gameStatus == 'waiting') {
        _checkBingoState();
+       
+       // Trigger Bingo Line Animation
+       int currentLineCount = _countAllBingoLines();
+       if (currentLineCount > _previousLineCount) {
+          _bingoLineController.forward(from: 0.0);
+          HapticFeedback.heavyImpact(); // Add tactile feedback
+       }
+       _previousLineCount = currentLineCount;
        
        // Entrance Notification Logic (One-time)
        if (!_hasShownEntranceToast) {
@@ -562,6 +614,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _onSpeechResult(result) {
+    debugPrint('_onSpeechResult: ${result.recognizedWords} (final: ${result.finalResult})');
     setState(() {
       _chatController.text = result.recognizedWords;
     });
@@ -620,7 +673,7 @@ class _GameScreenState extends State<GameScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text("빙고줄: ${_session.ap ?? 0}", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                                    Text("빙고줄: ${_session.bingoLines}", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
                                     const SizedBox(height: 4),
                                     Text("빙고셀: $filledCells", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
                                   ],
@@ -655,9 +708,8 @@ class _GameScreenState extends State<GameScreen> {
                     child: _buildFloatingText("메뉴"),
                     onSelected: (value) async {
                        SoundService().playButtonSound();
-                       if (value == 'Sound') {
-                          SoundService().toggleMute();
-                          setState(() {}); // Rebuild to update icon text
+                       if (value == 'Settings') {
+                          _showSettingsDialog();
                        } else if (value == 'Pause') {
                           GameSession().togglePause();
                           setState(() {});
@@ -669,19 +721,18 @@ class _GameScreenState extends State<GameScreen> {
                        }
                     },
                     itemBuilder: (context) {
-                         final isMuted = SoundService().isMutedNotifier.value;
                          final isPaused = _session.isPaused;
                          
                          return [
                             PopupMenuItem(
-                              value: 'Sound', 
+                              value: 'Settings', 
                               child: Container(
                                 width: 120,
                                 alignment: Alignment.centerLeft,
                                 child: Row(children: [
-                                  Icon(isMuted ? Icons.volume_off : Icons.volume_up, size: 18, color: Colors.black54),
+                                  const Icon(Icons.settings, size: 18, color: Colors.black54),
                                   const SizedBox(width: 8),
-                                  Text(isMuted ? "소리 켜기" : "소리 끄기", style: GoogleFonts.alexandria(color: Colors.black87))
+                                  Text("설정", style: GoogleFonts.alexandria(color: Colors.black87))
                                 ])
                               ),
                             ),
@@ -748,38 +799,7 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Widget _buildTurnIndicator() {
-    final bool isMyTurn = _session.currentTurn == _session.myRole;
-    final String text = isMyTurn ? "나의 턴" : "상대방 턴";
-    final Color color = isMyTurn ? const Color(0xFFFF0077) : const Color(0xFF6B14EC);
-    
-    return Animate(
-      onPlay: (controller) => controller.repeat(reverse: true),
-      effects: [
-         ScaleEffect(
-           begin: const Offset(1.0, 1.0), 
-           end: const Offset(1.1, 1.1),
-           duration: 1000.ms, 
-           curve: Curves.easeInOut
-         )
-      ],
-      child: Text(
-        text,
-        style: GoogleFonts.alexandria(
-          color: color,
-          fontSize: 16, // Larger size
-          fontWeight: FontWeight.w800, // Extra bold
-          shadows: [
-            BoxShadow(
-              color: color.withOpacity(0.5),
-              blurRadius: 8,
-              spreadRadius: 2,
-            )
-          ]
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildDivider() {
     return Container(
@@ -792,9 +812,9 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Hide Ad on Game Screen (Full Immersion)
+    // Show Ad on Game Screen (As requested)
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      AdState.showAd.value = false;
+      AdState.showAd.value = true;
     });
 
     // Enforce transparent status bar with dark icons for this screen
@@ -820,7 +840,7 @@ class _GameScreenState extends State<GameScreen> {
                   // 2. Main Content
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 100.0), // Added bottom padding for Ad Overlay
+                      padding: const EdgeInsets.only(bottom: 120.0), // Increased to 120 for safer clearance
                       child: Stack(
                         children: [
                          PageView(
@@ -929,7 +949,10 @@ class _GameScreenState extends State<GameScreen> {
                   // Wrapped in Container to ensure visibility
                   Container(
                      color: Colors.white,
-                     child: _buildBottomControls(),
+                     child: SafeArea(
+                       top: false, // Ensure top doesn't push down
+                       child: _buildBottomControls(),
+                     ),
                   ),
                 ],
               ),
@@ -1010,7 +1033,7 @@ class _GameScreenState extends State<GameScreen> {
           
           // Draggable Floating Button (Top Layer)
           DraggableFloatingButton(
-            key: ValueKey('float_btn_$_targetPage'), // Force rebuild on page change state
+            // Removed Key to persist state across page swipes (fixes flicker)
             isOnChatTab: _targetPage == 0,
             unreadCount: _unreadCount,
             latestMessage: _latestChatPreview,
@@ -1244,28 +1267,32 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Widget _buildBottomControls() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      alignment: Alignment.topCenter, // Align content to top
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
+    return ValueListenableBuilder<bool>(
+      valueListenable: AdState.showAd,
+      builder: (context, showAd, child) {
+        return Container(
+          padding: EdgeInsets.fromLTRB(16, 8, 16, 8 + (showAd ? 60.0 : 0.0)),
+          alignment: Alignment.topCenter, // Align content to top
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, -5),
+              ),
+            ],
           ),
-        ],
-      ),
+          child: child,
+        );
+      },
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start, // Align items to top
         children: [
           Expanded(
             child: TextField(
-              onChanged: (text) {
-                setState(() {}); // Rebuild to toggle icon
-                SoundService().playTypingSound(); // Typing Sound
-              },
+              controller: _chatController,
+              // onChanged removed in favor of listener in initState for better Web IME support
               decoration: InputDecoration(
                 hintText: _isPaused ? 'Game Paused' : 'Type a message...',
                 hintStyle: GoogleFonts.alexandria(
@@ -1300,7 +1327,7 @@ class _GameScreenState extends State<GameScreen> {
             padding: const EdgeInsets.only(top: 4.0),
             child: AnimatedButton(
                onPressed: _isPaused ? null : () {
-                  if (_chatController.text.isNotEmpty) {
+                  if (_hasInput) {
                       _handleSendMessage();
                   } else {
                       // Toggle Speech
@@ -1321,11 +1348,11 @@ class _GameScreenState extends State<GameScreen> {
                   disabledForegroundColor: Colors.white70,
                ),
                child: Icon(
-                  _chatController.text.isNotEmpty 
+                  _hasInput 
                       ? Icons.send 
                       : (_isListening ? Icons.mic_off : Icons.mic), // Toggle Icon
-                  color: Colors.white,
-                  size: 20,
+                   color: Colors.white,
+                   size: 20,
                ),
             ),
           ),
@@ -1346,7 +1373,9 @@ class _GameScreenState extends State<GameScreen> {
 
     _session.sendMessage(text);
     _chatController.clear();
-    setState(() {}); // Rebuild to update UI immediately (optimistic update handled in model)
+    setState(() {
+      _hasInput = false;
+    }); 
   }
 
 
@@ -1358,6 +1387,8 @@ class _GameScreenState extends State<GameScreen> {
   // int? _hoveredIndex; // For hover effect - REMOVED
   int? _pressedIndex; // For touch/press effect
   // int? _activeQuizIndex; // For full-size overlay - REMOVED
+
+  bool _hasInput = false;
 
   // Interaction Handlers
 
@@ -1632,8 +1663,9 @@ class _GameScreenState extends State<GameScreen> {
       child: Center(
         child: AspectRatio(
           aspectRatio: 1,
-          child: Container(child: const SizedBox(), /* LayoutBuilder
+          child: LayoutBuilder(
             builder: (context, constraints) {
+
               final boardSize = constraints.maxWidth;
               return GestureDetector(
                 onPanUpdate: (details) {
@@ -1688,7 +1720,10 @@ class _GameScreenState extends State<GameScreen> {
                           ),
                           itemCount: 25,
                           itemBuilder: (context, index) {
-                            return _buildBingoTile(index);
+                            return _buildBingoTile(index)
+                                .animate(delay: (50 * index).ms) // Staggered Entrance
+                                .fadeIn(duration: 400.ms)
+                                .scale(begin: const Offset(0.8, 0.8), curve: Curves.easeOutBack);
                           },
                         ),
                         
@@ -1709,7 +1744,9 @@ class _GameScreenState extends State<GameScreen> {
                     ),
                 ),
               );
-            } */ ),
+            }
+          ),
+
         ),
       ),
     );
@@ -1774,6 +1811,43 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  Widget _buildTurnIndicator() {
+    bool isMyTurn = _session.myRole == _session.currentTurn;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: isMyTurn ? _themePrimary : Colors.grey[300],
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: isMyTurn ? [
+          BoxShadow(color: _themePrimary.withOpacity(0.3), blurRadius: 8, spreadRadius: 2)
+        ] : [],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            isMyTurn ? "MY TURN" : "OPPONENT'S TURN",
+            style: GoogleFonts.alexandria(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isMyTurn ? Colors.white : Colors.grey[600],
+            ),
+          ),
+          if (isMyTurn) ...[
+             const SizedBox(width: 8),
+             const Icon(Icons.touch_app, color: Colors.white, size: 16)
+                .animate(onPlay: (c) => c.repeat())
+                .scaleXY(end: 1.2, duration: 600.ms, curve: Curves.easeInOut)
+                .then().scaleXY(end: 1.0, duration: 600.ms)
+          ]
+        ],
+      ),
+    ).animate(target: isMyTurn ? 1 : 0)
+     .shimmer(duration: 1500.ms, color: Colors.white.withOpacity(0.5))
+     .scale(begin: const Offset(1, 1), end: const Offset(1.05, 1.05), duration: 1000.ms, curve: Curves.easeInOut)
+     .then().scale(end: const Offset(1, 1), duration: 1000.ms);
+  }
+
   Widget _buildBingoTile(int index) {
     String owner = _session.tileOwnership[index];
     
@@ -1805,6 +1879,81 @@ class _GameScreenState extends State<GameScreen> {
   bool _isGameEndedDialogShown = false;
   // Duplicate _isBingoDialogVisible removed
 
+
+  void _showSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final soundService = SoundService();
+            return AlertDialog(
+              title: Text("게임 설정", style: GoogleFonts.alexandria(fontWeight: FontWeight.bold)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // BGM Control
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("배경음악 (BGM)", style: GoogleFonts.alexandria(fontSize: 14)),
+                      Switch(
+                        value: soundService.isBgmEnabled,
+                        onChanged: (val) {
+                          soundService.setBgmEnabled(val).then((_) => setDialogState(() {}));
+                        },
+                      ),
+                    ],
+                  ),
+                  if (soundService.isBgmEnabled)
+                    Slider(
+                      value: soundService.bgmVolume,
+                      min: 0.0,
+                      max: 1.0,
+                      onChanged: (val) {
+                        soundService.setBgmVolume(val).then((_) => setDialogState(() {}));
+                      },
+                    ),
+                    
+                  const SizedBox(height: 16),
+                  
+                  // SFX Control
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("효과음 (SFX)", style: GoogleFonts.alexandria(fontSize: 14)),
+                      Switch(
+                        value: soundService.isSfxEnabled,
+                        onChanged: (val) {
+                          soundService.setSfxEnabled(val).then((_) => setDialogState(() {}));
+                        },
+                      ),
+                    ],
+                  ),
+                  if (soundService.isSfxEnabled)
+                    Slider(
+                      value: soundService.sfxVolume,
+                      min: 0.0,
+                      max: 1.0,
+                      onChanged: (val) {
+                        soundService.setSfxVolume(val).then((_) => setDialogState(() {}));
+                      },
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("닫기"),
+                )
+              ],
+            );
+          }
+        );
+      }
+    );
+  }
 
   // Modified to handle "Wait Handshake" Overlay
 
@@ -2444,15 +2593,22 @@ class _GameScreenState extends State<GameScreen> {
     }
     
     // Switch to CustomPainter for clean overlay
+    // Switch to CustomPainter for clean overlay
     return Positioned.fill(
       child: IgnorePointer(
-        child: CustomPaint(
-          painter: BingoLinePainter(
-            session: _session,
-            tileOwnership: _session.tileOwnership,
-            primaryA: AppColors.hostPrimary,
-            primaryB: AppColors.guestPrimary,
-          ),
+        child: AnimatedBuilder(
+          animation: _bingoLineController,
+          builder: (_, __) {
+            return CustomPaint(
+              painter: BingoLinePainter(
+                session: _session,
+                tileOwnership: _session.tileOwnership,
+                primaryA: AppColors.hostPrimary,
+                primaryB: AppColors.guestPrimary,
+                animationValue: _bingoLineController.value,
+              ),
+            );
+          },
         ),
       ),
     );
@@ -2582,6 +2738,34 @@ class _GameScreenState extends State<GameScreen> {
       // 1. Notify Backend (this triggers UI update for BOTH players)
       await _session.startInteraction(index, gameType, _session.myRole); 
   }
+
+  // Helper to count TOTAL bingo lines for animation trigger
+  int _countAllBingoLines() {
+     int lines = 0;
+     // Rows
+     for(int r=0; r<5; r++) {
+        if(_checkLine(List.generate(5, (c)=> r*5+c))) lines++;
+     }
+     // Cols
+     for(int c=0; c<5; c++) {
+        if(_checkLine(List.generate(5, (r)=> r*5+c))) lines++;
+     }
+     // Diagonals
+     if(_checkLine([0,6,12,18,24])) lines++;
+     if(_checkLine([4,8,12,16,20])) lines++;
+     return lines;
+  }
+
+  bool _checkLine(List<int> indices) {
+     String? first;
+     for(int idx in indices) {
+        String owner = _session.tileOwnership[idx];
+        if(owner.isEmpty || owner == 'X' || owner == 'LOCKED') return false;
+        if(first == null) first = owner;
+        else if(first != owner) return false;
+     }
+     return true;
+  }
 }
 
 class BingoLinePainter extends CustomPainter {
@@ -2589,12 +2773,14 @@ class BingoLinePainter extends CustomPainter {
   final List<String> tileOwnership;
   final Color primaryA;
   final Color primaryB;
+  final double animationValue; // 0.0 to 1.0
 
   BingoLinePainter({
     required this.session,
     required this.tileOwnership,
     required this.primaryA,
     required this.primaryB,
+    this.animationValue = 1.0,
   });
 
   @override
@@ -2647,7 +2833,23 @@ class BingoLinePainter extends CustomPainter {
        final p1 = start - (unit * extension);
        final p2 = end + (unit * extension);
        
-       canvas.drawLine(p1, p2, owner == 'A' ? paintA : paintB);
+       // ANIMATION: Interpolate end point based on value
+       final animatedP2 = Offset.lerp(p1, p2, animationValue)!;
+
+       // Draw Main Line
+       canvas.drawLine(p1, animatedP2, owner == 'A' ? paintA : paintB);
+       
+       // Draw Glow (Only if fully drawn or > 0.5)
+       if (animationValue > 0.1) {
+          final glowPaint = Paint()
+            ..color = (owner == 'A' ? primaryA : primaryB).withOpacity(0.5 * animationValue)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 14.0
+            ..strokeCap = StrokeCap.round
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+            
+          canvas.drawLine(p1, animatedP2, glowPaint);
+       }
     }
     
     // Rows

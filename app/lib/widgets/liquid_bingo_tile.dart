@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
+import 'package:flutter_animate/flutter_animate.dart'; // Added for Shake
 import '../styles/app_colors.dart';
 
 class LiquidBingoTile extends StatefulWidget {
@@ -31,6 +32,7 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
   late AnimationController _hoverController;
   late AnimationController _tapController;
   late AnimationController _shimmerController;
+  late AnimationController _shakeController; // New for Locked Shake
   
   // Animations
   late Animation<double> _fillAnimation;
@@ -47,16 +49,23 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
       duration: const Duration(milliseconds: 2000),
     )..repeat();
     
-    // Hover controller for liquid fill effect (Liquid Button style)
+    // Hover controller for liquid fill effect
+    // INCREASED DURATION: 0.8s for smoother fill as requested
     _hoverController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 800), 
     );
     
     // Tap controller for bounce effect
     _tapController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
+    );
+
+    // Shake controller for locked items
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
     );
     
     // Shimmer for winning tiles (gold glow)
@@ -71,7 +80,7 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _hoverController,
-      curve: Curves.easeInOut,
+      curve: Curves.easeInOutCubic, // Smoother curve
     ));
     
     // Hover scale animation (1.0 → 1.03)
@@ -83,22 +92,17 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
       curve: Curves.easeOut,
     ));
     
-    // Tap bounce animation sequence
+    // Tap bounce animation sequence (Elastic)
     _tapScaleAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 0.97)
+        tween: Tween(begin: 1.0, end: 0.95) // Deeper press
             .chain(CurveTween(curve: Curves.easeOut)),
-        weight: 20,
+        weight: 40,
       ),
       TweenSequenceItem(
-        tween: Tween(begin: 0.97, end: 1.05)
-            .chain(CurveTween(curve: Curves.easeOut)),
-        weight: 30,
-      ),
-      TweenSequenceItem(
-        tween: Tween(begin: 1.05, end: 1.0)
-            .chain(CurveTween(curve: Curves.elasticOut)),
-        weight: 50,
+        tween: Tween(begin: 0.95, end: 1.0)
+            .chain(CurveTween(curve: Curves.elasticOut)), // Elastic bounce back
+        weight: 60,
       ),
     ]).animate(_tapController);
   }
@@ -107,7 +111,6 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
   void didUpdateWidget(LiquidBingoTile oldWidget) {
     super.didUpdateWidget(oldWidget);
     
-    // Handle hover state changes for liquid fill
     if (widget.isHovered != oldWidget.isHovered) {
       if (widget.isHovered && !_isFilled) {
         _hoverController.forward();
@@ -123,90 +126,81 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
     _hoverController.dispose();
     _tapController.dispose();
     _shimmerController.dispose();
+    _shakeController.dispose();
     super.dispose();
   }
   
   // Helper getters
-  bool get _isFilled => widget.owner != null && 
-                        widget.owner!.isNotEmpty && 
-                        widget.owner != 'X';
-  
+  bool get _isFilled => widget.owner != null && widget.owner!.isNotEmpty && widget.owner != 'X';
   bool get _isLocked => widget.owner == 'LOCKED' || widget.owner == 'X';
-  
   bool get _canSelect => !_isFilled && !_isLocked;
   
   Color get _fillColor {
-    if (widget.owner == 'A') {
-      return AppColors.hostPrimary;
-    } else if (widget.owner == 'B') {
-      return AppColors.guestPrimary;
-    } else if (_isLocked) {
-      return Colors.grey.shade600;
-    }
+    if (widget.owner == 'A') return AppColors.hostPrimary;
+    if (widget.owner == 'B') return AppColors.guestPrimary;
+    if (_isLocked) return Colors.grey.shade600;
     return Colors.transparent;
   }
   
-  Color get _hoverColor {
-    return widget.isHost 
-        ? AppColors.hostPrimary 
-        : AppColors.guestPrimary;
-  }
+  Color get _hoverColor => widget.isHost ? AppColors.hostPrimary : AppColors.guestPrimary;
   
   void _handleTap() {
-    // Haptic feedback for tactile response
-    HapticFeedback.mediumImpact();
-    
-    // Play tap bounce animation
-    _tapController.forward(from: 0);
-    
-    // Execute callback
-    widget.onTap();
+    // 1. Shake if Locked or Not Selectable
+    if (!_canSelect && !_isFilled) { // Allow tapping filled ones just for fun? No, usually ignore
+       if (_isLocked) {
+         HapticFeedback.lightImpact(); // Light error vibration
+         _shakeController.forward(from: 0);
+       }
+       return;
+    }
+
+    // 2. Click Logic
+    if (_canSelect) {
+      // Haptic feedback for tactile response
+      HapticFeedback.mediumImpact();
+      
+      // Play tap bounce animation
+      _tapController.forward(from: 0);
+      
+      // Execute callback
+      widget.onTap();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Combine animations
     return AnimatedBuilder(
-      animation: Listenable.merge([
-        _hoverController,
-        _tapController,
-      ]),
+      animation: Listenable.merge([_hoverController, _tapController]),
       builder: (context, child) {
-        // Combine hover and tap scales
         final double scale = _scaleAnimation.value * _tapScaleAnimation.value;
         
-        return Transform.scale(
-          scale: scale,
-          child: GestureDetector(
-            onTap: _handleTap,
+        // Wrap with Shake Animation from flutter_animate
+        // Note: effectively 0-1, we use ShakeEffect to interpret it
+        return Animate(
+          controller: _shakeController,
+          autoPlay: false,
+          effects: const [
+            ShakeEffect(hz: 10, offset: const Offset(4, 0), curve: Curves.easeInOut, duration: Duration(milliseconds: 500))
+          ],
+          child: Transform.scale(
+            scale: scale,
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                // Enhanced 3D shadow system
                 boxShadow: [
-                  // Main shadow (depth)
                   BoxShadow(
-                    color: _fillColor.withOpacity(
-                      widget.isHovered && _canSelect ? 0.3 : 0.15
-                    ),
+                    color: _fillColor.withOpacity(widget.isHovered && _canSelect ? 0.3 : 0.15),
                     offset: Offset(0, widget.isHovered ? 8 : 4),
                     blurRadius: widget.isHovered ? 20 : 10,
                     spreadRadius: widget.isHovered ? 2 : 0,
                   ),
-                  // Top highlight (3D effect)
-                  BoxShadow(
-                    color: Colors.white.withOpacity(0.8),
-                    offset: const Offset(0, -2),
-                    blurRadius: 4,
-                    spreadRadius: -2,
-                  ),
-                  // Glow effect for selectable tiles
                   if (_canSelect && widget.isHovered)
                     BoxShadow(
                       color: _hoverColor.withOpacity(0.4),
                       blurRadius: 16,
                       spreadRadius: -4,
                     ),
-                  // Gold glow for winning tiles
                   if (widget.isWinningTile)
                     BoxShadow(
                       color: Colors.amber.withOpacity(0.5),
@@ -224,28 +218,22 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
                       ? Border.all(
                           color: widget.isWinningTile
                               ? Colors.amber
-                              : (widget.isHovered && _canSelect
-                                  ? _hoverColor
-                                  : Colors.grey.withOpacity(0.2)),
+                              : (widget.isHovered && _canSelect ? _hoverColor : Colors.grey.withOpacity(0.2)),
                           width: widget.isWinningTile ? 3.0 : (widget.isHovered ? 2.0 : 1.0),
                         )
                       : null,
                     borderRadius: BorderRadius.circular(12),
-                    // Gradient for depth when not filled
                     gradient: _isFilled
                         ? null
                         : LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                            colors: [
-                              Colors.white,
-                              Colors.grey.shade50,
-                            ],
+                            colors: [Colors.white, Colors.grey.shade50],
                           ),
                   ),
                   child: Stack(
                     children: [
-                      // Base text (visible when liquid is low)
+                      // Base Text
                       Center(
                         child: Text(
                           widget.text,
@@ -253,28 +241,54 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
                             fontFamily: 'NURA',
                             fontSize: 20,
                             fontWeight: FontWeight.w900,
-                            color: _isLocked 
-                                ? Colors.grey.shade400
-                                : AppColors.textDark,
+                            color: _isLocked ? Colors.grey.shade400 : AppColors.textDark,
                           ),
                         ),
                       ),
                       
-                      // Liquid fill layer (animated)
-                      AnimatedBuilder(
-                        animation: _waveController,
-                        builder: (context, child) {
-                          // If filled, show static solid color (no wave)
-                          if (_isFilled) {
-                             return Container(
+                      // Liquid Fill
+                      // Use IgnorePointer for visual layers so InkWell gets clicks
+                      IgnorePointer(
+                        child: AnimatedBuilder(
+                          animation: _waveController,
+                          builder: (context, child) {
+                            if (_isFilled) {
+                               return Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [_fillColor, _fillColor.withOpacity(0.9)],
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      widget.text,
+                                      style: const TextStyle(
+                                        fontFamily: 'NURA',
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                               );
+                            }
+                            
+                            final double fillLevel = _fillAnimation.value;
+                            if (fillLevel == 0.0) return const SizedBox.shrink();
+                            
+                            return ClipPath(
+                              clipper: WaveClipper(
+                                animationValue: _waveController.value,
+                                fillLevel: fillLevel,
+                              ),
+                              child: Container(
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
-                                    colors: [
-                                      _fillColor,
-                                      _fillColor.withOpacity(0.9), // Subtle gradient
-                                    ],
+                                    colors: [_fillColor, _fillColor.withOpacity(0.8)],
                                   ),
                                 ),
                                 child: Center(
@@ -288,53 +302,27 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
                                     ),
                                   ),
                                 ),
-                             );
-                          }
-                          
-                          // Otherwise, show wave animation
-                          final double fillLevel = _fillAnimation.value;
-                          
-                          if (fillLevel == 0.0) return const SizedBox.shrink();
-                          
-                          return ClipPath(
-                            clipper: WaveClipper(
-                              animationValue: _waveController.value,
-                              fillLevel: fillLevel,
-                            ),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    _fillColor,
-                                    _fillColor.withOpacity(0.8),
-                                  ],
-                                ),
                               ),
-                              child: Center(
-                                child: Text(
-                                  widget.text,
-                                  style: const TextStyle(
-                                    fontFamily: 'NURA',
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
                       
-                      // Shimmer effect for winning tiles (gold wave)
+                      // Locked Icon
+                      if (_isLocked)
+                        IgnorePointer(
+                          child: Center(
+                            child: Icon(Icons.lock, color: _isFilled ? Colors.white70 : Colors.grey.shade600, size: 24),
+                          ),
+                        ),
+
+                      // Winning Shimmer
                       if (widget.isWinningTile)
-                        AnimatedBuilder(
-                          animation: _shimmerController,
-                          builder: (context, child) {
-                            return Positioned.fill(
-                              child: Container(
+                        IgnorePointer(
+                          child: AnimatedBuilder(
+                            animation: _shimmerController,
+                            builder: (context, child) {
+                              return Container(
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     begin: Alignment.topLeft,
@@ -345,26 +333,28 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
                                       Colors.transparent,
                                     ],
                                     stops: [
-                                      _shimmerController.value - 0.2,
+                                      (_shimmerController.value - 0.2).clamp(0.0, 1.0),
                                       _shimmerController.value,
-                                      _shimmerController.value + 0.2,
-                                    ].map((v) => v.clamp(0.0, 1.0)).toList(),
+                                      (_shimmerController.value + 0.2).clamp(0.0, 1.0),
+                                    ],
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                      
-                      // Locked icon overlay
-                      if (_isLocked)
-                        Center(
-                          child: Icon(
-                            Icons.lock,
-                            color: _isFilled ? Colors.white70 : Colors.grey.shade600,
-                            size: 24,
+                              );
+                            },
                           ),
                         ),
+
+                      // RIPPLE OVERLAY (Material InkWell)
+                      // This must be on top to capture touches and show ripple
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _handleTap,
+                          borderRadius: BorderRadius.circular(12),
+                          splashColor: _hoverColor.withOpacity(0.3),
+                          highlightColor: _hoverColor.withOpacity(0.1),
+                        ),
+                      ),
                     ],
                   ),
                 ),

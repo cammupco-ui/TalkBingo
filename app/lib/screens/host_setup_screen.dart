@@ -10,6 +10,8 @@ import 'package:talkbingo_app/screens/game_setup_screen.dart';
 import 'package:talkbingo_app/screens/home_screen.dart';
 
 import 'package:talkbingo_app/models/game_session.dart';
+import 'package:talkbingo_app/styles/app_spacing.dart';
+
 
 class HostSetupScreen extends StatefulWidget {
   final String? initialGender;
@@ -132,7 +134,8 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
         iconTheme: const IconThemeData(color: Color(0xFFBD0558)),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(AppSpacing.screenPadding),
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -147,9 +150,10 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.sectionSpacing),
 
             if (_isGenerated) ...[
+
               // Code Display
               // Code Display
               // Code Display
@@ -173,8 +177,9 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                   decoration: BoxDecoration(
                     border: Border.all(color: const Color(0xFFBD0558)),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
                     color: const Color(0xFFBD0558).withOpacity(0.1),
+
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -202,22 +207,23 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.spacingMd),
               
               // Copy (Share) Button
+
               AnimatedOutlinedButton(
                 onPressed: _shareCode,
                 style: OutlinedButton.styleFrom(
-                  fixedSize: const Size.fromHeight(44), // Strict 44px
-                  side: const BorderSide(color: Color(0xFFBD0558)),
+                  fixedSize: const Size.fromHeight(AppSpacing.buttonHeight), // Strict 44px
+                  side: const BorderSide(color: AppColors.hostPrimary),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
                   ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.share, color: Color(0xFFBD0558)),
+                    const Icon(Icons.share, color: AppColors.hostPrimary),
                     const SizedBox(width: 8),
                     const Text(
                       'Share', 
@@ -225,13 +231,13 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                         fontSize: 16, 
                         fontFamily: 'NURA', 
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFFBD0558),
+                        color: AppColors.hostPrimary,
                       )
                     ),
                   ],
                 ),
               ),
-               const SizedBox(height: 24),
+               const SizedBox(height: AppSpacing.spacingLg),
 
               // Next Button
               AnimatedButton(
@@ -248,17 +254,17 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFBD0558),
+                  backgroundColor: AppColors.hostPrimary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 0),
-                  fixedSize: const Size.fromHeight(44),
+                  fixedSize: const Size.fromHeight(AppSpacing.buttonHeight),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Next',
-                  style: TextStyle(fontSize: 14, fontFamily: 'NURA', fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: AppSpacing.buttonFontSize, fontFamily: 'NURA', fontWeight: FontWeight.bold),
                 ),
               ),
             ] else ...[
@@ -266,17 +272,17 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
               AnimatedButton(
                 onPressed: _generateCode,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFBD0558),
+                  backgroundColor: AppColors.hostPrimary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 0),
-                  fixedSize: const Size.fromHeight(44),
+                  fixedSize: const Size.fromHeight(AppSpacing.buttonHeight),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Generate',
-                  style: TextStyle(fontSize: 14, fontFamily: 'NURA', fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: AppSpacing.buttonFontSize, fontFamily: 'NURA', fontWeight: FontWeight.bold),
                 ),
               ),
             ],

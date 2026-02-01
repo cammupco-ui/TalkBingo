@@ -11,6 +11,8 @@ import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/screens/game_screen.dart';
 import 'package:talkbingo_app/screens/host_setup_screen.dart';
 import 'package:talkbingo_app/screens/signup_screen.dart'; // Added for auto-logout redirect
+import 'package:talkbingo_app/styles/app_spacing.dart';
+
 
 import 'package:talkbingo_app/utils/dev_config.dart';
 
@@ -148,7 +150,8 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
         iconTheme: const IconThemeData(color: Color(0xFFBD0558)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.all(AppSpacing.screenPadding),
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -162,10 +165,11 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.spacingLg),
 
             // Nickname
             _buildLabel('Nickname'),
+
             TextField(
               controller: _nicknameController,
               onChanged: (_) => setState(() {}),
@@ -177,8 +181,9 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
                 suffixIcon: _nicknameController.text.trim().isNotEmpty 
                     ? const Icon(Icons.check_circle, color: Colors.green) 
                     : null,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                isDense: true,
+                contentPadding: AppSpacing.inputContentPadding,
+                isDense: false,
+
                 border: const OutlineInputBorder(),
                 enabledBorder: const OutlineInputBorder(
                   borderSide: BorderSide(color: AppColors.hostPrimary),
@@ -189,7 +194,8 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
               ),
               style: const TextStyle(fontSize: 14),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.spacingSm),
+
 
             // Gender
             _buildLabel('Gender'),
@@ -200,7 +206,8 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
                 Expanded(child: _buildGenderButton('Female', 'Female')),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.spacingLg),
+
 
             // Validation Message if Invalid
             if (!_isFormValid)
@@ -225,16 +232,16 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFBD0558),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 0),
-                  fixedSize: const Size.fromHeight(44),
+                  padding: EdgeInsets.zero,
+                  fixedSize: const Size.fromHeight(AppSpacing.buttonHeight),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
                   ),
                   disabledBackgroundColor: Colors.grey[300],
                 ),
                 child: const Text(
                   'Next',
-                  style: TextStyle(fontSize: 14, fontFamily: 'NURA', fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: AppSpacing.buttonFontSize, fontFamily: 'NURA', fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -246,7 +253,8 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
 
   Widget _buildLabel(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+      padding: const EdgeInsets.only(bottom: AppSpacing.spacingXs),
+
       child: Text(
         text,
         style: const TextStyle(
@@ -264,14 +272,15 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
       onTap: () => setState(() => _selectedGender = value),
       borderRadius: BorderRadius.circular(8),
       child: Container(
-        height: 48,
+        height: AppSpacing.inputHeight,
+
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFBD0558) : Colors.white,
           border: Border.all(
             color: isSelected ? const Color(0xFFBD0558) : Colors.grey[400]!,
             width: isSelected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
         ),
         alignment: Alignment.center,
         child: Text(

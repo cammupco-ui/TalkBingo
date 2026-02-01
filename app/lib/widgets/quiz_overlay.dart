@@ -72,12 +72,13 @@ class _QuizOverlayState extends State<QuizOverlay> {
             padding: const EdgeInsets.all(16.0), // Reduced from 24
             child: Center(
               child: SingleChildScrollView(
-                child: _buildContent(),
+                child: _buildContent()
+                    .animate()
+                    .fadeIn(duration: 400.ms, curve: Curves.easeOut)
+                    .slideY(begin: 0.1, end: 0, duration: 400.ms, curve: Curves.easeOutQuad),
               ),
             ),
           ),
-
-          // Icons Removed as requested
 
           // Paused Overlay
           if (widget.isPaused)
@@ -87,7 +88,9 @@ class _QuizOverlayState extends State<QuizOverlay> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.pause_circle_filled_rounded, size: 80, color: AppColors.hostPrimary),
+                    const Icon(Icons.pause_circle_filled_rounded, size: 80, color: AppColors.hostPrimary)
+                        .animate(onPlay: (c) => c.repeat())
+                        .shimmer(duration: 2000.ms, color: Colors.white.withOpacity(0.5)),
                     const SizedBox(height: 24),
                     Text(
                       "Thinking Time...",
@@ -117,7 +120,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
                     ),
                   ],
                 ),
-              ),
+              ).animate().fadeIn(duration: 300.ms),
             ),
           
           // Report Button (Top-Right)
@@ -134,7 +137,9 @@ class _QuizOverlayState extends State<QuizOverlay> {
           ),
         ],
       ),
-    );
+    ).animate()
+     .fadeIn(duration: 300.ms)
+     .scale(begin: const Offset(0.95, 0.95), end: const Offset(1, 1), curve: Curves.easeOutBack);
   }
 
   void _showReportDialog() {
