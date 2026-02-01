@@ -37,7 +37,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // Reusing Hometown Data (Should be shared, but copying for now for speed)
 
 
-  String _appVersion = '1.0.0';
+
 
   @override
   void initState() {
@@ -272,7 +272,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildLanguageChip('한국어', 'ko'),
               ],
             ),
-             const SizedBox(height: AppSpacing.spacingM),
+             const SizedBox(height: AppSpacing.spacingMd),
 
             // Profile Tile (Navigates to Edit Screen)
             if (!(Supabase.instance.client.auth.currentSession?.user.isAnonymous ?? true))
@@ -374,132 +374,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-            if (Supabase.instance.client.auth.currentSession?.user.isAnonymous ?? true)
-              SizedBox(
-                width: double.infinity,
-                child: AnimatedButton(
-                  onPressed: () async {
-                    // Capture current guest ID before going to Sign Up / Log In
-                    await MigrationManager().prepareForMigration();
-                    
-                    if (context.mounted) {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => SignupScreen()),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.hostPrimary, // Prominent color
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.login, color: Colors.white),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Sign Up / Link Account", // Matches PageFlow doc
-                        style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            // --- NEW: Reset Data Button for Anonymous Users (For Testing/Reset) ---
-            if (Supabase.instance.client.auth.currentSession?.user.isAnonymous ?? true)
-              Padding(
-                padding: const EdgeInsets.only(top: 16.0),
-                child: TextButton(
-                  onPressed: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Reset App Data'),
-                        content: const Text('This will clear all local data and guest account. You will return to the start screen.'),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, true), 
-                            child: const Text('Reset', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
-                          ),
-                        ],
-                      ),
-                    );
 
-                    if (confirm == true) {
-                      // 1. Clear Local Prefs
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.clear();
-                      
-                      // 2. Sign Out
-                      await Supabase.instance.client.auth.signOut();
-                      
-                      // 3. Reset Session Singleton
-                      // Note: GameSession is a singleton, so we might need a manual reset method if fields persist in memory.
-                      // Assuming the app restart/nav will handle most, but let's be safe if possible.
-                      // _session.reset(); // If such method exists. 
-                      // For now, simple navigation is fine as SplashScreen re-initializes widely.
-                      
-                      if (mounted) {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (_) => const SplashScreen()),
-                          (route) => false,
-                        );
-                      }
-                    }
-                  },
-                  child: const Text(
-                    "Reset Data (Debug)",
-                    style: TextStyle(color: Colors.redAccent, fontSize: 12),
-                  ),
-                ),
-              )
-            else
-              // Logout Button (Member)
-              // Logout Button (Member)
-              AnimatedTextButton(
-                onPressed: () async {
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Sign Out'),
-                      content: const Text('Are you sure you want to sign out?'),
-                      actions: [
-                        TextButton(onPressed: () => Navigator.pop(context, false), child: Text(AppLocalizations.get('cancel'))),
-                        TextButton(onPressed: () => Navigator.pop(context, true), child: Text(AppLocalizations.get('sign_out'), style: const TextStyle(color: Colors.red))),
-                      ],
-                    ),
-                  );
-
-                  if (confirm == true) {
-                    await Supabase.instance.client.auth.signOut();
-                    if (mounted) {
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (_) => const SignOutLandingScreen()),
-                        (route) => false,
-                      );
-                    }
-                  }
-                },
-                style: TextButton.styleFrom(foregroundColor: Colors.grey),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.logout, color: Colors.grey),
-                    const SizedBox(width: 8),
-                    Text(AppLocalizations.get('sign_out'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(color: Colors.grey))),
-                  ],
-                ),
-              ),
-            const SizedBox(height: 100), // Bottom padding for scrolling
-          ],
-        ),
-      ),
-    ),
-  );
-  }
 
   Widget _buildLabel(String text, {bool isRequired = false}) {
     return Padding(
@@ -667,5 +542,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
       ),
+    );
   }
 }
