@@ -6,6 +6,7 @@ import 'package:talkbingo_app/styles/app_spacing.dart';
 import 'package:talkbingo_app/utils/localization.dart';
 import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   const ProfileEditScreen({super.key});
@@ -13,10 +14,6 @@ class ProfileEditScreen extends StatefulWidget {
   @override
   State<ProfileEditScreen> createState() => _ProfileEditScreenState();
 }
-
-import 'package:supabase_flutter/supabase_flutter.dart'; // Added for email // Wait, duplicate import if I replace whole file? No, I am replacing LINES. Import is at top. Need to assume import exists or add if not.
-// Ah, the file view showed duplicates if I am not careful.
-// Let's replace the State class and helpers completely.
 
 class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final _nicknameController = TextEditingController();
