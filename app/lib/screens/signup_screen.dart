@@ -81,7 +81,25 @@ class _SignupScreenState extends State<SignupScreen> {
         }
       }
     } on AuthException catch (e) {
-      if (mounted) _showSnack(e.message);
+      if (mounted) {
+        // Check for specific error messages indicating duplicate account
+        if (e.message.contains('User already registered') || 
+            e.message.contains('unique constraint') ||
+            e.message.contains('Failed to decode error response')) { // Common supabase web client masking issue
+          
+          _showDialog(
+            AppLocalizations.get('account_exists') ?? '이미 가입된 계정입니다.\n로그인 페이지로 이동합니다.',
+            () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            }
+          );
+        } else {
+           _showSnack(e.message);
+        }
+      }
     } catch (e) {
       if (mounted) _showSnack('Signup Failed: $e');
     } finally {
