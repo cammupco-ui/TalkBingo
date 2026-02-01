@@ -8,22 +8,28 @@
 -   **목적:** 앱의 시작점. 로그인 상태 확인, 익명 로그인 처리, 딥링크 감지.
 -   **로직:**
     -   **보안 강화 (Security):** 비로그인 유저 진입 시 `signInAnonymously()`를 통해 **익명 세션**을 발급받아 RLS 보안을 준수함.
-    -   신규/비로그인 -> **SignupScreen** 이동 (또는 익명 세션 발급 후 홈 이동).
+    -   신규/비로그인 -> **LoginScreen** 이동 (기본).
     -   로그인된 사용자 (익명/정식) -> **HomeScreen** 이동.
     -   **딥링크 (Deep Link):**
         -   (비로그인) 초대 코드 -> **InviteCodeScreen**.
         -   (로그인됨) 초대 코드 -> **HomeScreen**을 거쳐 **자동으로 WaitingScreen으로 납치(Fast Track)**.
 
-### **SignupScreen** & **LoginScreen** (통합 권장: `AuthScreen`)
--   **목적:** 앱의 메인 진입점. OAuth(Google) 특성상 가입과 로그인이 동일 프로세스이므로 통합 운영 권장.
+### **LoginScreen** (`login_screen.dart`)
+-   **목적:** 앱의 메인 진입점.
 -   **기능:**
-    1.  **Continue with Google:** 구글 계정으로 간편 가입 및 로그인 (원클릭).
-    2.  **Email Login (OTP):** 이메일 매직링크 인증.
+    1.  **Log in:** 이메일/비밀번호 로그인.
+    2.  **Continue with Google:** 구글 계정 로그인.
     3.  **Enter Invite Code:** 초대 코드 입력 화면으로 이동 (게스트).
+    4.  **Sign Up:** 회원가입 화면(`SignupScreen`)으로 이동 링크 제공.
 -   **탐색 (Navigation):**
-    -   Google/Email 인증 성공 (신규/연동) -> **Supabase Profile 확인**:
-        -   **프로필 있음:** -> **HomeScreen** (즉시 이동, 불필요한 설정 생략).
-        -   **프로필 없음:** -> **HostInfoScreen** (닉네임 설정) -> **HomeScreen**.
+    -   로그인 성공 -> **Supabase Profile 확인**:
+        -   **프로필 있음:** -> **HomeScreen** (즉시 이동).
+        -   **프로필 없음:** -> **HostInfoScreen** (닉네임 설정/가입절차완료) -> **HomeScreen**.
+
+### **SignupScreen** (`signup_screen.dart`)
+-   **목적:** 신규 회원가입.
+-   **기능:** 이메일, 비밀번호, 비밀번호 확인 입력 후 가입.
+-   **탐색:** 가입 완료 및 이메일 인증 -> **LoginScreen** (로그인 유도).
 
 ### **Returning Guest** (재방문 게스트/익명 사용자)
 -   **시나리오:** 인증되지 않은 사용자(게스트/익명)가 재접속 시.
@@ -31,24 +37,17 @@
     1.  `SplashScreen`에서 **익명 세션(Anonymous Session)**을 유지하여 **HomeScreen**으로 즉시 진입.
     2.  **Conversion (회원 전환):**
         -   **SettingsScreen**에서 "**Sign Up / Link Account**" 버튼 클릭.
-        -   `SignupScreen`에서 계정 연동 진행 (익명 세션 무시하고 로그인 화면 유지).
+        -   `SignupScreen`에서 계정 연동 진행.
     3.  **완료 후:** `HomeScreen`으로 복귀하여 정식 회원 권한 획득.
 
 ---
 
 ## 2. 호스트 흐름 (신규가입)
 
-### **SignupScreen** (`signup_screen.dart`)
--   **목적:** 신규 호스트 가입 및 계정 연동.
--   **역할:** 앱을 처음 설치한 호스트 사용자.
--   **기능:** **Sign up with Google** 버튼을 통해 원클릭 획원가입.
--   **탐색 (Navigation):**
-    -   Google 인증 완료 -> **프로필 유무 확인** -> **HomeScreen** (있음) / **HostInfoScreen** (없음).
-
-### **HostInfoScreen** (`host_info_screen.dart`)
--   **목적:** 호스트의 프로필 정보(닉네임, 성별)를 수집.
--   **역할:** 호스트 (최초 1회 설정).
--   **탐색 (Navigation):** -> **HomeScreen**. (설정 완료 후 바로 홈으로 이동)
+### **SignupScreen -> HostInfoScreen** (`host_info_screen.dart`)
+-   **목적:** 호스트 가입 후 프로필 정보(닉네임, 성별) 설정.
+-   **역할:** 호스트 (최초 1회).
+-   **탐색 (Navigation):** -> **HomeScreen**.
 
 ### **HostSetupScreen** (`host_setup_screen.dart`)
 -   **목적:** 게임 생성 1단계 - 초대 코드 생성.
