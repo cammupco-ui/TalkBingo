@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:talkbingo_app/screens/home_screen.dart'; // Redirect to Home
 import 'package:talkbingo_app/screens/host_info_screen.dart';
 import 'package:talkbingo_app/screens/signup_screen.dart'; // Link back to Signup
+import 'package:talkbingo_app/screens/invite_code_screen.dart';
 import 'package:talkbingo_app/screens/forgot_password_screen.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'dart:async';
@@ -181,6 +182,40 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
               ),
               
+              const SizedBox(height: 20),
+
+              // OR Divider
+              Row(
+                children: [
+                   const Expanded(child: Divider()),
+                   Padding(
+                     padding: const EdgeInsets.symmetric(horizontal: 16),
+                     child: Text(AppLocalizations.get('or_divider') ?? 'OR', style: const TextStyle(color: Colors.grey)),
+                   ),
+                   const Expanded(child: Divider()),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Invite Code Button
+              AnimatedOutlinedButton(
+                onPressed: () {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (_) => const InviteCodeScreen()),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.hostPrimary,
+                  side: const BorderSide(color: AppColors.hostPrimary),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(
+                  AppLocalizations.get('enter_invite_code') ?? 'Enter Invite Code',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+
               const SizedBox(height: 30),
 
               // Sign Up Link

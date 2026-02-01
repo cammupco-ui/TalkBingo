@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:talkbingo_app/screens/signup_screen.dart';
+import 'package:talkbingo_app/screens/login_screen.dart';
 import 'package:talkbingo_app/screens/invite_code_screen.dart';
 import 'package:talkbingo_app/screens/host_info_screen.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
@@ -166,7 +166,7 @@ class _SplashScreenState extends State<SplashScreen> {
       if (session == null && !isAuthCode) {
          _addLog("No Session. Navigating to Signup...");
          Navigator.of(context).pushReplacement(
-           MaterialPageRoute(builder: (_) => const SignupScreen()),
+           MaterialPageRoute(builder: (_) => const LoginScreen()),
          );
       } else if (isAuthCode) {
          _addLog("Auth Code Detected. Waiting...");
@@ -182,7 +182,7 @@ class _SplashScreenState extends State<SplashScreen> {
         if (session == null) {
             _addLog("Still No Session. Forced Signup.");
             Navigator.of(context).pushReplacement(
-               MaterialPageRoute(builder: (_) => const SignupScreen()),
+               MaterialPageRoute(builder: (_) => const LoginScreen()),
             );
         }
     });

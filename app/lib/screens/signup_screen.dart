@@ -183,7 +183,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 child: _isLoading 
                   ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                   : Text(
-                      AppLocalizations.get('sign_up_google') ?? 'Sign Up', // Reusing key or add 'sign_up'
+                      AppLocalizations.get('sign_up_email') ?? 'Sign Up',
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
               ),

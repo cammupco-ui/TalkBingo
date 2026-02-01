@@ -25,7 +25,7 @@ Flutter 앱을 웹용으로 빌드합니다. `app` 폴더 내에서 실행해야
 cd app
 flutter clean
 flutter pub get
-flutter build web --release
+flutter build web --release --base-href "/TalkBingo/"
 ```
 
 빌드가 완료되면 `app/build/web` 폴더에 정적 파일들이 생성됩니다.
@@ -51,6 +51,12 @@ git push -u -f origin gh-pages
 # 원래 폴더로 복귀
 cd ../../..
 ```
+- **배포 후 화면이 하얗게 나오는 경우 (Blank Screen)**
+    - 원인: GitHub Pages는 하위 경로(`/TalkBingo/`)에서 실행되는데, 앱이 루트(`/`)를 기준으로 리소스를 찾기 때문입니다.
+    - 해결: 빌드 시 `--base-href` 옵션을 추가해야 합니다.
+      ```bash
+      flutter build web --release --base-href "/TalkBingo/"
+      ```
 
 ## 4. 트러블슈팅 (Troubleshooting)
 
