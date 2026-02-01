@@ -61,7 +61,12 @@ class GameHeader extends StatelessWidget {
               // Timer Badge
               _buildTimerBadge(config, timeLeft),
               
-              const SizedBox(width: 12), // md
+              const SizedBox(width: 8),
+
+              // Turn Indicator
+              _buildTurnBadge(isMyTurn),
+
+              const SizedBox(width: 8), 
               
               // Title
               Expanded(
@@ -152,6 +157,27 @@ class GameHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+  Widget _buildTurnBadge(bool isMyTurn) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isMyTurn ? const Color(0xFFBD0558) : Colors.grey[700], // Pink for My Turn
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: isMyTurn 
+          ? [BoxShadow(color: const Color(0xFFBD0558).withOpacity(0.4), blurRadius: 6)] 
+          : [],
+      ),
+      child: Text(
+        isMyTurn ? "MY TURN" : "WAIT",
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.0,
+        ),
       ),
     );
   }

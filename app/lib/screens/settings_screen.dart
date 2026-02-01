@@ -207,7 +207,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icons.description_outlined,
                     title: AppLocalizations.get('terms_of_service') ?? 'Terms of Service',
                     iconColor: const Color(0xFF68CDFF), // Blue
-                    onTap: () => _launchUrl('https://example.com/terms'), 
+                    onTap: () => _launchUrl('https://cammupco-ui.github.io/TalkBingo/terms.html'), 
                   ),
                   const Divider(height: 24, thickness: 0.5),
                   
@@ -216,7 +216,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icons.privacy_tip_outlined,
                     title: AppLocalizations.get('privacy_policy') ?? 'Privacy Policy',
                     iconColor: const Color(0xFF68CDFF), // Blue
-                    onTap: () => _launchUrl('https://example.com/privacy'), 
+                    onTap: () => _launchUrl('https://cammupco-ui.github.io/TalkBingo/privacy.html'), 
                   ),
                   const Divider(height: 24, thickness: 0.5),
 
