@@ -127,11 +127,26 @@ class _SplashScreenState extends State<SplashScreen> {
 
       // Handle Invite Code (Deep Link / URL Param)
       if (effectiveCode != null && effectiveCode.length == 6) {
-           _addLog("Invite Code Found: $effectiveCode -> Navigating");
+           _addLog("Invite Code Found: $effectiveCode -> Preparing Fast Track");
            GameSession().pendingInviteCode = effectiveCode;
-           Navigator.of(context).pushReplacement(
-             MaterialPageRoute(builder: (_) => InviteCodeScreen(initialCode: effectiveCode)),
-           );
+           
+           if (session != null) {
+             _handleAuthenticatedUser(session);
+           } else {
+             // AUTO-LOGIN ANONYMOUSLY FOR FAST TRACK
+             _addLog("No Session. Auto-login for Fast Track...");
+             try {
+                final authResponse = await Supabase.instance.client.auth.signInAnonymously();
+                if (authResponse.session != null) {
+                   _handleAuthenticatedUser(authResponse.session!);
+                } else {
+                   throw Exception("Anon Sign-in failed");
+                }
+             } catch (e) {
+                // If failed, we don't navigate here. The timeout logic will catch it and send to Login.
+                _addLog("Auto-login failed: $e. Waiting for timeout logic.");
+             }
+           }
            return;
       }
 
@@ -155,11 +170,27 @@ class _SplashScreenState extends State<SplashScreen> {
       bool isInviteCode = inviteCode != null && inviteCode.length == 6;
 
       if (isInviteCode) {
-         _addLog("Navigating to Invite: $inviteCode");
+         _addLog("Invite Code Detected: $inviteCode. Fast Track...");
          GameSession().pendingInviteCode = inviteCode;
-         Navigator.of(context).pushReplacement(
-           MaterialPageRoute(builder: (_) => InviteCodeScreen(initialCode: inviteCode)),
-         );
+         
+         if (session == null) {
+            _addLog("No Session. Auto-login for Fast Track...");
+             try {
+                final authResponse = await Supabase.instance.client.auth.signInAnonymously();
+                if (authResponse.session != null) {
+                   _handleAuthenticatedUser(authResponse.session!);
+                } else {
+                   throw Exception("Anon Sign-in failed");
+                }
+             } catch (e) {
+                _addLog("Auto-login failed: $e. Going to Login.");
+                Navigator.of(context).pushReplacement(
+                   MaterialPageRoute(builder: (_) => const LoginScreen()),
+                );
+             }
+         } else {
+             _handleAuthenticatedUser(session);
+         }
          return;
       }
 
@@ -200,13 +231,15 @@ class _SplashScreenState extends State<SplashScreen> {
     await gameSession.loadHostInfoFromPrefs();
     _addLog("Host Nickname: ${gameSession.hostNickname}");
       
-      if (gameSession.hostNickname == null) {
+      // If code is pending, SKIP HostInfo requirement to allow Fast Track
+      // This is crucial for "Guest Mode" join where we don't want to force profile setup yet.
+      if (gameSession.hostNickname == null && gameSession.pendingInviteCode == null) {
          _addLog("No Nickname. Going to HostInfoScreen.");
          Navigator.of(context).pushReplacement(
            MaterialPageRoute(builder: (_) => HostInfoScreen()), 
          );
       } else {
-         _addLog("Profile OK. Going to Home.");
+         _addLog("Profile OK or Fast Track. Going to Home.");
          gameSession.myRole = 'A';
          Navigator.of(context).pushReplacementNamed('/home');
       }

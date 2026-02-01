@@ -109,6 +109,7 @@ class AppLocalizations {
       'enter_email': 'Enter your email',
       'enter_password': 'Enter your password',
       'or_divider': 'OR',
+      'account_exists': 'Account already exists.\nRedirecting to Login...',
     },
     'ko': {
       'new_game': '새 게임',
@@ -215,6 +216,7 @@ class AppLocalizations {
       'enter_email': '이메일을 입력하세요',
       'enter_password': '비밀번호를 입력하세요',
       'or_divider': '또는',
+      'account_exists': '이미 가입된 계정입니다.\n로그인 페이지로 이동합니다.',
     },
   };
 

@@ -249,24 +249,22 @@ or `Link/Splash` (초대코드) -> `Home`("초대된 게임 참여") -> `InviteC
 **1. 일반 게스트 (General Guest):**
 `Splash` -> `Signup` -> `Link/Splash` (초대코드) -> `InviteCode` -> `GuestInfo` -> `Waiting` -> `Game` -> `Reward` -> `Signup` / `Exit`
 
-**2. 기존 회원이 게스트로 참여 (Member as Guest):**
-초대 링크로 접속 시 이미 기기에 앱이 설치되어 있고 기존회원이라면 `Home`으로 이동하며 **초대 코드가 자동으로 입력**됩니다.
-*Home 화면의 "Join a Game" 입력란에 코드가 자동 기입되어 있어, `Join` 버튼만 누르면 바로 참여 가능.*
-`Splash` -> `Signup` -> `Link/Splash` (초대코드) -> `Home` (자동입력) -> `InviteCode` (검증) -> **`GuestInfo` (닉네임 자동완성/통과)** -> `Waiting` -> `Game` -> `Reward` -> `Home`
-*(`GuestInfo` 단계에서 기존에 저장된 Guest Nickname이 있다면 그대로 유지되어 바로 입장 가능)*
 
-**3. 재방문 게스트 (Returning Guest):**
+
+**2. 재방문 게스트 (Returning Guest):**
 인증되지 않은(익명) 상태로 재접속 시, 이전 세션을 유지하여 홈으로 진입하며 목적에 따라 두 가지 경로로 나뉩니다.
 
-    **3-1. 게임 참여 (Join Game):**
-    기존 익명 프로필을 그대로 사용하여 바로 게임에 참여합니다.
-    `Splash` -> `Home` (게스트 모드) -> `Join Game` (초대코드 입력) -> `InviteCode` -> `Waiting` -> `Game`
+    **2-1. 홈 화면 진입 시 가입 유도 (Conversion Nudge) [NEW]:**
+    익명 사용자가 `HomeScreen`에 진입할 때(앱 실행 또는 게임 종료 후), 사용자의 데이터 보존을 권장하는 안내를 노출합니다.
+    -   **메시지:** "포인트 적립과 게임 기록 보존을 위해 계정을 등록하세요!"
+    -   **UI:** 상단 배너(Banner) 또는 스낵바(SnackBar), 혹은 3회 이상 플레이 시 모달 팝업.
+    -   **Action:** 클릭 시 -> `Settings` -> `SignupScreen` 연결.
 
-    **3-2. 상태 확인 및 회원 전환 (Status Check & Conversion):**
-    자신의 계정 상태(익명)를 확인하고, 정식 회원(Host)으로 전환하여 데이터를 보존합니다.
-    `Splash` -> `Home` -> `Settings` (내 프로필/상태 확인: "Guest Mode") -> **`Sign Up / Link Account`** 버튼 클릭 -> `AuthScreen` (이메일 인증 or Google 연동) -> `HostInfo` (프로필 보완) -> `Home` (정식 Host 모드로 전환됨)
+    **2-2. 게임 참여 (Fast Track Join):**
+    초대 링크로 들어온 경우, 복잡한 절차 없이 빠르게 게임에 합류합니다.
+    `Link` -> `Splash` -> `Home` (초대코드 자동입력 상태) -> **"Guest Mode로 참여하시겠습니까?" 팝업** -> `InviteCode` -> `Waiting`
 
-**4. 회원 전환 (Conversion: Guest to Host):**
-익명 게스트가 정식 회원(Host)으로 전환하여 데이터를 보존하고 모든 기능을 사용합니다.
-`Home` -> `Settings` -> **`Link Identity` (Google/이메일 연동)** -> `HostInfo` (프로필 보완) -> `Home` (정식 회원)
+    **2-3. 자발적 회원 전환 (Manual Conversion):**
+    사용자가 설정 메뉴를 통해 스스로 계정을 연동합니다.
+    `Home` -> `Settings` -> **`Sign Up / Link Account`** -> `Signup` (이메일/Google) -> `HostInfo` -> `Home` (정식 회원 승격)
 

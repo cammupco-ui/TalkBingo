@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
@@ -44,11 +45,66 @@ class _HomeScreenState extends State<HomeScreen> {
 
     _loadHostInfo();
     
-    // Auto-fill code if pending
+    // Defer UI logic to after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+       _checkInitialFlows();
+    });
+  }
+
+  void _checkInitialFlows() {
+    // 1. Fast Track Join (Deep Link)
     if (GameSession().pendingInviteCode != null) {
-      _inviteCodeController.text = GameSession().pendingInviteCode!;
-      // Clear it so it doesn't persist forever
-      GameSession().pendingInviteCode = null;
+      final code = GameSession().pendingInviteCode!;
+      GameSession().pendingInviteCode = null; // Clear it
+      
+      _inviteCodeController.text = code;
+      
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(AppLocalizations.get('join_game'), style: const TextStyle(fontWeight: FontWeight.bold)),
+          content: Text("Guest Mode로 참여하시겠습니까?\n(코드: $code)"), // TODO: Localize
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(AppLocalizations.get('cancel'), style: const TextStyle(color: Colors.grey)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.of(context).push(
+                   MaterialPageRoute(builder: (_) => InviteCodeScreen(initialCode: code)),
+                );
+              },
+              child: Text(AppLocalizations.get('join'), style: const TextStyle(color: AppColors.hostPrimary, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+      return; // Prioritize Game Join over Nudge
+    }
+
+    // 2. Conversion Nudge (Returning Guest)
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null && user.isAnonymous) {
+       ScaffoldMessenger.of(context).showSnackBar(
+         SnackBar(
+           content: const Text("포인트 적립과 게임 기록 보존을 위해 계정을 등록하세요!"), // TODO: Localize
+           backgroundColor: AppColors.hostPrimary,
+           duration: const Duration(seconds: 5),
+           action: SnackBarAction(
+             label: '등록하기',
+             textColor: Colors.white,
+             onPressed: () {
+               Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+               );
+             },
+           ),
+         ),
+       );
     }
   }
 

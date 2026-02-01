@@ -84,8 +84,7 @@ class _SignupScreenState extends State<SignupScreen> {
       if (mounted) {
         // Check for specific error messages indicating duplicate account
         if (e.message.contains('User already registered') || 
-            e.message.contains('unique constraint') ||
-            e.message.contains('Failed to decode error response')) { // Common supabase web client masking issue
+            e.message.contains('unique constraint')) { 
           
           _showDialog(
             AppLocalizations.get('account_exists') ?? '이미 가입된 계정입니다.\n로그인 페이지로 이동합니다.',
@@ -96,6 +95,9 @@ class _SignupScreenState extends State<SignupScreen> {
               );
             }
           );
+        } else if (e.message.contains('Failed to decode error response')) {
+           // Handle generic Supabase Web error (likely network or 500)
+           _showSnack("서버 연결 상태가 불안정합니다. (Network Error)\n새로고침 후 다시 시도해주세요.");
         } else {
            _showSnack(e.message);
         }
