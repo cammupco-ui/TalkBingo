@@ -281,25 +281,7 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
           ),
           
-          // --- VERSION LABEL ---
-          Positioned(
-            bottom: 230,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.redAccent,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  "v1.0.1 (HTML)",
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-              ),
-            ),
-          ),
+
 
 
         ],

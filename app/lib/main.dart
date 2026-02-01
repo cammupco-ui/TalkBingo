@@ -92,6 +92,13 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
         textTheme: GoogleFonts.alexandriaTextTheme().apply(
           fontFamilyFallback: ['EliceDigitalBaeum', 'EliceDigitalCodingverH'],
         ),
+        // Fix for Dialogs being dark and unreadable
+        dialogTheme: const DialogTheme(
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.transparent, 
+          titleTextStyle: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
+          contentTextStyle: TextStyle(color: Colors.black87, fontSize: 16),
+        ),
       ),
       initialRoute: '/',
       routes: {
