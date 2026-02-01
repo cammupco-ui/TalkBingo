@@ -4,13 +4,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:talkbingo_app/screens/home_screen.dart'; // Redirect to Home
 import 'package:talkbingo_app/screens/host_info_screen.dart';
 import 'package:talkbingo_app/screens/signup_screen.dart'; // Link back to Signup
+import 'package:talkbingo_app/screens/forgot_password_screen.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'dart:async';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:talkbingo_app/utils/ad_state.dart';
 import 'package:talkbingo_app/utils/dev_config.dart';
-import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/utils/localization.dart';
 import 'package:talkbingo_app/widgets/animated_button.dart';
 
@@ -21,123 +20,40 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
+class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _isLoading = false;
-  bool _isEmailSent = false;
-  final bool _isVerified = false;
-  bool _isCheckingSession = true;
-  late final StreamSubscription<AuthState> _authSubscription;
-  Timer? _pollingTimer;
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      debugPrint('LoginScreen: App resumed. Checking session...');
-      _checkSessionStatus();
-    }
-  }
-
-  Future<void> _checkSessionStatus() async {
-    await Future.delayed(const Duration(milliseconds: 500)); // Wait for SDK to update
-    final session = Supabase.instance.client.auth.currentSession;
-    if (session != null) {
-      debugPrint('LoginScreen: Session found on resume.');
-      _checkSession(session);
-    } else {
-       debugPrint('LoginScreen: No session found on resume.');
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _checkInitialSession();
-    
-    // Auth Callback Handling (identical to Signup)
-    if (kIsWeb) {
-      final uri = Uri.base;
-      if (uri.queryParameters.containsKey('code') || uri.fragment.contains('access_token')) {
-         // If verifying, we will wait for session
-      }
-    }
-
-    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      debugPrint('LoginScreen: Auth State Changed: ${data.event}');
-      if (mounted && data.session != null) {
-         debugPrint('LoginScreen: Session received from listener.');
-         _checkSession(data.session!);
-      }
-    });
-
-    // Handle Deep Link manually if needed (Supabase SDK usually handles this, but for safety)
-    if (kIsWeb) {
-      final uri = Uri.base;
-      if (uri.queryParameters.containsKey('code')) {
-        // Show loading while SDK processes code
-        setState(() => _isCheckingSession = true);
-      }
-    }
-  }
-
-  Future<void> _checkInitialSession() async {
-    // Wait a bit for SDK to process potential deep link
-    await Future.delayed(const Duration(seconds: 1));
-    final session = Supabase.instance.client.auth.currentSession;
-    if (session != null) {
-      _checkSession(session);
-    } else {
-      if (mounted) setState(() => _isCheckingSession = false);
-    }
-  }
-
-  void _startPolling() {
-    int pollingCount = 0;
-    const int maxPollingCount = 100;
-    _pollingTimer?.cancel();
-    _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      pollingCount++;
-      if (pollingCount > maxPollingCount) { timer.cancel(); return; }
-      final session = Supabase.instance.client.auth.currentSession;
-      if (session != null) {
-        _checkSession(session);
-        timer.cancel();
-      }
-    });
-  }
-
-  void _checkSession(Session session) {
-    if (!mounted) return;
-    
-    // Auto-navigate if session is valid
-    if (DevConfig.isDevMode.value || session.user.id.isNotEmpty) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
-    }
-  }
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _pollingTimer?.cancel();
-    _authSubscription.cancel();
     _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
   Future<void> _signIn() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter email and password'), backgroundColor: Colors.red));
+      return;
+    }
+
     setState(() => _isLoading = true);
+
     try {
-      await Supabase.instance.client.auth.signInWithOtp(
-        email: _emailController.text.trim().toLowerCase(),
-        shouldCreateUser: false, // Log-in Only
-        emailRedirectTo: kIsWeb ? Uri.base.origin : 'io.supabase.talkbingo://login-callback', 
+      final response = await Supabase.instance.client.auth.signInWithPassword(
+        email: email,
+        password: password,
       );
+
       if (mounted) {
-        setState(() => _isEmailSent = true);
-        _startPolling();
+        if (response.session != null) {
+          _checkSession(response.session!);
+        }
       }
     } on AuthException catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message), backgroundColor: Colors.red));
@@ -148,15 +64,44 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     }
   }
 
+  Future<void> _checkSession(Session session) async {
+    // Check Profile to decide destination (Home vs Onboarding)
+    bool hasProfile = false;
+    try {
+      final profile = await Supabase.instance.client
+          .from('profiles')
+          .select()
+          .eq('id', session.user.id)
+          .maybeSingle();
+      hasProfile = profile != null;
+    } catch (e) {
+      debugPrint("LoginScreen: Error checking profile: $e");
+    }
+
+    if (!mounted) return;
+
+    if (hasProfile) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
+      );
+    } else {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HostInfoScreen()),
+        (route) => false,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) => AdState.showAd.value = false);
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Center(
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -174,48 +119,88 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
               ),
               const SizedBox(height: 60),
 
-              if (_isCheckingSession || _isLoading)
-                 const Center(child: CircularProgressIndicator(color: AppColors.hostPrimary))
-              else ...[
-                // Google Sign In Button
-                AnimatedButton(
-                  onPressed: _signInWithGoogle,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black87,
-                    elevation: 2,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide(color: Colors.grey.shade300),
+              // Title
+              Text(
+                AppLocalizations.get('log_in') ?? 'Log In',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 30),
+
+              // Email Field
+              _buildTextField(
+                controller: _emailController,
+                label: AppLocalizations.get('email') ?? 'Email',
+                hint: AppLocalizations.get('enter_email') ?? 'Enter email',
+                icon: Icons.email_outlined,
+              ),
+              const SizedBox(height: 16),
+
+              // Password Field
+              _buildTextField(
+                controller: _passwordController,
+                label: AppLocalizations.get('password') ?? 'Password',
+                hint: AppLocalizations.get('enter_password') ?? 'Enter password',
+                icon: Icons.lock_outline,
+                isPassword: true,
+                isObscure: _obscurePassword,
+                onToggleObscure: () => setState(() => _obscurePassword = !_obscurePassword),
+              ),
+              
+              // Forgot Password
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                    );
+                  },
+                  child: Text(
+                    AppLocalizations.get('forgot_password') ?? 'Forgot Password?',
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Login Button
+              AnimatedButton(
+                onPressed: _isLoading ? null : _signIn,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.hostPrimary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: _isLoading 
+                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : Text(
+                      AppLocalizations.get('log_in') ?? 'Log In',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+              ),
+              
+              const SizedBox(height: 30),
+
+              // Sign Up Link
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Don't have an account? "),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (_) => const SignupScreen()),
+                      );
+                    },
+                    child: Text(
+                      AppLocalizations.get('sign_up_email') ?? 'Sign Up',
+                      style: const TextStyle(color: AppColors.hostPrimary, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Google Icon
-                      SvgPicture.asset( 
-                        'assets/images/google_logo.svg', 
-                        height: 24,
-                        width: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      // Label
-                      Text(
-                        AppLocalizations.get('continue_google'),
-                        style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'NURA')),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                const SizedBox(height: 16),
-                Text(
-                  AppLocalizations.get('quick_secure_login'),
-                  textAlign: TextAlign.center,
-                  style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(color: Colors.grey, fontSize: 12)),
-                ),
-              ],
+                ],
+              ),
             ],
           ),
         ),
@@ -223,26 +208,49 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     );
   }
 
-  Future<void> _signInWithGoogle() async {
-    setState(() => _isLoading = true);
-    try {
-      await Supabase.instance.client.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo: kIsWeb 
-          ? (kReleaseMode ? 'https://talkbingo-web.web.app/' : Uri.base.origin) 
-          : 'io.supabase.talkbingo://login-callback',
-      );
-      // OAuth flow redirects away, so loading state stays until return
-    } on AuthException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message), backgroundColor: Colors.red));
-        setState(() => _isLoading = false);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error occurred'), backgroundColor: Colors.red));
-        setState(() => _isLoading = false);
-      }
-    }
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    bool isPassword = false,
+    bool isObscure = false,
+    VoidCallback? onToggleObscure,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          obscureText: isObscure,
+          decoration: InputDecoration(
+            hintText: hint,
+            prefixIcon: Icon(icon, color: Colors.grey),
+            suffixIcon: isPassword 
+              ? IconButton(
+                  icon: Icon(isObscure ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
+                  onPressed: onToggleObscure,
+                )
+              : null,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+              borderSide: BorderSide(color: AppColors.hostPrimary, width: 2),
+            ),
+            filled: true,
+            fillColor: Colors.grey[50],
+          ),
+        ),
+      ],
+    );
   }
 }
