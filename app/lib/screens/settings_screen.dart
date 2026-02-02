@@ -278,12 +278,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
              _buildCard(
                child: Column(
                  children: [
-                    // Contact Us
+                    // Board (Feedback)
                     _buildSettingsTile(
-                      icon: Icons.email_outlined,
-                      title: AppLocalizations.get('contact_us') ?? 'Contact Us',
+                      icon: Icons.forum_outlined,
+                      title: '게시판 (Board)',
                       iconColor: const Color(0xFFBD0558), // Pink
-                      onTap: () => _launchFeedback(),
+                      onTap: () => _launchUrl('https://example.com/board'), // TODO: Update with actual Board URL
                     ),
                     
                     // Delete Account
