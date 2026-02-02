@@ -32,6 +32,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _inviteCodeController = TextEditingController();
   final GameSession _session = GameSession();
+  bool _showSignupNudge = false;
 
   
   @override
@@ -89,22 +90,9 @@ class _HomeScreenState extends State<HomeScreen> {
     // 2. Conversion Nudge (Returning Guest)
     final user = Supabase.instance.client.auth.currentUser;
     if (user != null && user.isAnonymous) {
-       ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(
-           content: const Text("포인트 적립과 게임 기록 보존을 위해 계정을 등록하세요!"), // TODO: Localize
-           backgroundColor: AppColors.hostPrimary,
-           duration: const Duration(seconds: 5),
-           action: SnackBarAction(
-             label: '등록하기',
-             textColor: Colors.white,
-             onPressed: () {
-               Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
-               );
-             },
-           ),
-         ),
-       );
+       setState(() {
+         _showSignupNudge = true;
+       });
     }
   }
 
@@ -298,6 +286,72 @@ class _HomeScreenState extends State<HomeScreen> {
                child: Column(
                  crossAxisAlignment: CrossAxisAlignment.stretch,
                  children: [
+                   // Conversion Nudge Banner
+                   if (_showSignupNudge)
+                     Container(
+                       margin: const EdgeInsets.only(bottom: 16),
+                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                       decoration: BoxDecoration(
+                         color: AppColors.hostPrimary.withOpacity(0.9),
+                         borderRadius: BorderRadius.circular(12),
+                         boxShadow: [
+                           BoxShadow(
+                             color: Colors.black.withOpacity(0.2),
+                             blurRadius: 8,
+                             offset: const Offset(0, 4),
+                           )
+                         ],
+                       ),
+                       child: Row(
+                         children: [
+                           const Icon(Icons.stars, color: Colors.amber, size: 24),
+                           const SizedBox(width: 12),
+                           Expanded(
+                             child: Column(
+                               crossAxisAlignment: CrossAxisAlignment.start,
+                               children: [
+                                 Text(
+                                   "포인트 적립과 기록 보존!",
+                                   style: GoogleFonts.alexandria(
+                                     color: Colors.white,
+                                     fontWeight: FontWeight.bold,
+                                     fontSize: 14,
+                                   ),
+                                 ),
+                                 Text(
+                                   "계정을 등록하고 혜택을 받으세요.",
+                                   style: GoogleFonts.alexandria(
+                                     color: Colors.white.withOpacity(0.9),
+                                     fontSize: 12,
+                                   ),
+                                 ),
+                               ],
+                             ),
+                           ),
+                           TextButton(
+                             onPressed: () {
+                               Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                               );
+                             },
+                             style: TextButton.styleFrom(
+                               backgroundColor: Colors.white,
+                               foregroundColor: AppColors.hostPrimary,
+                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                               minimumSize: Size.zero,
+                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                             ),
+                             child: const Text("등록", style: TextStyle(fontWeight: FontWeight.bold)),
+                           ),
+                           const SizedBox(width: 8),
+                           InkWell(
+                             onTap: () => setState(() => _showSignupNudge = false),
+                             child: const Icon(Icons.close, color: Colors.white70, size: 20),
+                           ),
+                         ],
+                       ),
+                     ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.5, end: 0),
+
                     // --- Custom Header ---
                     // Row 1: Logo
                     const Center(
