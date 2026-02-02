@@ -21,6 +21,7 @@ import 'package:talkbingo_app/screens/game_setup_screen.dart';
 import 'package:talkbingo_app/utils/localization.dart'; // Localization
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:math';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
