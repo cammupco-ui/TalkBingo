@@ -1044,8 +1044,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             latestMessage: _latestChatPreview,
             themeColor: _themePrimary,
             dragThreshold: 8.0, // Increased threshold to prevent micro-drags
-            onTap: (wasDragged) { // Added wasDragged parameter
-               if (wasDragged) return; // Only fire if NOT dragging
+            onTap: () { // Reverted to VoidCallback
                // Toggle Page with Sound Feedback
                SoundService().playButtonSound();
                

@@ -10,6 +10,7 @@ class DraggableFloatingButton extends StatefulWidget {
   final VoidCallback onTap;
   final String? latestMessage;
   final Color themeColor;
+  final double dragThreshold;
 
   const DraggableFloatingButton({
     super.key,
@@ -18,6 +19,7 @@ class DraggableFloatingButton extends StatefulWidget {
     required this.onTap,
     this.latestMessage,
     this.themeColor = AppColors.hostPrimary,
+    this.dragThreshold = 5.0,
   });
 
   @override
@@ -103,7 +105,7 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton> {
 
   void _onPanUpdate(DragUpdateDetails details) {
     _dragDistance += details.delta.distance;
-    if (_dragDistance > 8.0) { // Increased Threshold for Mobile
+    if (_dragDistance > widget.dragThreshold) { 
        setState(() {
          _position += details.delta;
          _isDragging = true;
