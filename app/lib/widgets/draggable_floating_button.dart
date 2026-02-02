@@ -103,7 +103,7 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton> {
 
   void _onPanUpdate(DragUpdateDetails details) {
     _dragDistance += details.delta.distance;
-    if (_dragDistance > 5.0) { // Threshold
+    if (_dragDistance > 8.0) { // Increased Threshold for Mobile
        setState(() {
          _position += details.delta;
          _isDragging = true;

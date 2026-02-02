@@ -132,6 +132,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _speech = stt.SpeechToText();
     _initSpeech();
     
+    // Clear Stale Chat Data
+    _unreadCount = 0;
+    _latestChatPreview = null;
+    _lastProcessedMsg = null;
+    
     // Initialize Sound Service
     SoundService().init(); // Fire and forget initialization
     _bingoLineController = AnimationController(
@@ -1038,7 +1043,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             unreadCount: _unreadCount,
             latestMessage: _latestChatPreview,
             themeColor: _themePrimary,
-            onTap: () {
+            dragThreshold: 8.0, // Increased threshold to prevent micro-drags
+            onTap: (wasDragged) { // Added wasDragged parameter
+               if (wasDragged) return; // Only fire if NOT dragging
                // Toggle Page with Sound Feedback
                SoundService().playButtonSound();
                
