@@ -15,8 +15,7 @@ import 'package:talkbingo_app/screens/invite_code_screen.dart'; // Still useful 
 import 'package:talkbingo_app/screens/point_purchase_screen.dart';
 import 'package:talkbingo_app/screens/notice_screen.dart';
 import 'package:talkbingo_app/models/notice.dart';
-import 'package:talkbingo_app/screens/notice_screen.dart';
-import 'package:talkbingo_app/models/notice.dart';
+
 import 'package:talkbingo_app/screens/game_setup_screen.dart';
 import 'package:talkbingo_app/utils/localization.dart'; // Localization
 import 'package:google_fonts/google_fonts.dart';
