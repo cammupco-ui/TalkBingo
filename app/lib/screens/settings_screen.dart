@@ -202,6 +202,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildCard(
               child: Column(
                 children: [
+                  // How to Play Bingo
+                  _buildSettingsTile(
+                    icon: Icons.help_outline,
+                    title: '빙고 플레이 방법 (How to Play)',
+                    iconColor: const Color(0xFFFFA000), // Amber/Orange
+                    onTap: () => _launchUrl('https://cammupco-ui.github.io/TalkBingo/guide_bingo.html'), 
+                  ),
+                  const Divider(height: 24, thickness: 0.5),
+
+                  // How to Use Points
+                  _buildSettingsTile(
+                    icon: Icons.monetization_on_outlined,
+                    title: '포인트 사용 방법 (Points Guide)',
+                    iconColor: const Color(0xFFFFA000), // Amber/Orange
+                    onTap: () => _launchUrl('https://cammupco-ui.github.io/TalkBingo/guide_points.html'), 
+                  ),
+                  const Divider(height: 24, thickness: 0.5),
+
                   // Terms of Service
                   _buildSettingsTile(
                     icon: Icons.description_outlined,
@@ -209,7 +227,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     iconColor: const Color(0xFF68CDFF), // Blue
                     onTap: () => _launchUrl('https://cammupco-ui.github.io/TalkBingo/terms.html'), 
                   ),
-                  const Divider(height: 24, thickness: 0.5),
                   
                   // Privacy Policy
                   _buildSettingsTile(
@@ -220,11 +237,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const Divider(height: 24, thickness: 0.5),
 
-                  // Open Source Licenses
+                  // License & Version (Merged)
                   _buildSettingsTile(
-                    icon: Icons.code,
-                    title: AppLocalizations.get('licenses') ?? 'Open Source Licenses',
-                    iconColor: const Color(0xFF68CDFF), // Blue
+                    icon: Icons.info_outline,
+                    title: '${AppLocalizations.get('licenses') ?? 'Licenses'} / v$_appVersion',
+                    iconColor: Colors.grey, 
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
@@ -258,16 +275,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       );
                     },
-                  ),
-                  const Divider(height: 24, thickness: 0.5),
-
-                  // Version Info
-                  _buildSettingsTile(
-                    icon: Icons.info_outline,
-                    title: AppLocalizations.get('version_info') ?? 'Version',
-                    iconColor: const Color(0xFF68CDFF), // Blue
-                    trailing: Text(_appVersion, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                    onTap: () {}, 
                   ),
                 ],
               ),

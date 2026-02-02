@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>빙고 플레이 방법 - TalkBingo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #BD0558;
+            --secondary-color: #6B14EC;
+            --text-color: #333;
+            --bg-color: #F8F9FA;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            min-height: 100vh;
+        }
+
+        .step {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            background: #fff;
+            border: 1px solid #eee;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .step-title {
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .step-number {
+            background: var(--secondary-color);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 0.9rem;
+        }
+
+        .highlight {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>빙고 플레이 방법</h1>
+    </div>
+
+    <div class="container">
+        <div class="step">
+            <div class="step-title"><span class="step-number">1</span> 주제 선택</div>
+            <p>다양한 대화 주제(여행, 취미, 밸런스 게임 등) 중 하나를 선택하여 게임을 시작하세요.</p>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">2</span> 질문에 답하기</div>
+            <p>화면에 나타나는 질문에 대해 파트너와 솔직하게 이야기 나누세요. 대화가 깊어질수록 게임이 흥미로워집니다.</p>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">3</span> 빙고 완성</div>
+            <p>대화를 통해 칸을 채우고 <span class="highlight">가로, 세로, 대각선</span>으로 줄을 완성하세요. 빙고를 외치면 승리합니다!</p>
+        </div>
+
+        <div class="step">
+            <div class="step-title"><span class="step-number">4</span> 보상 획득</div>
+            <p>게임에서 승리하여 <span class="highlight">VP (Victory Point)</span>를 획득하고 레벨을 올려보세요.</p>
+        </div>
+    </div>
+</body>
+
+</html>
