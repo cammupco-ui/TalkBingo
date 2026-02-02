@@ -829,6 +829,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         statusBarIconBrightness: Brightness.dark, // For light background
         statusBarBrightness: Brightness.light, // For iOS
       ),
+      child: WillPopScope(
       onWillPop: () async => false, // Prevent back button
       child: Scaffold(
         resizeToAvoidBottomInset: !_isQuizInputFocused, // Allow keyboard resizing ONLY when not in Quiz (prevents jumpiness)
