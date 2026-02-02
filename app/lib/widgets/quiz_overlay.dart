@@ -27,12 +27,14 @@ class QuizOverlay extends StatefulWidget {
     this.answeringPlayer = 'A',
     this.submittedAnswer,
     this.isPaused = false,
+    this.onInputFocus, // New optional callback
   });
 
-  final String interactionStep; // 'answering' or 'reviewing'
-  final String answeringPlayer; // 'A' or 'B'
+  final String interactionStep; 
+  final String answeringPlayer; 
   final String? submittedAnswer;
   final bool isPaused;
+  final ValueChanged<bool>? onInputFocus; // Callback definition
 
   @override
   State<QuizOverlay> createState() => _QuizOverlayState();
@@ -45,6 +47,8 @@ class _QuizOverlayState extends State<QuizOverlay> {
   
   // For Balance Game
   String? _balanceReason; 
+  
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -52,6 +56,20 @@ class _QuizOverlayState extends State<QuizOverlay> {
     if (widget.submittedAnswer != null) {
       _selectedChoice = widget.submittedAnswer;
     }
+    
+    // Listen to Focus Changes
+    _focusNode.addListener(() {
+      if (widget.onInputFocus != null) {
+        widget.onInputFocus!(_focusNode.hasFocus);
+      }
+    });
+  } 
+
+  @override
+  void dispose() {
+    _answerController.dispose();
+    _focusNode.dispose();
+    super.dispose();
   } 
 
   @override
@@ -401,10 +419,11 @@ class _QuizOverlayState extends State<QuizOverlay> {
   final TextEditingController _answerController = TextEditingController();
 
   @override
-  void dispose() {
-    _answerController.dispose();
-    super.dispose();
-  }
+  // void dispose() handled above in simplified block
+  // void dispose() {
+  //   _answerController.dispose();
+  //   super.dispose();
+  // }
 
   Widget _buildTruthContent({required bool readOnly, String? highlightAnswer}) {
     // If reviewing/waiting, show the submitted answer instead of input if possible, 
@@ -422,15 +441,17 @@ class _QuizOverlayState extends State<QuizOverlay> {
         // Input Field
         TextField(
           controller: _answerController,
+          focusNode: _focusNode, // Attach FocusNode
           maxLength: 20, 
-          enabled: true, // Keep enabled for vivid text color
-          readOnly: readOnly, // Prevent editing if readOnly
+          enabled: true, 
+          readOnly: readOnly, 
+          // scrollPadding: const EdgeInsets.only(bottom: 120), // Removed: Handled by resizeToAvoidBottomInset: false logic
           style: const TextStyle(
-            fontSize: 16, // Increased size for better visibility
-            fontWeight: FontWeight.bold, // Bold for emphasis
-            color: Colors.black, // Vivid Black
+            fontSize: 16, 
+            fontWeight: FontWeight.bold, 
+            color: Colors.black, 
           ),
-          textAlign: TextAlign.center, // Center text for truth answer presentation
+          textAlign: TextAlign.center, 
           decoration: InputDecoration(
             isDense: true, 
             hintText: readOnly ? '상대방이 답변 중입니다...' : '답변을 입력하거나 선택하세요', 
@@ -439,7 +460,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
             fillColor: Colors.grey[100],
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: highlightAnswer != null ? const BorderSide(color: AppColors.hostPrimary, width: 2) : BorderSide.none, // Highlight border
+              borderSide: highlightAnswer != null ? const BorderSide(color: AppColors.hostPrimary, width: 2) : BorderSide.none, 
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12), 
             counterText: "",

@@ -829,10 +829,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         statusBarIconBrightness: Brightness.dark, // For light background
         statusBarBrightness: Brightness.light, // For iOS
       ),
-      child: WillPopScope(
       onWillPop: () async => false, // Prevent back button
       child: Scaffold(
-        resizeToAvoidBottomInset: true, // Allow keyboard
+        resizeToAvoidBottomInset: !_isQuizInputFocused, // Allow keyboard resizing ONLY when not in Quiz (prevents jumpiness)
         body: BubbleBackground(
           interactive: true,
           child: Stack(
@@ -942,6 +941,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                                   isPaused: state['isPaused'] ?? false, 
                                   onOptionSelected: _handleOptionSelected,
                                   onClose: () {},
+                                  onInputFocus: (val) {
+                                      if (mounted && _isQuizInputFocused != val) {
+                                          setState(() => _isQuizInputFocused = val);
+                                      }
+                                  },
                                 ),
                               );
                             }
@@ -952,13 +956,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   
                   // 3. Persistent Input Field (Visible on ALL tabs)
                   // Wrapped in Container to ensure visibility
-                  Container(
-                     color: Colors.white,
-                     child: SafeArea(
-                       top: false, // Ensure top doesn't push down
-                       child: _buildBottomControls(),
-                     ),
-                  ),
+                  if (!_isQuizInputFocused) 
+                    Container(
+                       color: Colors.white,
+                       child: SafeArea(
+                         top: false, // Ensure top doesn't push down
+                         child: _buildBottomControls(),
+                       ),
+                    ),
                 ],
               ),
               
@@ -1400,6 +1405,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   // int? _activeQuizIndex; // For full-size overlay - REMOVED
 
   bool _hasInput = false;
+  bool _isQuizInputFocused = false; // Track if Quiz Input is active (to hide chat bar)
 
   // Interaction Handlers
 
