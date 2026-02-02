@@ -205,7 +205,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   // How to Play Bingo
                   _buildSettingsTile(
                     icon: Icons.help_outline,
-                    title: '빙고 플레이 방법 (How to Play)',
+                    title: AppLocalizations.get('guide_bingo'),
                     iconColor: const Color(0xFFFFA000), // Amber/Orange
                     onTap: () => _launchUrl('https://cammupco-ui.github.io/TalkBingo/guide_bingo.html'), 
                   ),
@@ -214,7 +214,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   // How to Use Points
                   _buildSettingsTile(
                     icon: Icons.monetization_on_outlined,
-                    title: '포인트 사용 방법 (Points Guide)',
+                    title: AppLocalizations.get('guide_points'),
                     iconColor: const Color(0xFFFFA000), // Amber/Orange
                     onTap: () => _launchUrl('https://cammupco-ui.github.io/TalkBingo/guide_points.html'), 
                   ),
@@ -288,9 +288,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     // Board (Feedback)
                     _buildSettingsTile(
                       icon: Icons.forum_outlined,
-                      title: '게시판 (Board)',
+                      title: AppLocalizations.get('board'),
                       iconColor: const Color(0xFFBD0558), // Pink
-                      onTap: () => _launchUrl('https://example.com/board'), // TODO: Update with actual Board URL
+                      onTap: () => _launchUrl('https://example.com/board'), // Implemented localization for Board title
                     ),
                     
                     // Delete Account

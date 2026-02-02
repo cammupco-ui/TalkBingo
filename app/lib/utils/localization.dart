@@ -110,6 +110,9 @@ class AppLocalizations {
       'enter_password': 'Enter your password',
       'or_divider': 'OR',
       'account_exists': 'Account already exists.\nRedirecting to Login...',
+      'board': 'Board',
+      'guide_bingo': 'How to Play',
+      'guide_points': 'Points Guide',
     },
     'ko': {
       'new_game': '새 게임',
@@ -217,6 +220,9 @@ class AppLocalizations {
       'enter_password': '비밀번호를 입력하세요',
       'or_divider': '또는',
       'account_exists': '이미 가입된 계정입니다.\n로그인 페이지로 이동합니다.',
+      'board': '게시판',
+      'guide_bingo': '빙고 플레이 방법',
+      'guide_points': '포인트 사용 방법',
     },
   };
 
