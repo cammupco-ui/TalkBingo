@@ -599,7 +599,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     
     await _speech.listen(
       onResult: _onSpeechResult,
-      localeId: _session.language == 'ko' ? 'ko_KR' : 'en_US',
+      localeId: _session.language == 'ko' ? 'ko-KR' : 'en-US',
     );
     setState(() {
       _isListening = true;
@@ -1039,16 +1039,21 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             latestMessage: _latestChatPreview,
             themeColor: _themePrimary,
             onTap: () {
-               // Toggle Page
+               // Toggle Page with Sound Feedback
+               SoundService().playButtonSound();
+               
                final nextPage = _targetPage == 0 ? 1 : 0;
                setState(() {
                  _targetPage = nextPage;
                });
-               _pageController.animateToPage(
-                 nextPage, 
-                 duration: const Duration(milliseconds: 400), 
-                 curve: Curves.easeInOutBack
-               );
+               
+               if (_pageController.hasClients) {
+                 _pageController.animateToPage(
+                   nextPage, 
+                   duration: const Duration(milliseconds: 300), 
+                   curve: Curves.easeInOut
+                 );
+               }
             },
           ),
         ], // Stack Children
@@ -1812,40 +1817,48 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildTurnIndicator() {
-    bool isMyTurn = _session.myRole == _session.currentTurn;
+    final myRole = _session.myRole;
+    final turn = _session.currentTurn;
+    final isMyTurn = (myRole.isNotEmpty && myRole == turn);
+    
+    // Debug fallback: If empty, assume it's starting or valid
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-        color: isMyTurn ? _themePrimary : Colors.grey[300],
+        color: isMyTurn ? const Color(0xFFBD0558) : const Color(0xFF757575), // Explicit colors
         borderRadius: BorderRadius.circular(20),
-        boxShadow: isMyTurn ? [
-          BoxShadow(color: _themePrimary.withOpacity(0.3), blurRadius: 8, spreadRadius: 2)
-        ] : [],
+        border: Border.all(color: Colors.white.withOpacity(0.5), width: 1.5), // Add border for visibility
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          )
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          Icon(
+            isMyTurn ? Icons.play_circle_fill : Icons.hourglass_empty,
+            color: Colors.white,
+            size: 14,
+          ),
+          const SizedBox(width: 6),
           Text(
-            isMyTurn ? "MY TURN" : "OPPONENT'S TURN",
+            isMyTurn ? "MY TURN" : "WAIT",
             style: GoogleFonts.alexandria(
-              fontSize: 14,
+              fontSize: 12, // Slightly smaller to prevent overflow
               fontWeight: FontWeight.bold,
-              color: isMyTurn ? Colors.white : Colors.grey[600],
+              color: Colors.white,
+              letterSpacing: 0.5,
             ),
           ),
-          if (isMyTurn) ...[
-             const SizedBox(width: 8),
-             const Icon(Icons.touch_app, color: Colors.white, size: 16)
-                .animate(onPlay: (c) => c.repeat())
-                .scaleXY(end: 1.2, duration: 600.ms, curve: Curves.easeInOut)
-                .then().scaleXY(end: 1.0, duration: 600.ms)
-          ]
         ],
       ),
     ).animate(target: isMyTurn ? 1 : 0)
-     .shimmer(duration: 1500.ms, color: Colors.white.withOpacity(0.5))
-     .scale(begin: const Offset(1, 1), end: const Offset(1.05, 1.05), duration: 1000.ms, curve: Curves.easeInOut)
-     .then().scale(end: const Offset(1, 1), duration: 1000.ms);
+     .scale(begin: const Offset(0.95, 0.95), end: const Offset(1.05, 1.05), duration: 800.ms, curve: Curves.easeInOut)
+     .then().scale(end: const Offset(0.95, 0.95), duration: 800.ms); // Pulse animation
   }
 
   Widget _buildBingoTile(int index) {
