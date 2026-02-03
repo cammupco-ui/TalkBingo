@@ -61,7 +61,19 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
     if (_inviteCode != null) {
       String link;
       if (kIsWeb) {
-        link = '${Uri.base.origin}/?code=$_inviteCode';
+        // Fix: Ensure we include the base path (e.g. /TalkBingo/) 
+        // Uri.base.origin gives "https://domain.com"
+        // Uri.base.path gives "/TalkBingo/" (or similar)
+        // Combine them to get "https://domain.com/TalkBingo/"
+        String baseUrl = Uri.base.origin + Uri.base.path;
+        // Remove trailing 'index.html' if present (unlikely but possible)
+        baseUrl = baseUrl.replaceAll('index.html', '');
+        // Remove trailing slash to clean up before appending query
+        if (baseUrl.endsWith('/')) {
+             baseUrl = baseUrl.substring(0, baseUrl.length - 1);
+        }
+        
+        link = '$baseUrl/?code=$_inviteCode';
       } else {
         // Mobile App: Use a deep link or valid web placeholder
         // Since we don't have a real domain yet, using a standard schema example or custom scheme

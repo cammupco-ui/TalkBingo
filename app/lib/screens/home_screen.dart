@@ -439,7 +439,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                  
                                  // Settings Icon
                                  GestureDetector(
-                                   onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
+                                   onTap: () async {
+                                     await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
+                                     if (mounted) setState(() {}); // Refresh UI (e.g. nickname) on return
+                                   },
                                    child: SvgPicture.asset(
                                      'assets/images/Setting.svg', 
                                      width: 18, height: 18, // Slightly Larger
