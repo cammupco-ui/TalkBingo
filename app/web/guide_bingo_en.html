@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Rules - TalkBingo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #BD0558;
+            --secondary-color: #6B14EC;
+            --text-color: #333;
+            --bg-color: #F8F9FA;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 1.4rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            min-height: 100vh;
+        }
+
+        .section-title {
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--secondary-color);
+            padding-left: 10px;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+            margin-right: 5px;
+        }
+
+        .badge-t {
+            background-color: #6B14EC;
+        }
+
+        /* Truth */
+        .badge-b {
+            background-color: #BD0558;
+        }
+
+        /* Balance */
+        .badge-m {
+            background-color: #FFA000;
+        }
+
+        /* Mini-game */
+
+        ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        li {
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+
+        .highlight {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>TalkBingo Game Rules</h1>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <p>TalkBingo is not just Bingo. The core is to gain <b>"Sympathy (Approve)"</b> from your opponent through
+                conversation.</p>
+        </div>
+
+        <div class="section-title">1. Bingo Cell Types</div>
+
+        <div class="card">
+            <h3><span class="badge badge-t">T Type</span> Truth Game</h3>
+            <ul>
+                <li>Answer the given question <b>honestly</b> (Text/Voice).</li>
+                <li>Opponent must <b>"Approve"</b> your answer to claim the cell.</li>
+                <li><b>Reward:</b> Claim Cell + <span class="highlight">EP +1</span></li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3><span class="badge badge-b">B Type</span> Balance Game</h3>
+            <ul>
+                <li>Choose one of two options and <b>explain your reason</b>.</li>
+                <li>Opponent must accept your reason and <b>"Approve"</b> to claim the cell.</li>
+                <li><b>Reward:</b> Claim Cell + <span class="highlight">EP +1</span></li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3><span class="badge badge-m">M Type</span> Mini Game (Revival)</h3>
+            <ul>
+                <li>If a quiz fails, the cell becomes <b>Locked</b>.</li>
+                <li>Anyone can tap a locked cell to trigger a <b>Mini Game</b>.</li>
+                <li>The winner of the mini game claims the cell immediately!</li>
+            </ul>
+        </div>
+
+        <div class="section-title">2. Winning Conditions</div>
+        <div class="card">
+            <ul>
+                <li>Complete <b>1 Bingo Line</b> first and declare <b>[Finish Game]</b> to win!</li>
+                <li>Select <b>Continue</b> to challenge for higher rewards.</li>
+                <li><b>Draw</b>: If both complete Bingo simultaneously or the board is full without a winner.</li>
+            </ul>
+        </div>
+    </div>
+</body>
+
+</html>

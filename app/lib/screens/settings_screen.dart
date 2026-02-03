@@ -120,6 +120,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
      }
   }
 
+  Future<void> _launchLocalizedUrl(String baseUrl) async {
+    String finalUrl = baseUrl;
+    // Check current language
+    if (_session.language == 'en') {
+       // Insert _en before .html
+       finalUrl = baseUrl.replaceAll('.html', '_en.html');
+    }
+    await _launchUrl(finalUrl);
+  }
+
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -207,7 +217,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icons.help_outline,
                     title: AppLocalizations.get('guide_bingo'),
                     iconColor: const Color(0xFFFFA000), // Amber/Orange
-                    onTap: () => _launchUrl('https://cammupco-ui.github.io/TalkBingo/guide_bingo.html'), 
+                    onTap: () => _launchLocalizedUrl('https://cammupco-ui.github.io/TalkBingo/guide_bingo.html'), 
                   ),
                   const Divider(height: 24, thickness: 0.5),
 
@@ -216,7 +226,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icons.monetization_on_outlined,
                     title: AppLocalizations.get('guide_points'),
                     iconColor: const Color(0xFFFFA000), // Amber/Orange
-                    onTap: () => _launchUrl('https://cammupco-ui.github.io/TalkBingo/guide_points.html'), 
+                    onTap: () => _launchLocalizedUrl('https://cammupco-ui.github.io/TalkBingo/guide_points.html'), 
                   ),
                   const Divider(height: 24, thickness: 0.5),
 
@@ -225,7 +235,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icons.description_outlined,
                     title: AppLocalizations.get('terms_of_service') ?? 'Terms of Service',
                     iconColor: const Color(0xFF68CDFF), // Blue
-                    onTap: () => _launchUrl('https://cammupco-ui.github.io/TalkBingo/terms.html'), 
+                    onTap: () => _launchLocalizedUrl('https://cammupco-ui.github.io/TalkBingo/terms.html'), 
                   ),
                   
                   // Privacy Policy
@@ -233,7 +243,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icons.privacy_tip_outlined,
                     title: AppLocalizations.get('privacy_policy') ?? 'Privacy Policy',
                     iconColor: const Color(0xFF68CDFF), // Blue
-                    onTap: () => _launchUrl('https://cammupco-ui.github.io/TalkBingo/privacy.html'), 
+                    onTap: () => _launchLocalizedUrl('https://cammupco-ui.github.io/TalkBingo/privacy.html'), 
                   ),
                   const Divider(height: 24, thickness: 0.5),
 
