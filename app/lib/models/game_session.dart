@@ -1759,7 +1759,21 @@ class GameSession with ChangeNotifier {
 
   // --- Realtime Hover Broadcast ---
   void broadcastHover(int? index) {}
-  void reportContent(String id, String reason) { debugPrint("Reported: $id, $reason"); }
+  Future<void> reportContent(String qId, String reason, {String? details}) async {
+    try {
+      final user = _supabase.auth.currentUser;
+      await _supabase.from('reports').insert({
+        'q_id': qId,
+        'reporter_id': user?.id, // Can be null if guest, but RLS might require auth. 
+        // If guest reporting is allowed, table should allow public insert or anon.
+        'reason': reason,
+        'details': details,
+      });
+      debugPrint("✅ Report submitted for $qId: $reason");
+    } catch (e) {
+      debugPrint("❌ Error sending report: $e");
+    }
+  }
 
   void _setupRealtimeHover() {
     /*
