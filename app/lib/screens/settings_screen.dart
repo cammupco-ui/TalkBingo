@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Added for SystemNavigator
 import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -152,77 +153,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  void _showSignOutOptions(BuildContext context, bool isGuest) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+  Widget _buildActionButton({required String title, required Color color, required VoidCallback onTap}) {
+    return SizedBox(
+      width: double.infinity,
+      child: AnimatedButton(
+        onPressed: onTap,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        child: Text(
+          title, 
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
+        ),
       ),
-      builder: (context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Handle Bar
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
-              ),
-              
-              if (isGuest) ...[
-                 // Guest Options
-                 ListTile(
-                  leading: const Icon(Icons.exit_to_app, color: Colors.red),
-                  title: Text(AppLocalizations.get('exit_talkbingo') ?? 'Exit TalkBingo', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                  onTap: () {
-                    Navigator.pop(context); // Close sheet
-                    _deleteAccount(); // Reuse delete account logic (clears data)
-                  },
-                ),
-              ] else ...[
-                 // Member Options
-                 ListTile(
-                  leading: const Icon(Icons.logout),
-                  title: Text(AppLocalizations.get('sign_out') ?? 'Sign Out'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _performSignOut();
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.switch_account_outlined),
-                  title: Text(AppLocalizations.get('sign_in_another') ?? 'Sign In Another Account'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _performSignOut(redirectToLogin: true);
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.delete_forever, color: Colors.red),
-                  title: Text(AppLocalizations.get('delete_account') ?? 'Delete Account', style: const TextStyle(color: Colors.red)),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _deleteAccount();
-                  },
-                ),
-              ],
-              
-              const SizedBox(height: 8),
-              // Cancel
-              ListTile(
-                // leading: const Icon(Icons.close),
-                title: Center(child: Text(AppLocalizations.get('cancel') ?? 'Cancel', style: const TextStyle(fontWeight: FontWeight.bold))),
-                onTap: () => Navigator.pop(context),
-              ),
-              const SizedBox(height: 8),
-            ],
-          ),
-        );
-      },
     );
   }
 
@@ -385,63 +331,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 32),
 
             // Sign Up / Sign Out Buttons
+            // Account Actions
             Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // 1. Sign Up (Only for Guests)
-                if (isGuest)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: AnimatedButton(
-                        onPressed: () async {
-                          await MigrationManager().prepareForMigration();
-                          if (context.mounted) {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => SignupScreen()),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.hostPrimary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.login, color: Colors.white),
-                            const SizedBox(width: 8),
-                            Text(
-                              AppLocalizations.get('sign_up_google'),
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                if (!isGuest) ...[
+                  // Log Out
+                  _buildActionButton(
+                    title: AppLocalizations.get('sign_out') ?? 'Log Out',
+                    color: const Color(0xFFBD0558), // Pink
+                    onTap: () => _performSignOut(),
                   ),
+                  const SizedBox(height: 12),
+                  
+                  // Sign In Another Account
+                  _buildActionButton(
+                    title: AppLocalizations.get('sign_in_another') ?? 'Sign In Another Account',
+                    color: const Color(0xFFBD0558), // Pink
+                    onTap: () => _performSignOut(redirectToLogin: true),
+                  ),
+                  const SizedBox(height: 12),
+                ],
 
-                // 2. Sign Out / Manage Account (For Everyone)
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: AnimatedOutlinedButton(
-                    onPressed: () {
-                      _showSignOutOptions(context, isGuest);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.black,
-                      side: const BorderSide(color: Colors.black, width: 1), 
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: Text(
-                      isGuest ? (AppLocalizations.get('reset_exit') ?? 'Exit Guest Mode') : AppLocalizations.get('sign_out'),
-                      style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    ),
-                  ),
+                // Exit TalkBingo
+                _buildActionButton(
+                  title: AppLocalizations.get('exit_talkbingo') ?? 'Exit TalkBingo',
+                  color: const Color(0xFFBD0558), // Pink
+                  onTap: () {
+                     if (isGuest) {
+                       _deleteAccount(); // Clean up guest data
+                     } else {
+                       SystemNavigator.pop(); // Close app for members
+                     }
+                  },
                 ),
+                const SizedBox(height: 12),
+
+                // Delete Account
+                 if (!isGuest)
+                  _buildActionButton(
+                    title: AppLocalizations.get('delete_account') ?? 'Delete Account',
+                    color: const Color(0xFFFF0000), // Red
+                    onTap: () => _deleteAccount(),
+                  ),
               ],
             ),
 
