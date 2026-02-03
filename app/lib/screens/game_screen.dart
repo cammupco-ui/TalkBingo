@@ -277,6 +277,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   void _onSessionUpdate() {
     if (!mounted) return;
+    setState(() {}); // Trigger rebuild to reflect session changes (e.g. Language)
 
     // 1. Check for Game Over (Global Sync)
     // FORCE DEBUG:
