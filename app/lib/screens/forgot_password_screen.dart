@@ -32,8 +32,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() => _isLoading = true);
     
     try {
-      await Supabase.instance.client.auth.resetPasswordForEmail(
-        email,
       // Determine Redirect URL (Same logic as SignupScreen)
       String? redirectUrl;
       if (kIsWeb) {
