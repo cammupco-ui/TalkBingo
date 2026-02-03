@@ -443,7 +443,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSettingsTile({
-    required IconData icon, 
+    IconData? icon, // Made nullable
     required String title, 
     required VoidCallback onTap, 
     Widget? trailing,

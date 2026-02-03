@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:talkbingo_app/utils/ad_state.dart';
 import 'package:talkbingo_app/screens/host_setup_screen.dart'; // Ensure this is present
 import 'package:talkbingo_app/models/game_session.dart';
+import 'package:talkbingo_app/screens/host_info_screen.dart'; // Added import
 import 'package:talkbingo_app/screens/game_screen.dart';
 import 'package:talkbingo_app/screens/settings_screen.dart';
 import 'package:talkbingo_app/widgets/game_history_item.dart';
