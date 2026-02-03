@@ -245,7 +245,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             );
           },
           child: SvgPicture.asset(
-            'assets/images/Logo Vector.svg',
+            'assets/images/logo_vector.svg',
             height: 30,
           ),
         ),
@@ -301,7 +301,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
             
             const SizedBox(height: 32),
 
-             // ... (Support & Info Section - Keep unchanged) ...
+             // 3. Customer Support & Info
+             _buildSectionHeader(AppLocalizations.get('customer_support'), const Color(0xFFBD0558)),
+             const SizedBox(height: 12),
+
+             // Game Info Card
+             _buildCard(
+               child: Column(
+                 children: [
+                   _buildSettingsTile(
+                     icon: Icons.help_outline,
+                     title: AppLocalizations.get('bingo_guide'),
+                     onTap: () => _launchLocalizedUrl('https://talkbingo.app/guide_bingo.html'),
+                   ),
+                   const Divider(height: 1),
+                   _buildSettingsTile(
+                     icon: Icons.stars_outlined,
+                     title: AppLocalizations.get('points_guide'),
+                     onTap: () => _launchLocalizedUrl('https://talkbingo.app/guide_points.html'),
+                   ),
+                 ],
+               ),
+             ),
+             const SizedBox(height: 24),
+
+             // App Info Card
+             _buildCard(
+               child: Column(
+                 children: [
+                   _buildSettingsTile(
+                     icon: Icons.description_outlined,
+                     title: AppLocalizations.get('terms'),
+                     onTap: () => _launchLocalizedUrl('https://talkbingo.app/terms.html'),
+                   ),
+                    const Divider(height: 1),
+                   _buildSettingsTile(
+                     icon: Icons.privacy_tip_outlined,
+                     title: AppLocalizations.get('privacy'),
+                     onTap: () => _launchLocalizedUrl('https://talkbingo.app/privacy.html'),
+                   ),
+                    const Divider(height: 1),
+                   ListTile( 
+                     leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.black54.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.info_outline, color: Colors.black54, size: 20),
+                     ),
+                     contentPadding: EdgeInsets.zero,
+                     dense: true,
+                     minLeadingWidth: 0,
+                     title: Text(AppLocalizations.get('version'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                     trailing: Text(_appVersion, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                   ),
+                 ],
+               ),
+             ),
+             const SizedBox(height: 24),
 
              // Action Card (Contact & Delete)
              _buildCard(
