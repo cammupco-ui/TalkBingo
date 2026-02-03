@@ -868,26 +868,26 @@ class GameSession with ChangeNotifier {
       
       if (user == null) return false;
 
-      final check = await _supabase.from('game_sessions').select().eq('invite_code', code);
-      if (check.isEmpty) throw 'Invalid Invite Code';
-
-      final response = await _supabase.from('game_sessions')
-          .update({'cp_id': user.id}) 
-          .eq('invite_code', code)
-          .select();
-
-      if (response.isEmpty) throw 'Join Failed';
-
-      final data = response.first;
-      _sessionId = data['id'];
-      inviteCode = code;
-      guestId = user.id;
-      myRole = 'B'; // Guest
-        
-      _loadFromMap(data);
-      _subscribeToGame();
-      debugPrint('Joined Game! Session: $_sessionId');
-      return true;
+      // Use RPC to bypass RLS
+      final res = await _supabase.rpc('join_game_by_code', params: {
+        'code_input': code,
+        'guest_id': user.id
+      });
+      
+      if (res['success'] == true) {
+         final data = res['data'];
+         _sessionId = data['id'];
+         inviteCode = code;
+         guestId = user.id;
+         myRole = 'B'; // Guest
+         
+         _loadFromMap(data);
+         _subscribeToGame();
+         debugPrint('Joined Game via RPC! Session: $_sessionId');
+         return true;
+      } else {
+         throw res['error'] ?? 'Join Failed';
+      }
     } catch (e) {
       debugPrint('Error joining game: $e');
       throw e;

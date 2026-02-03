@@ -90,6 +90,9 @@ class _SplashScreenState extends State<SplashScreen> {
         // Web Logic (Existing)
         final uri = Uri.base;
         _initialInviteCode = uri.queryParameters['code']?.trim();
+        if (_initialInviteCode != null && _initialInviteCode!.isNotEmpty) {
+           GameSession().pendingInviteCode = _initialInviteCode; // Set immediately
+        }
         _addLog("Captured Web URL Code: $_initialInviteCode");
       } else {
         // Mobile Logic (AppLinks)
@@ -99,17 +102,19 @@ class _SplashScreenState extends State<SplashScreen> {
         final initialUri = await appLinks.getInitialLink();
         if (initialUri != null) {
           _initialInviteCode = initialUri.queryParameters['code']?.trim();
+          if (_initialInviteCode != null) {
+             GameSession().pendingInviteCode = _initialInviteCode; // Set immediately
+          }
           _addLog("Captured Mobile Initial Code: $_initialInviteCode");
         }
 
         // 2. Listen for Stream (Foreground/Background)
-        // Note: For simplicity in Splash, we mainly care about initial, 
-        // but if it comes late, we handle it if still mounted.
         appLinks.uriLinkStream.listen((uri) {
            if (!mounted) return;
            final code = uri.queryParameters['code']?.trim();
            if (code != null) {
-              _initialInviteCode = code; // Update for Auth Listener to pick up
+              _initialInviteCode = code; 
+              GameSession().pendingInviteCode = code; // Set immediately
               _addLog("Captured Mobile Stream Code: $code");
               // Retrigger Auth check if we were stuck waiting
               _checkExistingSession(); 
