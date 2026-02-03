@@ -105,6 +105,17 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
         '/': (context) => const SplashScreen(),
         '/home': (context) => const HomeScreen(),
       },
+      // Handle Deep Links (e.g. /invite/123456)
+      // Since we use the SPA hack, the browser URL might be /invite/123456
+      // We want to force SplashScreen to handle this, as it parses Uri.base.
+      onGenerateRoute: (settings) {
+        // If route is not found (like /invite/...), go to SplashScreen
+        // SplashScreen checks Uri.base, which still contains the full path/query
+        return MaterialPageRoute(
+          builder: (context) => const SplashScreen(),
+          settings: settings,
+        );
+      },
       // home: const SplashScreen(), // Removed in favor of initialRoute
       builder: (context, child) {
         return ValueListenableBuilder<bool>(
