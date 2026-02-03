@@ -171,11 +171,12 @@ class GameSession with ChangeNotifier {
 
   Future<void> fetchQuestionsFromSupabase() async {
     // Determine genders for CodeName if not set from Profile
+    // Note: We map 'Female' to 'F', 'Male' to 'M'.
     String hGender = (hostGender == 'Female') ? 'F' : 'M'; 
     String gGender = (guestGender == 'Female') ? 'F' : 'M';
     
     if (codeName == null) {
-      // Standard Logic
+      // Standard Logic for Base Code
       String relCode = 'B'; 
       if (relationMain == 'Family') relCode = 'Fa';
       if (relationMain == 'Lover') relCode = 'Lo';
@@ -188,19 +189,15 @@ class GameSession with ChangeNotifier {
         else if (relationSub!.contains('동네친구')) subRel = 'Dc';
         else if (relationSub!.contains('형제')) subRel = 'Br';
         else if (relationSub!.contains('자매')) subRel = 'Si';
-        else if (relationSub!.contains('남매')) subRel = 'Sb'; // Need gender check contextually if specific, but 'Sb' is general
+        else if (relationSub!.contains('남매')) subRel = 'Sb';
         else if (relationSub!.contains('사촌')) subRel = 'Co';
         else if (relationSub!.contains('조부모')) subRel = 'Gp';
-        else if (relationSub!.contains('부모')) subRel = 'Fs'; // Default to Fs, or logic based on gender? 
-        // Note: Parent-Child is complex (Fs, Md, Ms, Fd). 
-        // For MVP, if we just map to 'Fs' (Father-Son) it might fail others if data strict.
-        // Or we use '*' for parent-child if not specific.
-        // Let's check relationMain for context.
+        else if (relationSub!.contains('부모')) subRel = 'Fs';
         else if (relationSub!.contains('애인')) subRel = 'Sw';
         else if (relationSub!.contains('부부')) subRel = 'Hw';
       }
       
-      // Refine Parent-Child Logic if needed, but for now simple mapping:
+      // Parent-Child Logic Handling
       if (relationMain == 'Family' && subRel == 'Fs') {
          if (hGender == 'F' && gGender == 'F') subRel = 'Md'; // Mother-Daughter
          else if (hGender == 'F' && gGender == 'M') subRel = 'Ms'; // Mother-Son
@@ -208,52 +205,91 @@ class GameSession with ChangeNotifier {
          else subRel = 'Fs'; // Father-Son (M-M)
       }
 
-      // 1. Local CodeName for Reference (though we use Wildcards for query)
+      // Base CodeName (used for logging/reference)
       codeName = '$hGender-$gGender-$relCode-$subRel-L$intimacyLevel';
-      debugPrint('*** [Local CodeName Gen] Generated: $codeName ***');
+      debugPrint('*** [Local CodeName Gen] Generated Base: $codeName ***');
     }
 
-    // --- NEW WILDCARD FETCHING STRATEGY ---
-    // We fetch questions based on Relation & Intimacy, IGNORING gender in the query.
-    // Gender nuances are handled by client-side dynamic variants (gender_variants).
+    // --- INTERSECTION MATCHING LOGIC ---
+    // Problem: M-F game should not show M-only questions when F is answering, or F-only when M.
+    // Solution: Fetch intersection. Valid questions must satisfy BOTH constraints.
+    // MP (Respondent) Constraint: Must be hGender OR '*'
+    // CP (Partner) Constraint: Must be gGender OR '*'
     
-    final parts = codeName!.split('-');
+    final parts = codeName!.split('-'); // [0]M-[1]F-[2]B-[3]Sub-[4]Lvl
+    final rel = parts[2];
+    final sub = parts[3];
+    final lvl = parts[4];
+
+    List<String> validMPs = [hGender, '*'];
+    List<String> validCPs = [gGender, '*'];
+    
     List<String> candidateCodes = [];
     
-    if (parts.length == 5) {
-       // Format: [0]M-[1]F-[2]B-[3]Sub-[4]Lvl
-       // Query Pattern: *-*-[Rel]-[SubRel]-[Intimacy]
-       
-       // 1. Exact Relation Match (Gender Wildcard)
-       candidateCodes.add('*-*-${parts[2]}-${parts[3]}-${parts[4]}');
-       
-       // 2. Broad Relation Match (Gender & SubRel Wildcard)
-       candidateCodes.add('*-*-${parts[2]}-*-${parts[4]}');
-       
-       // 3. Safe Net (All Wildcard)
-       candidateCodes.add('*-*-*-*-*');
+    // Generate Permutations
+    for (var mp in validMPs) {
+        for (var cp in validCPs) {
+            // Pattern 1: Exact SubRel
+            candidateCodes.add('$mp-$cp-$rel-$sub-$lvl');
+            // Pattern 2: Wildcard SubRel (Broad)
+            candidateCodes.add('$mp-$cp-$rel-*-$lvl');
+        }
     }
+    
+    // Safe Net (Total Wildcard) - if strictly needed
+    candidateCodes.add('*-*-*-*-*');
 
-    debugPrint('Fetching questions for candidates: $candidateCodes');
+    // Deduplicate
+    candidateCodes = candidateCodes.toSet().toList();
+
+    // Priority Definitions for Sorting
+    // Primary: The specific context codes generated above
+    final Set<String> primarySet = Set.from(candidateCodes);
+    
+    // Fallback: Add broad safety nets if not already present
+    // We add them to candidateCodes for the QUERY, but we know they are low priority
+    final safeNet = '*-*-*-*-*';
+    if (!candidateCodes.contains(safeNet)) {
+        candidateCodes.add(safeNet);
+    }
+    
+    // Broad Relationship Fallback (e.g. just Relationship match, ignore sub/intimacy if desperate)
+    // candidateCodes.add('*-*-${parts[2]}-*-*'); // Optional
+
+    debugPrint('Fetching questions for Intersection Candidates (Priority+Fallback): $candidateCodes');
 
     try {
       final response = await _supabase
           .from('questions')
           .select()
           .overlaps('code_names', candidateCodes) // ANY match
-          .limit(100); 
+          .limit(120); 
           
-      // ... processing ... 
+      List<dynamic> loadedQuestions = response;
 
-      final List<dynamic> loadedQuestions = response;
+      // --- PRIORITY SORTING ---
+      // Sort questions so that those matching 'Primary Set' come first.
+      // Those only matching 'Safe Net' come last.
+      loadedQuestions.sort((a, b) {
+          final List<dynamic> tagsA = a['code_names'] ?? [];
+          final List<dynamic> tagsB = b['code_names'] ?? [];
+          
+          bool aIsPrimary = tagsA.any((tag) => primarySet.contains(tag));
+          bool bIsPrimary = tagsB.any((tag) => primarySet.contains(tag));
+          
+          if (aIsPrimary && !bIsPrimary) return -1; // A comes first
+          if (!aIsPrimary && bIsPrimary) return 1;  // B comes first
+          return 0;
+      });
 
+      // After sorting, we proceed. The subsequent selection logic (first 50) 
+      // will naturally pick the top-ranked (Primary) questions first.
+      
       // Ensure we have enough questions for a 5x5 Grid (25)
       if (loadedQuestions.length >= 25) {
           await _parseAndSetQuestions(loadedQuestions);
       } else {
-        // Not enough questions found even with all fallback candidates.
-        debugPrint('⚠️ Only ${loadedQuestions.length} questions found for $candidateCodes. Using Fallback Mock.');
-         
+        debugPrint('⚠️ Only ${loadedQuestions.length} questions found. Using Fallback Mock.');
         _generateFallbackQuestions();
         gameStatus = 'playing'; 
         await _syncGameState(); 
@@ -261,7 +297,7 @@ class GameSession with ChangeNotifier {
     } catch (e) {
       debugPrint('Error fetching questions from Supabase: $e');
       _generateFallbackQuestions();
-      gameStatus = 'playing'; // Ensure status update on error
+      gameStatus = 'playing';
       await _syncGameState();
     }
   }
@@ -269,58 +305,42 @@ class GameSession with ChangeNotifier {
   Future<void> _processQuestionsWithRatioAndUniqueness(List<dynamic> rawQuestions) async {
     final prefs = await SharedPreferences.getInstance();
     
-    // Load History Map: {"q_id": "2024-01-01T12:00:00"}
+    // History Loading Logic...
     Map<String, String> playedDates = {};
     if (prefs.containsKey('played_questions_dates')) {
        try {
          playedDates = Map<String, String>.from(jsonDecode(prefs.getString('played_questions_dates')!));
-       } catch (e) {
-         debugPrint('Error parsing played dates: $e');
-         // Fallback to legacy list if map fails
-         List<String> legacyList = prefs.getStringList('played_questions') ?? [];
-         for (var id in legacyList) {
-            // Treat legacy items as "old" (or recent? Let's say recent to be safe, set to now)
-            // Or better, just ignore legacy if format changes. 
-            // Let's migrate legacy to "today" to prevent immediate repeat.
-            playedDates[id] = DateTime.now().toIso8601String();
-         }
-       }
-    } else {
-       // Legacy Fallback
-       List<String> legacyList = prefs.getStringList('played_questions') ?? [];
-       for (var id in legacyList) {
-          playedDates[id] = DateTime.now().subtract(const Duration(days: 1)).toIso8601String(); // just placeholder
-       }
+       } catch (e) { /* ignore */ }
     }
 
     final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
 
-    // 1. Filter Uniqueness (Exclude if played within 30 days)
+    // 1. Filter Uniqueness
     List<dynamic> pool = rawQuestions.where((q) {
       final qId = q['id'].toString();
-      if (!playedDates.containsKey(qId)) return true; // Never played
-
+      if (!playedDates.containsKey(qId)) return true;
       final lastPlayedStr = playedDates[qId];
       if (lastPlayedStr == null) return true;
-
       final lastPlayed = DateTime.tryParse(lastPlayedStr);
-      if (lastPlayed == null) return true; // Parse error, treat as play-able
-
-      // If played BEFORE 30 days ago, it is re-usable (return true).
-      // If played AFTER 30 days ago (recent), it is filtered (return false).
+      if (lastPlayed == null) return true;
       return lastPlayed.isBefore(thirtyDaysAgo);
     }).toList();
 
-    if (pool.length < 25) {
-      debugPrint('⚠️ Not enough fresh questions (${pool.length}). dipping into recent history.');
-      // Fallback Strategy: If not enough, include the "oldest" matching items from recent history?
-      // Or just simply use the rawQuestions but prioritize unplayed.
-      // Simple logic: Use rawQuestions, but shuffle to mix.
-      pool = List.from(rawQuestions);
-      // Optional: Sort by usage date? For now, random fallback.
+    // 2. Fallback if not enough for 50 items
+    // We aim for 50 (25 Main + 25 Reserve). 
+    // If < 25, that's critical (handled by caller fallback).
+    // If 25 <= N < 50, we reuse existing or duplicate to fill reserve.
+    if (pool.length < 50) {
+      debugPrint('⚠️ Pool size (${pool.length}) < 50. Some reserves might be duplicated/reused.');
+      // Add from history if needed? Or just duplicate from raw?
+      // Simple strategy: Dupe the pool to ensure we have enough to fill slots.
+      // (Ideally we iterate Supabase with offset, but for MVP local duping is safe)
+      while (pool.length < 50) {
+          pool.addAll(List.from(pool)); 
+      }
     }
     
-    // 2. Parse & Segregate
+    // 3. Parse & Segregate (Maintain Order for Priority)
     List<Map<String, dynamic>> balanceList = [];
     List<Map<String, dynamic>> truthList = [];
 
@@ -333,52 +353,66 @@ class GameSession with ChangeNotifier {
       }
     }
 
-    // 3. Select 50:50 (Target 13 Truth, 12 Balance for 25 total)
-    // Randomize source lists first
-    balanceList.shuffle();
-    truthList.shuffle();
-
-    List<Map<String, dynamic>> selected = [];
-    int targetTruth = 13;
-    int targetBalance = 12;
-
-    // Fill Truth
-    for (int i = 0; i < targetTruth; i++) {
-        if (truthList.isNotEmpty) {
-           selected.add(truthList.removeLast());
-        } else if (balanceList.isNotEmpty) {
-           selected.add(balanceList.removeLast()); // Fallback
+    // 4. Select 50 (25 Main + 25 Reserve)
+    List<Map<String, dynamic>> mainSelected = [];
+    List<Map<String, dynamic>> reserveSelected = [];
+    
+    // Helper to extract Top N items (Preserving High Priority)
+    void fillList(List<Map<String, dynamic>> targetList) {
+        int tCount = 13;
+        int bCount = 12;
+        
+        // Do NOT shuffle source lists yet. They are sorted by priority.
+        // We pick the top available items.
+        
+        for (int i=0; i<tCount; i++) {
+            if (truthList.isNotEmpty) targetList.add(truthList.removeAt(0)); // Take Top
+            else if (balanceList.isNotEmpty) targetList.add(balanceList.removeAt(0)); 
         }
-    }
-    // Fill Balance
-    for (int i = 0; i < targetBalance; i++) {
-        if (balanceList.isNotEmpty) {
-           selected.add(balanceList.removeLast());
-        } else if (truthList.isNotEmpty) {
-           selected.add(truthList.removeLast()); // Fallback
+        for (int i=0; i<bCount; i++) {
+            if (balanceList.isNotEmpty) targetList.add(balanceList.removeAt(0)); // Take Top
+            else if (truthList.isNotEmpty) targetList.add(truthList.removeAt(0));
         }
-    }
-
-    // 4. Shuffle & Set
-    selected.shuffle();
-
-    questions = selected.map((s) => s['content'] as String).toList();
-    options = selected.map((s) => s['options'] as Map<String, dynamic>).toList();
-
-    // 5. Update Played Dates
-    final nowStr = DateTime.now().toIso8601String();
-    for (var s in selected) {
-       playedDates[s['id'].toString()] = nowStr;
+        
+        // Shuffle the RESULT list so the board layout is random, 
+        // but the CONTENTS are the high-priority ones we just picked.
+        targetList.shuffle();
     }
     
-    // Clean up very old entries? (Optional optimization)
-    // playedDates.removeWhere((k, v) => DateTime.parse(v).isBefore(olderThan60Days));
+    fillList(mainSelected); // First 25 (Best Quality)
+    fillList(reserveSelected); // Next 25 (Next Best)
     
+    // 5. Assign to Game Session
+
+    // Structure: 25 items in `questions` list (Main Content).
+    // `options` list will store Main Details + Reserve Details.
+    
+    questions = [];
+    options = [];
+    
+    for (int i=0; i<25; i++) {
+        var main = (i < mainSelected.length) ? mainSelected[i] : mainSelected[0]; // Safety
+        var reserve = (i < reserveSelected.length) ? reserveSelected[i] : main; // Safety fallback
+        
+        questions.add(main['content'] as String);
+        
+        var opt = main['options'] as Map<String, dynamic>;
+        // Inject Reserve
+        opt['reserve'] = {
+            'content': reserve['content'],
+            'options': reserve['options']
+        };
+        options.add(opt);
+        
+        // Update Played Date (for Main only? or both? Let's mark both as 'exposed')
+        final nowStr = DateTime.now().toIso8601String();
+        playedDates[main['id'].toString()] = nowStr;
+        playedDates[reserve['id'].toString()] = nowStr;
+    }
+
     await prefs.setString('played_questions_dates', jsonEncode(playedDates));
-    // Legacy support (optional, maybe clear it to save space)
-    // await prefs.setStringList('played_questions', playedDates.keys.toList());
 
-    debugPrint('✅ Balanced Selection: ${questions.length} questions. (History Size: ${playedDates.length})');
+    debugPrint('✅ Balanced Selection: 25 Main + 25 Reserve allocated.');
 
     gameStatus = 'playing';
     await _syncGameState();
