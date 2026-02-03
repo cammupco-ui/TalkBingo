@@ -32,6 +32,10 @@ jobs:
           channel: 'stable'
           flutter-version: '3.27.1'
 
+      - name: Create Dummy .env
+        working-directory: ./app
+        run: touch .env
+
       - name: Install dependencies
         working-directory: ./app
         run: flutter pub get
