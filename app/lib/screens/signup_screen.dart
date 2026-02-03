@@ -154,9 +154,10 @@ class _SignupScreenState extends State<SignupScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+            children: [
               // Logo
               Center(
-                child: SvgPicture.asset('assets/images/Logo Vector.svg', width: 72, height: 72),
+                child: SvgPicture.asset('assets/images/logo_vector.svg', width: 80, height: 80),
               ),
               const SizedBox(height: 20),
               Text(
@@ -168,13 +169,7 @@ class _SignupScreenState extends State<SignupScreen> {
               ),
               const SizedBox(height: 40),
 
-              // Sign Up Title
-              Text(
-                AppLocalizations.get('sign_up_email') ?? 'Sign Up',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 30),
+              // Sign Up Title Removed
 
               // Email Field
               _buildTextField(

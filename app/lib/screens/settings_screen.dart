@@ -131,6 +131,100 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await _launchUrl(finalUrl);
   }
 
+  Future<void> _performSignOut({bool redirectToLogin = false}) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    await Supabase.instance.client.auth.signOut();
+    
+    if (mounted) {
+       if (redirectToLogin) {
+         Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
+         );
+       } else {
+         Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const SignOutLandingScreen()),
+          (route) => false,
+         );
+       }
+    }
+  }
+
+  void _showSignOutOptions(BuildContext context, bool isGuest) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle Bar
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+              ),
+              
+              if (isGuest) ...[
+                 // Guest Options
+                 ListTile(
+                  leading: const Icon(Icons.exit_to_app, color: Colors.red),
+                  title: Text(AppLocalizations.get('exit_talkbingo') ?? 'Exit TalkBingo', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  onTap: () {
+                    Navigator.pop(context); // Close sheet
+                    _deleteAccount(); // Reuse delete account logic (clears data)
+                  },
+                ),
+              ] else ...[
+                 // Member Options
+                 ListTile(
+                  leading: const Icon(Icons.logout),
+                  title: Text(AppLocalizations.get('sign_out') ?? 'Sign Out'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _performSignOut();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.switch_account_outlined),
+                  title: Text(AppLocalizations.get('sign_in_another') ?? 'Sign In Another Account'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _performSignOut(redirectToLogin: true);
+                  },
+                ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.delete_forever, color: Colors.red),
+                  title: Text(AppLocalizations.get('delete_account') ?? 'Delete Account', style: const TextStyle(color: Colors.red)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _deleteAccount();
+                  },
+                ),
+              ],
+              
+              const SizedBox(height: 8),
+              // Cancel
+              ListTile(
+                // leading: const Icon(Icons.close),
+                title: Center(child: Text(AppLocalizations.get('cancel') ?? 'Cancel', style: const TextStyle(fontWeight: FontWeight.bold))),
+                onTap: () => Navigator.pop(context),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -185,12 +279,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 16),
             
-            // Profile Card (Visible to all, allowing Guests to edit nickname)
+            // Profile Card (Visible to all)
             _buildCard(
               child: _buildSettingsTile(
-                icon: Icons.person_outline,
-                title: AppLocalizations.get('profile_settings'),
-                iconColor: const Color(0xFF6B14EC), // Purple
+                icon: null, // No leading icon
+                title: Supabase.instance.client.auth.currentSession?.user.email ?? 'Guest',
+                textColor: Colors.black87,
+                backgroundColor: const Color(0xFFFFF9FB), // Custom BG
+                trailing: const Icon(Icons.edit_outlined, color: Colors.grey),
                 onTap: () {
                     Navigator.push(
                       context, 
@@ -222,17 +318,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       },
                     ),
                     
-                    // Delete Account (Members only)
-                    if (!isGuest) ...[
-                      const Divider(height: 24, thickness: 0.5),
-                       _buildSettingsTile(
-                        icon: Icons.delete_forever,
-                        title: AppLocalizations.get('delete_account') ?? 'Delete Account',
-                        textColor: Colors.red,
-                        iconColor: Colors.red,
-                        onTap: _deleteAccount,
-                      ),
-                    ]
+                    // Delete Account REMOVED from list (Moved to Sign Out Action Sheet)
                  ],
                )
              ),
@@ -278,23 +364,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
 
-                // 2. Sign Out (For Everyone - Guests need to be able to reset too)
+                // 2. Sign Out / Manage Account (For Everyone)
                 SizedBox(
                   width: double.infinity,
                   height: 48,
                   child: AnimatedOutlinedButton(
-                    onPressed: () async {
-                      // Explicit Sign Out Logic
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.clear();
-                      await Supabase.instance.client.auth.signOut();
-                      
-                      if (context.mounted) {
-                         Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (_) => const SignOutLandingScreen()),
-                          (route) => false,
-                         );
-                      }
+                    onPressed: () {
+                      _showSignOutOptions(context, isGuest);
                     },
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.black,

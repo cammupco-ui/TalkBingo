@@ -108,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
                Center(
-                child: SvgPicture.asset('assets/images/Logo Vector.svg', width: 72, height: 72),
+                child: SvgPicture.asset('assets/images/logo_vector.svg', width: 80, height: 80),
               ),
               const SizedBox(height: 20),
               Text(
@@ -120,13 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 60),
 
-              // Title
-              Text(
-                AppLocalizations.get('log_in') ?? 'Log In',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 30),
+              // Title Removed
 
               // Email Field
               _buildTextField(

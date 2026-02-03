@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/screens/splash_screen.dart';
 import 'package:talkbingo_app/utils/dev_config.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class SignOutLandingScreen extends StatelessWidget {
   const SignOutLandingScreen({super.key});
@@ -20,8 +21,8 @@ class SignOutLandingScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Icon or Logo
-              Icon(Icons.waving_hand_rounded, size: 64, color: AppColors.hostPrimary.withOpacity(0.8)),
+              // Logo
+              SvgPicture.asset('assets/images/logo_vector.svg', width: 80, height: 80),
               const SizedBox(height: 24),
               
               // Title

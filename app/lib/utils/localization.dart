@@ -144,6 +144,9 @@ class AppLocalizations {
       'cat_payment': 'Payment/Points',
       'cat_account': 'Account/Login',
       'cat_etc': 'Etc',
+      'manage_account': 'Manage Account',
+      'sign_in_another': 'Sign In Another Account',
+      'exit_talkbingo': 'Exit TalkBingo (Delete Data)',
       'reset_exit': 'Exit Guest Mode',
     },
     'ko': {
@@ -286,6 +289,9 @@ class AppLocalizations {
       'cat_payment': '결제/포인트',
       'cat_account': '계정/로그인',
       'cat_etc': '기타',
+      'manage_account': '계정 관리',
+      'sign_in_another': '다른 계정으로 로그인',
+      'exit_talkbingo': 'TalkBingo 나가기 (데이터 삭제)',
       'reset_exit': '게스트 모드 종료',
     },
   };
