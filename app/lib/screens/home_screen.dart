@@ -147,6 +147,20 @@ class _HomeScreenState extends State<HomeScreen> {
                    width: designWidth,
                    height: designHeight,
                    onTap: () {
+                     // Helper to check profile
+                     void startNewGame() {
+                       final session = GameSession();
+                       if (session.hostNickname == null || session.hostNickname!.isEmpty) {
+                          // Redirect to Profile Setup first
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const HostInfoScreen(isGameSetupFlow: true))
+                          );
+                       } else {
+                          // Proceed to Game Setup
+                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HostSetupScreen()));
+                       }
+                     }
+
                      if (GameSession().isGameActive) {
                         showDialog(
                           context: context,
@@ -164,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onPressed: () {
                                   GameSession().reset();
                                   Navigator.pop(context);
-                                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HostSetupScreen()));
+                                  startNewGame(); // Use helper
                                 },
                                 child: Text(AppLocalizations.get('start_new'), style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(color: Colors.red))),
                               ),
@@ -172,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         );
                      } else {
-                       Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HostSetupScreen()));
+                       startNewGame(); // Use helper
                      }
                    },
                 ),
