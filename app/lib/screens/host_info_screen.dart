@@ -3,21 +3,15 @@ import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:talkbingo_app/utils/ad_state.dart';
 import 'package:talkbingo_app/screens/game_setup_screen.dart';
 import 'package:talkbingo_app/screens/home_screen.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/models/game_session.dart';
-import 'package:talkbingo_app/screens/game_screen.dart';
 import 'package:talkbingo_app/screens/host_setup_screen.dart';
-import 'package:talkbingo_app/screens/signup_screen.dart'; // Added for auto-logout redirect
 import 'package:talkbingo_app/styles/app_spacing.dart';
 
-
-import 'package:talkbingo_app/utils/dev_config.dart';
-
 class HostInfoScreen extends StatefulWidget {
-  final bool isGameSetupFlow; // New Flag
+  final bool isGameSetupFlow;
 
   const HostInfoScreen({super.key, this.isGameSetupFlow = false});
 
@@ -28,11 +22,11 @@ class HostInfoScreen extends StatefulWidget {
 class _HostInfoScreenState extends State<HostInfoScreen> {
   final _nicknameController = TextEditingController();
   
-  // ... (keep existing state)
+  String? _selectedGender;
+  bool get _isFormValid => _nicknameController.text.trim().isNotEmpty && _selectedGender != null;
 
   Future<void> _onNextPressed() async {
     if (_isFormValid) {
-       // ... (Keep existing saving logic lines 46-77)
        final session = GameSession();
        session.hostNickname = _nicknameController.text;
        session.hostGender = _selectedGender;
@@ -59,19 +53,16 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
         }
       } catch (e) {
          debugPrint('Error saving profile: $e');
-         // ... (Keep error handling)
       }
 
-      await session.saveHostInfoToPrefs(); // Persist locally
+      await session.saveHostInfoToPrefs();
 
       if (mounted) {
         if (widget.isGameSetupFlow) {
-           // Flow: Home -> HostInfo -> HostSetup
            Navigator.of(context).pushReplacement(
              MaterialPageRoute(builder: (_) => const HostSetupScreen()),
            );
         } else {
-           // Flow: Settings -> HostInfo -> Home (or Back)
            Navigator.of(context).pushAndRemoveUntil(
              MaterialPageRoute(builder: (_) => const HomeScreen()),
              (route) => false,
@@ -81,28 +72,21 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
     }
   }
 
-  // ... (Keep build method)
-
-  // Update AppBar Back Button logic if needed
-  // ...
-  // In `build`:
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        automaticallyImplyLeading: false, // Or true if we want back button
+        automaticallyImplyLeading: false, 
         title: GestureDetector(
           onTap: () {
-            // Logic for Logo Tap
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const HomeScreen()),
               (route) => false,
             );
           },
           child: SvgPicture.asset(
-            'assets/images/Logo Vector.svg',
-            height: 36,
-          ),
-        ),
-          child: SvgPicture.asset(
-            'assets/images/Logo Vector.svg',
+            'assets/images/logo_vector.svg',
             height: 36,
           ),
         ),
@@ -113,13 +97,11 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Logo (Re-added to body for visibility)
             Center(
-              child: SvgPicture.asset('assets/images/Logo Vector.svg', width: 60, height: 60),
+              child: SvgPicture.asset('assets/images/logo_vector.svg', width: 60, height: 60),
             ),
             const SizedBox(height: 20),
 
@@ -129,7 +111,7 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
                 fontFamily: 'NURA',
-                color: AppColors.hostPrimary, // Was 0xFFBD0558
+                color: AppColors.hostPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -151,7 +133,6 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
                     : null,
                 contentPadding: AppSpacing.inputContentPadding,
                 isDense: false,
-
                 border: const OutlineInputBorder(),
                 enabledBorder: const OutlineInputBorder(
                   borderSide: BorderSide(color: AppColors.hostPrimary),
@@ -164,7 +145,6 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
             ),
             const SizedBox(height: AppSpacing.spacingSm),
 
-
             // Gender
             _buildLabel('Gender'),
             Row(
@@ -176,8 +156,7 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
             ),
             const SizedBox(height: AppSpacing.spacingLg),
 
-
-            // Validation Message if Invalid
+            // Validation Message
             if (!_isFormValid)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
@@ -222,7 +201,6 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
   Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.spacingXs),
-
       child: Text(
         text,
         style: const TextStyle(
@@ -241,7 +219,6 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
       borderRadius: BorderRadius.circular(8),
       child: Container(
         height: AppSpacing.inputHeight,
-
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFBD0558) : Colors.white,
           border: Border.all(

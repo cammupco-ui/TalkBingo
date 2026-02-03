@@ -154,7 +154,6 @@ class _SignupScreenState extends State<SignupScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-            children: [
               // Logo
               Center(
                 child: SvgPicture.asset('assets/images/logo_vector.svg', width: 80, height: 80),

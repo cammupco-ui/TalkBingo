@@ -20,6 +20,7 @@ import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/styles/app_spacing.dart';
 import 'package:talkbingo_app/utils/localization.dart';
 import 'package:talkbingo_app/screens/signup_screen.dart';
+import 'package:talkbingo_app/screens/login_screen.dart'; // Added import
 import 'package:talkbingo_app/screens/profile_edit_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -448,16 +449,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Widget? trailing,
     Color? textColor,
     Color? iconColor,
+    Color? backgroundColor,
   }) {
     return ListTile(
-      leading: Container(
+      leading: icon != null ? Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: (iconColor ?? Colors.black54).withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, color: iconColor ?? Colors.black54, size: 20),
-      ),
+      ) : null,
+      tileColor: backgroundColor, // Use background color
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       title: Text(title, style: TextStyle(color: textColor ?? Colors.black87, fontWeight: FontWeight.w600, fontSize: 14)),
       trailing: trailing ?? const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
       onTap: onTap,
