@@ -11,6 +11,7 @@ import 'package:talkbingo_app/styles/app_colors.dart';
 
 import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/utils/migration_manager.dart';
+import 'package:app_links/app_links.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -70,13 +71,7 @@ class _SplashScreenState extends State<SplashScreen> {
     _addLog("InitState Started");
     
     // 1. Capture URL state IMMEDIATELY
-    try {
-      final uri = Uri.base;
-      _initialInviteCode = uri.queryParameters['code']?.trim();
-      _addLog("Captured URL Code: $_initialInviteCode");
-    } catch (e) {
-      _addLog("Error capturing URL: $e");
-    }
+    _initDeepLinks();
 
     // Select random index once
     _randomIndex = DateTime.now().millisecondsSinceEpoch % _koreanTexts.length;
@@ -87,6 +82,43 @@ class _SplashScreenState extends State<SplashScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
        _checkExistingSession();
     });
+  }
+
+  Future<void> _initDeepLinks() async {
+    try {
+      if (kIsWeb) {
+        // Web Logic (Existing)
+        final uri = Uri.base;
+        _initialInviteCode = uri.queryParameters['code']?.trim();
+        _addLog("Captured Web URL Code: $_initialInviteCode");
+      } else {
+        // Mobile Logic (AppLinks)
+        final appLinks = AppLinks();
+        
+        // 1. Check Initial Link
+        final initialUri = await appLinks.getInitialLink();
+        if (initialUri != null) {
+          _initialInviteCode = initialUri.queryParameters['code']?.trim();
+          _addLog("Captured Mobile Initial Code: $_initialInviteCode");
+        }
+
+        // 2. Listen for Stream (Foreground/Background)
+        // Note: For simplicity in Splash, we mainly care about initial, 
+        // but if it comes late, we handle it if still mounted.
+        appLinks.uriLinkStream.listen((uri) {
+           if (!mounted) return;
+           final code = uri.queryParameters['code']?.trim();
+           if (code != null) {
+              _initialInviteCode = code; // Update for Auth Listener to pick up
+              _addLog("Captured Mobile Stream Code: $code");
+              // Retrigger Auth check if we were stuck waiting
+              _checkExistingSession(); 
+           }
+        });
+      }
+    } catch (e) {
+      _addLog("Error capturing Deep Link: $e");
+    }
   }
 
   @override
