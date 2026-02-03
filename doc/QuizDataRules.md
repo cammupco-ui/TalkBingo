@@ -1,6 +1,11 @@
 # TalkBingo Quiz Data Generation Rules
 
-이 문서는 `BalanceQuizData.csv`와 `TruthQuizData.csv`의 분석을 바탕으로, TalkBingo의 퀴즈 데이터 관리 규칙을 정의합니다.
+이 문서는 `TalkBingo`의 퀴즈 데이터 관리 및 선별 규칙을 정의합니다.
+
+> **Note**: 
+> *   현재 **AI 맞춤형 실시간 질문 생성**은 도입 전이며, **Supabase**에 저장된 데이터를 **관계/친밀도(CodeName)** 기준으로 쿼리하여 제공합니다.
+> *   실제 데이터 생성 및 관리는 **외부 프로젝트**에서 진행되며, 본 문서는 앱 서비스 내에서의 **데이터 구조 및 선택 기준**을 설명합니다.
+> *   모든 질문은 **한국어(KO)**와 **영어(EN)**를 동시에 지원합니다.
 
 ---
 
@@ -20,26 +25,18 @@
 
 밸런스 게임은 두 가지 선택지 중 하나를 선택해야 하는 게임입니다.
 
-### 1.1 데이터 구조 (CSV Structure)
+### 1.1 데이터 구조 (Structure)
 | 컬럼명 | 설명 | 예시 | 비고 |
 | --- | --- | --- | --- |
 | `CodeName` | 타겟팅 코드 | `*-*-B-Ar-L1` | **Wildcard 사용 (`*-*`)**. 성별 무관, 타겟팅 전용 태그 |
-| `Order` | 관리 코드 | `BDcL3-00001` | **(Semantic)** 대분류소분류친밀도-순번(5자리). 식별 용도. |
+| `Order` | 관리 코드 | `BDcL3-00001` | **(Semantic)** 대분류소분류친밀도-순번. |
 | `q_id` | 시스템 ID | `B26-00001` | **(System)** 타입+연도-전체순번. 불변의 고유키 (PK). |
-| `content` | 질문 내용 (기본) | `탕수육 먹는 스타일은?` | 상황이나 선택의 기준을 제시 (기본형) |
-| `var_m_f` | 남->여 변형 | `누나는 탕수육 먹을 때...` | (Optional) 특정 성별 조합 시 텍스트 |
-| `var_f_m` | 여->남 변형 | `오빠는 탕수육 먹을 때...` | (Optional) 특정 성별 조합 시 텍스트 |
-| `var_m_m` | 남->남 변형 | `형은 탕수육 먹을 때...` | (Optional) 특정 성별 조합 시 텍스트 |
-| `var_f_f` | 여->여 변형 | `언니는 탕수육 먹을 때...` | (Optional) |
-| `content_en` | 질문 (영어) | `What is your style for Tangsuyuk?` | **(New)** English Content |
-| `var_m_f_en` | 남->여 (영어) | `Noona, when you eat...` | **(New)** English Variant |
-| `var_f_m_en` | 여->남 (영어) | `Oppa, when you eat...` | **(New)** English Variant |
-| `var_m_m_en` | 남->남 (영어) | `Hyung, when you eat...` | **(New)** English Variant |
-| `var_f_f_en` | 여->여 (영어) | `Unnie, when you eat...` | **(New)** English Variant |
-| `choice_a` | 선택지 A | `부먹` | 짧고 명확한 텍스트 |
-| `choice_b` | 선택지 B | `찍먹` | A와 대립되거나 비교되는 텍스트 |
-| `choice_a_en` | 선택지 A (영어) | `Pouring Sauce` | **(New)** English Choice |
-| `choice_b_en` | 선택지 B (영어) | `Dipping Sauce` | **(New)** English Choice |
+| `content` | 질문 내용 (KO) | `탕수육 먹는 스타일은?` | 상황이나 선택의 기준을 제시 (기본형) |
+| `content_en` | 질문 (EN) | `What is your style for Tangsuyuk?` | **(Natural)** 직역이 아닌, 자연스러운 영어식 표현 |
+| `choice_a` | 선택지 A (KO) | `부먹` | 짧고 명확한 텍스트 |
+| `choice_b` | 선택지 B (KO) | `찍먹` | A와 대립되거나 비교되는 텍스트 |
+| `choice_a_en` | 선택지 A (EN) | `Pouring Sauce` | **(Natural)** 직역이 아닌, 자연스러운 영어식 표현 |
+| `choice_b_en` | 선택지 B (EN) | `Dipping Sauce` | **(Natural)** 직역이 아닌, 자연스러운 영어식 표현 |
 
 ### 1.2 콘텐츠 관리 가이드라인
 1.  **대립성 (Conflict)**: 두 선택지는 명확하게 구분되어야 하며, 선택이 고민될수록 좋은 질문입니다.
@@ -50,7 +47,11 @@
     *   **상황형**: "평생 폰 없이 살기, 평생 친구 없이 살기"
 
 ### 1.3 최적의 관리 조건 (Optimization Rules)
-질문(`content`)과 선택지(`choice_a`, `choice_b`)를 생성할 때 다음 조건을 준수해야 합니다.1. 
+질문(`content`)과 선택지(`choice_a`, `choice_b`)를 생성할 때 다음 조건을 준수해야 합니다.
+
+> **Note (English Localization Rules)**: 
+> *   영문 데이터(`_en`)는 한국어를 그대로 번역(Literal Translation)하는 것이 아니라, 해당 언어권에서 **자연스럽게 사용하는 표현(Transcreation)**으로 재작성합니다.
+> *   예: "탕수육 부먹 vs 찍먹" -> "Pouring Sauce vs Dipping Sauce" (문화적 맥락 전달)
 
 #### A. 질문 내용 (`content`)
 *   **몰입감 (Immersive)**: 단순한 질문보다는 구체적인 상황을 부여하여 몰입감을 높입니다.
@@ -101,24 +102,16 @@
 
 진실 게임은 서로에 대해 깊이 알아가기 위한 서술형/대화형 질문입니다.
 
-### 2.1 데이터 구조 (CSV Structure)
+### 2.1 데이터 구조 (Structure)
 | 컬럼명 | 설명 | 예시 | 비고 |
 | --- | --- | --- | --- |
 | `CodeName` | 타겟팅 코드 | `*-*-Fa-*-L1` | **Wildcard 사용**. 성별 무관, 관계/친밀도 기준 |
 | `Order` | 관리 코드 | `TFaL1-00001` | **(Semantic)** T(Truth)가족(Fa)L1-순번. |
 | `q_id` | 시스템 ID | `T26-00001` | **(System)** T(Truth)+26년-전체순번. |
-| `content` | 질문 내용 (기본) | `본인이 생각하는 자신의 장점은?` | 자신에 대해 이야기할 수 있는 질문 |
-| `var_m_f` | 남->여 변형 | `누나랑 갔던 여행 중...` | (Optional) |
-| `var_f_m` | 여->남 변형 | `오빠랑 갔던 여행 중...` | (Optional) |
-| `var_m_m` | 남->남 변형 | `형이랑 갔던 여행 중...` | (Optional) |
-| `var_f_f` | 여->여 변형 | `언니랑 갔던 여행 중...` | (Optional) |
-| `content_en` | 질문 (영어) | `What is your most memorable trip?` | **(New)** English Content |
-| `var_m_f_en` | 남->여 (영어) | `Noona, among your trips...` | **(New)** English Variant |
-| `var_f_m_en` | 여->남 (영어) | `Oppa, among your trips...` | **(New)** English Variant |
-| `var_m_m_en` | 남->남 (영어) | `Hyung, among your trips...` | **(New)** English Variant |
-| `var_f_f_en` | 여->여 (영어) | `Unnie, among your trips...` | **(New)** English Variant |
-| `answers` | 답변 예시 | `파리, 뉴욕, 제주도` | 콤마(,)로 구분된 키워드 |
-| `answers_en` | 답변 예시 (영) | `Paris, NYC, Jeju` | **(New)** English Answers |
+| `content` | 질문 내용 (KO) | `본인이 생각하는 자신의 장점은?` | 자신에 대해 이야기할 수 있는 질문 |
+| `content_en` | 질문 (EN) | `What is your most memorable trip?` | **(Natural)** 직역이 아닌, 자연스러운 영어식 표현 |
+| `answers` | 답변 예시 (KO) | `파리, 뉴욕, 제주도` | 콤마(,)로 구분된 키워드 |
+| `answers_en` | 답변 예시 (EN) | `Paris, NYC, Jeju` | English Answers |
 
 ### 2.2 콘텐츠 관리 가이드라인
 1.  **개방성 (Open-ended)**: "예/아니오"로 끝나는 질문보다는 "이유는?", "언제?", "무엇을?" 등 이야기를 끌어내는 질문을 지향합니다.
@@ -152,68 +145,49 @@
 
 ## 3. CodeName 규칙 (Targeting Logic)
 
-모든 퀴즈 데이터는 `CodeName`을 통해 타겟팅 대상을 정의합니다.
+## 3. CodeName 규칙 (Targeting Logic)
 
-**Format**: `*-*-[IR]-[SubRel]-[Intimacy]`
+모든 퀴즈 데이터는 **`CodeName`**을 통해 타겟팅 대상을 정의합니다.
 
-*   **MP/CP (Gender Slots)**: 항상 `*` (Wildcard) 사용. 성별 구분은 `gender_variants` 컬럼에서 처리합니다.
-*   **IR (Intimate Relationship)**:
-    *   `B`: Friend (친구)
-    *   `Fa`: Family (가족)
-    *   `Lo`: Lover (연인)
-*   **SubRel (Sub Relation Code)**:
-    *   `Ar`, `Sc`, `Or`, `Dc` ... (기존 동일)
-*   **Intimacy (Level)**: `L1` ~ `L5` (기존 동일)
+**Format**: `[MP]-[CP]-[IR]-[SubRel]-[Intimacy]`
 
-> **Note**: 기존의 `M-F` 와 같은 명시적 성별 코드는 더 이상 타겟팅 키로 사용하지 않습니다. 모든 질문은 동적 변형을 전제로 합니다.
+*   **MP (Respondent Constraint)**: 질문에 답변하는 사람의 **필수 성별 조건**.
+    *   `*`: 성별 무관 (Neutral)
+    *   `M`: 남성 전용 (Male Only)
+    *   `F`: 여성 전용 (Female Only)
+*   **CP (Partner Constraint)**: 상대방의 **필수 성별 조건**.
+    *   `*`: 성별 무관
+    *   `M`: 상대가 남성일 때만
+    *   `F`: 상대가 여성일 때만
+*   **IR (Intimate Relationship)**: `B` (Friend), `Fa` (Family), `Lo` (Lover)
+*   **SubRel**: `Ar`, `Sc` 등
+*   **Intimacy**: `L1` ~ `L5`
 
----
-
-## 4. 동적 변형 시스템 (Dynamic Variant System)
-
-### 4.1 문제 해결 (Solution)
-기존의 성별 고정 방식(`M-F`)은 데이터 파편화를 야기했습니다. 새로운 시스템은 **단일 소스 멀티 렌더링** 방식을 사용합니다.
-
-### 4.2 작동 방식
-1.  **Fetch**: 앱은 **성별과 무관하게** 관계(`Ar`)와 친밀도(`L3`)만으로 질문을 검색합니다. (쿼리: `*-*-B-Ar-L3`)
-2.  **Adapt**: 게임 화면에서 턴이 바뀔 때마다, 현재 **화자(Speaker)**와 **청자(Listener)**의 성별을 클라이언트가 판단합니다.
-3.  **Render**: `content` 대신 적절한 `var_X_to_Y` 텍스트를 우선적으로 표시합니다.
-    *   `M -> F`: `var_m_f` ("누나...", "동생아...")
-    *   `F -> M`: `var_f_m` ("오빠...", "너...")
-    *   `Fallback`: 변형 텍스트가 비어있다면(`null`) 기본 `content`를 표시합니다.
+> **Note (Intersection Logic - 교집합 매칭)**: 
+> *   **문제**: 빙고 보드는 두 플레이어가 공유하므로, `M-F` 같은 특정 성별 조합만 가져오면 반대 상황에서 어색할 수 있습니다.
+> *   **해결**: 게임 시작 시, 참여하는 **두 플레이어 모두에게 적합한 질문(`Intersection`)**을 추출하여 각 셀에 **2개씩 할당**합니다.
+>     *   **구조**: `1 Cell` = `Main Question` (초기 배치) + `Reserve Question` (미니게임/패스용)
+>     *   **필터링**: (Host=M, Guest=F) → 두 성별 모두 호환되는 `*` (Neutral) 질문만 추출.
+> *   이 방식을 통해 **상황 적합성**과 **예비 질문 확보**라는 두 마리 토끼를 모두 잡습니다.
 
 ---
 
-### 4.4 생성 제약 사항 (Generation Constraints)
+## 4. 데이터 관리 메모
 
-퀴즈 데이터를 생성하거나 관리할 때 다음 제약 사항을 준수해야 합니다.
-
-1.  **임의 코드 생성 금지**: 정의된 관계 코드(`Ar`, `Sc`, `Or`, `Dc`, `Br`, `Si` 등) 외에 새로운 코드를 임의로 생성하지 않습니다.
-2.  **레벨 준수**: 친밀도 레벨은 `L1` ~ `L5` 사이의 값만 사용합니다.
-3.  **성별 필드 필수**: CodeName 작성 시 MP와 CP 자리를 비우지 않습니다. (성별 무관일 경우 `*`를 명시적으로 작성)
-4.  **관계 코드 필수**: CodeName에 관계 코드가 누락되어서는 안 됩니다. (범용 질문이라도 `B-*` 형태 등으로 명시)
-
+*   **성별 변형 삭제**: 초기 기획의 복잡한 성별 변형(M->F, F->M 등)은 제거되었습니다. 질문은 가능한 성별 중립적으로 작성하거나, 문맥상 자연스러운 표준어를 사용합니다.
+*   **AI 도입 계획**: 향후 AI 에이전트가 도입되면, 이 CodeName 구조를 기반으로 실시간 생성 로직으로 고도화될 예정입니다.
 
 ---
 
-## 5. 실전 데이터 관리 프로세스 (Data Pipeline)
+## 0. ID 생성 규칙 (ID Generation Rules)
 
-우리는 **"엑셀에서 관리하고, 스크립트로 한 번에 서버로 올리는"** 효율적인 방식을 사용합니다.
+모든 퀴즈 및 게임 데이터는 아래의 ID 포맷을 엄격히 따릅니다.
 
-### 1단계: 엑셀(CSV)로 질문 만들기 📝
-*   기획자는 복잡한 데이터베이스를 직접 건드릴 필요가 없습니다.
-*   **엑셀 파일**에 질문, 선택지, 그리고 타겟팅 코드(`CodeName`)만 규칙에 맞춰 작성하세요.
-*   파일: `BalanceQuizData.csv` (밸런스게임), `TruthQuizData.csv` (진실게임)
+| 퀴즈 타입 | 약어 | ID 생성 포맷 (Type + Year + Seq) | 예시 (2026년 첫 번째 데이터) |
+| --- | --- | --- | --- |
+| 밸런스 퀴즈 (Balance Quiz) | `B` | `B + YY + - + 00001` | `B26-00001` |
+| 진실 게임 (Truth Game) | `T` | `T + YY + - + 00001` | `T26-00001` |
+| 미니 게임 (Mini Game) | `M` | `M + YY + - + 00001` | `M26-00001` |
 
-### 2단계: 파이썬 스크립트 실행 (자동 변환 및 업로드) ⚙️
-*   `import_supabase.py` 스크립트가 엑셀 파일과 서버 사이의 다리 역할을 합니다.
-*   **자동 처리되는 작업**:
-    1.  **ID 자동 부여**: 질문마다 고유 관리 번호(`q_id`)를 붙여줍니다. (예: `B26-00001`)
-    2.  **데이터 검증**: 입력한 `CodeName`이 규칙에 맞는지 검사하여 오타를 방지합니다.
-    3.  **포맷 변환**: 엑셀 데이터를 앱이 이해할 수 있는 데이터 형식(JSON)으로 변환합니다.
+---
 
-### 3단계: Supabase(서버) 저장 및 활용 ☁️
-*   변환된 데이터는 서버의 **`questions` 테이블**에 안전하게 저장됩니다.
-*   특히 `CodeName`은 **태그(Array)** 형태로 저장되어, 앱에서 "20대 여성 친구 질문만 보여줘"와 같은 검색을 매우 빠르고 정확하게 수행할 수 있습니다.
-
-**✨ 요약: 엑셀에 적고 -> 스크립트 돌리면 -> 앱에 바로 반영됩니다!**

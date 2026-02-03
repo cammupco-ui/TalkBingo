@@ -14,6 +14,7 @@ import 'package:talkbingo_app/screens/home_screen.dart';
 import 'package:talkbingo_app/screens/point_purchase_screen.dart';
 import 'package:talkbingo_app/utils/migration_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:talkbingo_app/screens/board/board_list_screen.dart';
 import 'package:talkbingo_app/screens/splash_screen.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/styles/app_spacing.dart';
@@ -300,7 +301,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: Icons.forum_outlined,
                       title: AppLocalizations.get('board'),
                       iconColor: const Color(0xFFBD0558), // Pink
-                      onTap: () => _launchUrl('https://example.com/board'), // Implemented localization for Board title
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const BoardListScreen()),
+                        );
+                      },
                     ),
                     
                     // Delete Account
