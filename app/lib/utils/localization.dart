@@ -144,6 +144,7 @@ class AppLocalizations {
       'cat_payment': 'Payment/Points',
       'cat_account': 'Account/Login',
       'cat_etc': 'Etc',
+      'reset_exit': 'Exit Guest Mode',
     },
     'ko': {
       'new_game': '새 게임',
@@ -285,6 +286,7 @@ class AppLocalizations {
       'cat_payment': '결제/포인트',
       'cat_account': '계정/로그인',
       'cat_etc': '기타',
+      'reset_exit': '게스트 모드 종료',
     },
   };
 
