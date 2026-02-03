@@ -713,7 +713,17 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     child: _buildFloatingText("메뉴"),
                     onSelected: (value) async {
                        SoundService().playButtonSound();
-                       if (value == 'Settings') {
+                       if (value == 'Language') {
+                          final newLang = _session.language == 'en' ? 'ko' : 'en';
+                          _session.setLanguage(newLang);
+                          setState(() {}); // Trigger rebuild for Localized Strings & STT Locale
+                          ScaffoldMessenger.of(context).showSnackBar(
+                             SnackBar(
+                               content: Text(newLang == 'ko' ? "한국어로 변경되었습니다. (STT: 한국어)" : "Switched to English. (STT: English)"),
+                               duration: const Duration(milliseconds: 1500),
+                             )
+                          );
+                       } else if (value == 'Settings') {
                           _showSettingsDialog();
                        } else if (value == 'Pause') {
                           GameSession().togglePause();
@@ -727,20 +737,41 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                     },
                     itemBuilder: (context) {
                          final isPaused = _session.isPaused;
-                         
-                         return [
-                            PopupMenuItem(
-                              value: 'Settings', 
-                              child: Container(
-                                width: 120,
-                                alignment: Alignment.centerLeft,
-                                child: Row(children: [
-                                  const Icon(Icons.settings, size: 18, color: Colors.black54),
-                                  const SizedBox(width: 8),
-                                  Text("설정", style: GoogleFonts.alexandria(color: Colors.black87))
-                                ])
-                              ),
-                            ),
+                                                  return [
+                             PopupMenuItem(
+                               value: 'Language', 
+                               child: Container(
+                                 width: 120,
+                                 alignment: Alignment.centerLeft,
+                                 child: Row(children: [
+                                   const Icon(Icons.language, size: 18, color: Colors.black54),
+                                   const SizedBox(width: 8),
+                                   // Show TARGET language to switch TO? Or Current? 
+                                   // Convention: Show "Change to X" or Current status.
+                                   // Let's show current status with a toggle feel: "KO / EN"
+                                   Text(
+                                     _session.language == 'en' ? "한국어 🇰🇷" : "English 🇺🇸", 
+                                     style: GoogleFonts.alexandria(
+                                        color: Colors.black87,
+                                        textStyle: const TextStyle(fontFamilyFallback: ['EliceDigitalBaeum'])
+                                     )
+                                   )
+                                 ])
+                               ),
+                             ),
+                             const PopupMenuDivider(),
+                             PopupMenuItem(
+                               value: 'Settings', 
+                               child: Container(
+                                 width: 120,
+                                 alignment: Alignment.centerLeft,
+                                 child: Row(children: [
+                                   const Icon(Icons.settings, size: 18, color: Colors.black54),
+                                   const SizedBox(width: 8),
+                                   Text("설정", style: GoogleFonts.alexandria(color: Colors.black87))
+                                 ])
+                               ),
+                             ),
                             PopupMenuItem(
                               value: 'Pause', 
                               child: Container(
