@@ -34,9 +34,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     try {
       await Supabase.instance.client.auth.resetPasswordForEmail(
         email,
-        redirectTo: kIsWeb 
-            ? Uri.base.origin // Redirect to app home where we can handle token
-            : 'io.supabase.talkbingo://reset-callback',
+      // Determine Redirect URL (Same logic as SignupScreen)
+      String? redirectUrl;
+      if (kIsWeb) {
+        final uri = Uri.base;
+         // If we are on "cammupco-ui.github.io/TalkBingo/", we must redirect back to that.
+        if (uri.path.contains('/TalkBingo')) {
+           redirectUrl = '${uri.origin}/TalkBingo/';
+        } else {
+           redirectUrl = uri.origin;
+        }
+      } else {
+        redirectUrl = 'io.supabase.talkbingo://reset-callback';
+      }
+
+      await Supabase.instance.client.auth.resetPasswordForEmail(
+        email,
+        redirectTo: redirectUrl,
       );
 
       if (mounted) {
