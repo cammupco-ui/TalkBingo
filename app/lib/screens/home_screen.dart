@@ -22,6 +22,7 @@ import 'package:talkbingo_app/utils/localization.dart'; // Localization
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:math';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -53,9 +54,22 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _checkInitialFlows() {
+  Future<void> _checkInitialFlows() async {
     // 1. Fast Track Join (Deep Link)
     String? code = GameSession().pendingInviteCode;
+
+    // Persistence Check (Fallback)
+    if (code == null) {
+       final prefs = await SharedPreferences.getInstance();
+       code = prefs.getString('pending_invite_code');
+       if (code != null) {
+          debugPrint("💾 Valid Code recovered from Storage: $code");
+          // Clear immediately so we don't handle it again on next reload if user cancels
+          // actually, we clear it ONLY if we successfully start the flow?
+          // No, safer to assume we handle it now.
+          await prefs.remove('pending_invite_code');
+       }
+    }
 
     // Safety Validation (Double Check)
     if (code != null && (code.length != 6 || !RegExp(r'^[A-Z0-9]+$', caseSensitive: false).hasMatch(code))) {
@@ -65,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     if (code != null) {
-      GameSession().pendingInviteCode = null; // Clear it
+      GameSession().pendingInviteCode = null; // Clear memory
       
       _inviteCodeController.text = code;
       

@@ -73,7 +73,9 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
              baseUrl = baseUrl.substring(0, baseUrl.length - 1);
         }
         
-        link = '$baseUrl/?code=$_inviteCode';
+        // Force Hash Routing Format for GitHub Pages consistency
+        // Even if local dev doesn't use it, Prod does.
+        link = '$baseUrl/#/?code=$_inviteCode';
       } else {
         // Mobile App: Use a deep link or valid web placeholder
         // Since we don't have a real domain yet, using a standard schema example or custom scheme

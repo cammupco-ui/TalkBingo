@@ -13,6 +13,7 @@ import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/utils/migration_manager.dart';
 import 'package:talkbingo_app/utils/url_cleaner.dart';
 import 'package:app_links/app_links.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -183,6 +184,13 @@ class _SplashScreenState extends State<SplashScreen> {
            code = code!.toUpperCase();
            _initialInviteCode = code; 
            GameSession().pendingInviteCode = code; 
+           
+           // PERSISTENCE: Save to SharedPreferences immediately
+           SharedPreferences.getInstance().then((prefs) {
+             prefs.setString('pending_invite_code', code!);
+             _addLog("💾 Persisted Invite Code: $code");
+           });
+
            _addLog("📩 Invite Code Captured & Store: $code");
            
            // Only clean URL if we successfully captured it
