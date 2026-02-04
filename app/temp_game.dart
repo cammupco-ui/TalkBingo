@@ -1090,14 +1090,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             },
           ),
         ], // Stack Children
-        ), // Stack (Inner)
-                        ), // Padding
-                      ), // Expanded
-                    ],
-                  ), // Column
-                ],
-              ), // Stack (Outer)
-      ), // BubbleBackground
+        ), // Stack
+      ), // Container
     ), // Scaffold
     ), // WillPopScope
     ); // AnnotatedRegion

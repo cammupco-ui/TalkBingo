@@ -401,6 +401,11 @@ class GameSession with ChangeNotifier {
         questions.add(main['content'] as String);
         
         var opt = main['options'] as Map<String, dynamic>;
+        
+        // Inject Multilingual Content for Dynamic Switching
+        opt['content_raw'] = main['content'];
+        opt['content_en_raw'] = main['content_en'];
+        
         // Inject Reserve
         opt['reserve'] = {
             'content': reserve['content'],
@@ -430,6 +435,35 @@ class GameSession with ChangeNotifier {
     if (lang != 'ko' && lang != 'en') return;
     _language = lang;
     notifyListeners();
+  }
+
+  // Dynamic Localization Getter
+  Map<String, String> getLocalizedContent(int index) {
+     if (index < 0 || index >= options.length) return {};
+     
+     final opt = options[index];
+     final bool isEn = _language == 'en';
+     
+     // 1. Question Content
+     String q = opt['content_raw'] ?? '';
+     if (isEn && opt['content_en_raw'] != null && (opt['content_en_raw'] as String).isNotEmpty) {
+        q = opt['content_en_raw'];
+     }
+     
+     // 2. Options (A/B)
+     String a = opt['A'] ?? '';
+     String b = opt['B'] ?? '';
+     
+     if (isEn) {
+        if (opt['A_en'] != null && (opt['A_en'] as String).isNotEmpty) a = opt['A_en'];
+        if (opt['B_en'] != null && (opt['B_en'] as String).isNotEmpty) b = opt['B_en'];
+     }
+     
+     return {
+       'q': q,
+       'A': a, 
+       'B': b
+     };
   }
 
   Map<String, dynamic> _parseSingleQuestion(dynamic q) {
