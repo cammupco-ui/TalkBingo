@@ -127,6 +127,21 @@ class _SplashScreenState extends State<SplashScreen> {
      // 2. Check for Invite Code
      String? code = uri.queryParameters['code']?.trim();
      
+     // Fallback: Check Fragment (Hash Routing support for Web)
+     if (code == null && uri.fragment.isNotEmpty) {
+        try {
+            // Fragment often looks like "/?code=XXXXXX" or "/invite?code=XXXXXX"
+            // We construct a dummy URI to parse parameters easily
+            final fragmentString = uri.fragment.startsWith('/') ? uri.fragment : '/${uri.fragment}';
+            final fragmentUri = Uri.parse("http://dummy$fragmentString");
+            code = fragmentUri.queryParameters['code']?.trim();
+        } catch (e) {
+            // Last resort regex
+            final match = RegExp(r'code=([A-Z0-9]{6})', caseSensitive: false).firstMatch(uri.fragment);
+            if (match != null) code = match.group(1);
+        }
+     }
+     
      if (code != null) {
         // Recursive Clean: If code acts as a URL container (bug fix)
         if (code.contains('http') || code.contains('://')) {
