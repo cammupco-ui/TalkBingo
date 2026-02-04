@@ -11,6 +11,7 @@ import 'package:talkbingo_app/styles/app_colors.dart';
 
 import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/utils/migration_manager.dart';
+import 'package:talkbingo_app/utils/url_cleaner.dart';
 import 'package:app_links/app_links.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -92,6 +93,7 @@ class _SplashScreenState extends State<SplashScreen> {
         _initialInviteCode = uri.queryParameters['code']?.trim();
         if (_initialInviteCode != null && _initialInviteCode!.isNotEmpty) {
            GameSession().pendingInviteCode = _initialInviteCode; // Set immediately
+           UrlCleaner.removeCodeParam(); // Clear from URL to prevent loop
         }
         _addLog("Captured Web URL Code: $_initialInviteCode");
       } else {
