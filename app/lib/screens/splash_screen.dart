@@ -67,35 +67,49 @@ class _SplashScreenState extends State<SplashScreen> {
     "You are already enough to start",
   ];
 
+  bool _isDeepLinkCheckDone = false; // Flag to prevent race conditions
+
   @override
   void initState() {
     super.initState();
     _addLog("InitState Started");
     
-    // 1. Capture URL state IMMEDIATELY
-    _initDeepLinks();
-
-    // Select random index once
-    _randomIndex = DateTime.now().millisecondsSinceEpoch % _koreanTexts.length;
+    // 1. Capture URL state IMMEDIATELY and sequentially
+    _sequenceInitialization();
 
     _setupAuthListener();
-    
-    // Explicitly check session immediately to prevent waiting if already logged in
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-       _checkExistingSession();
-    });
+  }
+
+  Future<void> _sequenceInitialization() async {
+    await _initDeepLinks();
+    _isDeepLinkCheckDone = true;
+    _addLog("Deep Link Check Complete. Proceeding to Session Check.");
+    await _checkExistingSession();
   }
 
   Future<void> _initDeepLinks() async {
     try {
       Uri? targetUri;
       if (kIsWeb) {
-        targetUri = Uri.base;
+        // Direct Window Location access for mostly accurate full URL
+        try {
+           // We use a predefined import stub or conditional import if possible, 
+           // but since we are in a single file here, we used kIsWeb.
+           // To avoid direct dart:html import issues in this file if compiled for mobile, 
+           // we rely on Uri.base which usually works, BUT for Hash routing fragments we add manual checks.
+           
+           // Ideally we should use the same logic as UrlCleaner
+           targetUri = Uri.parse(Uri.base.toString()); 
+           _addLog("Web Base URI: $targetUri");
+           
+           // Manual Fragment Parsing Hack because Uri.base might parse differently
+           // We will rely on _handleDeepLink's improved parsing logic.
+        } catch (e) {
+           targetUri = Uri.base;
+        }
       } else {
         final appLinks = AppLinks();
         targetUri = await appLinks.getInitialLink();
-        
-        // Listen for Stream (Foreground/Background)
         appLinks.uriLinkStream.listen((uri) => _handleDeepLink(uri));
       }
 
@@ -111,62 +125,72 @@ class _SplashScreenState extends State<SplashScreen> {
   void _handleDeepLink(Uri uri) {
      if (!mounted) return;
 
-     // 1. Check for Auth Params (Magic Link, Signup, Recovery)
+     _addLog("Processing URI: $uri");
+     _addLog("Fragment: ${uri.fragment}");
+     _addLog("Query: ${uri.queryParameters}");
+
+     // 1. Check for Auth Params
      final hasFragmentToken = uri.fragment.contains('access_token');
      final hasQueryToken = uri.queryParameters.containsKey('access_token');
-     final authType = uri.queryParameters['type']; // signup, recovery, magiclink, invite
+     final authType = uri.queryParameters['type'];
      
      if (hasFragmentToken || hasQueryToken || authType == 'signup' || authType == 'recovery' || authType == 'magiclink') {
-        _addLog("🔐 Auth Params Detected! (Type: $authType)");
-        setState(() {
-          _isAuthInProgress = true;
-        });
+        _isAuthInProgress = true;
+        _addLog("🔐 Auth Params Detected!");
         return; 
      }
 
      // 2. Check for Invite Code
      String? code = uri.queryParameters['code']?.trim();
      
-     // Fallback: Check Fragment (Hash Routing support for Web)
-     if (code == null && uri.fragment.isNotEmpty) {
-        try {
-            // Fragment often looks like "/?code=XXXXXX" or "/invite?code=XXXXXX"
-            // We construct a dummy URI to parse parameters easily
-            final fragmentString = uri.fragment.startsWith('/') ? uri.fragment : '/${uri.fragment}';
-            final fragmentUri = Uri.parse("http://dummy$fragmentString");
-            code = fragmentUri.queryParameters['code']?.trim();
-        } catch (e) {
-            // Last resort regex
-            final match = RegExp(r'code=([A-Z0-9]{6})', caseSensitive: false).firstMatch(uri.fragment);
-            if (match != null) code = match.group(1);
+     // Robust Fallback for Hash Routing (e.g. /#/?code=...)
+     if (code == null) {
+        // Search in Fragment
+        final frag = uri.fragment;
+        if (frag.contains('code=')) {
+            // Regex to extract value after code= until & or end
+            final match = RegExp(r'[?&]code=([A-Za-z0-9]+)').firstMatch(frag);
+            if (match != null) {
+               code = match.group(1);
+               _addLog("Found code in fragment via Regex: $code");
+            }
         }
      }
      
+     // 3. Fallback: Search absolute string (last resort)
+     if (code == null) {
+        final fullStr = uri.toString();
+        final match = RegExp(r'[?&]code=([A-Za-z0-9]+)').firstMatch(fullStr);
+        if (match != null) {
+           code = match.group(1);
+           _addLog("Found code in Full String via Regex: $code");
+        }
+     }
+
      if (code != null) {
-        // Recursive Clean: If code acts as a URL container (bug fix)
+        // Recursive Clean
         if (code.contains('http') || code.contains('://')) {
             try {
-               final innerUri = Uri.parse(code);
-               code = innerUri.queryParameters['code']?.trim();
+               final inner = Uri.parse(code);
+               code = inner.queryParameters['code']?.trim();
             } catch (e) { /* ignore */ }
         }
 
-        // Validate Format (6 Chars, Alphanumeric)
-        // Note: invite codes generated are 6 chars, usually uppercase + numbers.
+        // Validate Format (6 Chars)
         final bool isValid = code != null && RegExp(r'^[A-Z0-9]{6}$', caseSensitive: false).hasMatch(code!);
 
         if (isValid) { 
-           // Standardize to Uppercase
            code = code!.toUpperCase();
-           
            _initialInviteCode = code; 
            GameSession().pendingInviteCode = code; 
-           _addLog("📩 Invite Code Captured: $code");
+           _addLog("📩 Invite Code Captured & Store: $code");
+           
+           // Only clean URL if we successfully captured it
            UrlCleaner.removeCodeParam(); 
            
-           if (!_isAuthInProgress) _checkExistingSession(); 
+           // If we are NOT waiting for Auth, we can check session (but sequenceInitialization will do it anyway)
         } else {
-           _addLog("⚠️ Invalid Code Ignored: ${uri.queryParameters['code']}");
+           _addLog("⚠️ Invalid Code Ignored: $code");
         }
      }
   }
@@ -178,14 +202,20 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkExistingSession() async {
+      // WAIT for Deep Link Check to finish if called prematurely
+      if (!_isDeepLinkCheckDone) {
+         _addLog("Session Check waiting for Deep Link...");
+         return; // _sequenceInitialization will call us again
+      }
+
       _addLog("Checking Existing Session...");
       try {
         final session = Supabase.instance.client.auth.currentSession;
         if (session != null) {
-            _addLog("Immediate Session Found: ${session.user.id.substring(0,5)}...");
+            _addLog("Immediate Session Found");
             await _handleAuthenticatedUser(session);
         } else {
-            _addLog("No Immediate Session");
+            _addLog("No Immediate Session. Waiting for Timeout fallback.");
         }
       } catch (e) {
         _addLog("Session Check Error: $e");
@@ -193,84 +223,56 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _setupAuthListener() {
-    _addLog("Setting up Auth Listener");
-    // 1. Listen to Auth State Changes
     _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
       if (!mounted) return;
-      
-      final session = data.session;
-      final event = data.event;
-      _addLog("Auth Event: $event");
-
-      if (session != null) {
-           _addLog("✅ Session Found in Listener. Handling User.");
-           if (mounted) setState(() => _isAuthInProgress = false);
-           _handleAuthenticatedUser(session);
-      } else if (event == AuthChangeEvent.signedOut) {
-         if (mounted) setState(() => _isAuthInProgress = false);
+      if (data.session != null) {
+          _addLog("✅ Session Found in Listener.");
+          // We MUST wait for deep link check before handling user
+          if (_isDeepLinkCheckDone) {
+             _handleAuthenticatedUser(data.session!);
+          } else {
+             _addLog("Queued Auth Handling until Deep Link check done.");
+             // The sequence loop will eventually call _checkExistingSession which handles this case or currentSession
+          }
       }
     });
 
-    // 2. Initial Checks (Timeouts)
+    // Timeout Logic
     Future.delayed(const Duration(milliseconds: 4000), () async {
       if (!mounted) return;
       _addLog("⏳ Timeout (4s) Reached.");
       
-      // If Auth is in Progress, DO NOT REDIRECT yet.
-      if (_isAuthInProgress) {
-         _addLog("✋ Auth In Progress. Skipping Timeout Redirect. Waiting for Stream...");
-         return;
+      if (!_isDeepLinkCheckDone) {
+         // Force finish deep link check if stuck?
+         _addLog("Deep link check still pending? Forcing proceed.");
+         _isDeepLinkCheckDone = true;
       }
+
+      if (_isAuthInProgress) return;
 
       final session = Supabase.instance.client.auth.currentSession;
       String? inviteCode = _initialInviteCode ?? GameSession().pendingInviteCode; 
       
       bool isInviteCode = inviteCode != null && inviteCode.length == 6;
 
-      if (isInviteCode) {
-         _addLog("Invite Code Detected: $inviteCode. Fast Track...");
-         
-         if (session == null) {
-            _addLog("No Session. Auto-login for Fast Track...");
-             try {
-                final authResponse = await Supabase.instance.client.auth.signInAnonymously();
-                if (authResponse.session != null) {
-                   _handleAuthenticatedUser(authResponse.session!);
-                } else {
-                   throw Exception("Anon Sign-in failed");
-                }
-             } catch (e) {
-                _addLog("Auto-login failed: $e. Going to Login.");
-                Navigator.of(context).pushReplacement(
-                   MaterialPageRoute(builder: (_) => const LoginScreen()),
-                );
+      if (session != null) {
+          _handleAuthenticatedUser(session);
+      } else if (isInviteCode) {
+          _addLog("Invite Code Detected w/o Session. Fast Track.");
+          // Fast Track Auto-Login logic...
+          try {
+             final authResponse = await Supabase.instance.client.auth.signInAnonymously();
+             if (authResponse.session != null) {
+                _handleAuthenticatedUser(authResponse.session!);
+             } else {
+                throw Exception("Anon Sign-in failed");
              }
-         } else {
-             _handleAuthenticatedUser(session);
-         }
-         return;
+          } catch (e) {
+             Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen()));
+          }
+      } else {
+         Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen()));
       }
-
-      if (session == null) {
-         _addLog("No Session & No Auth in Progress. Navigating to Login...");
-         Navigator.of(context).pushReplacement(
-           MaterialPageRoute(builder: (_) => const LoginScreen()),
-         );
-      }
-    });
-
-    // Check 2: Safety Net (20s)
-    Future.delayed(const Duration(seconds: 20), () {
-        if (!mounted) return;
-        _addLog("🚨 Safety Net (20s) Reached.");
-        
-        final session = Supabase.instance.client.auth.currentSession;
-        if (session == null) {
-            _addLog("Still No Session. Forced Signup.");
-            Navigator.of(context).pushReplacement(
-               MaterialPageRoute(builder: (_) => const LoginScreen()),
-            );
-        }
     });
   }
 
