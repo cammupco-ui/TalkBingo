@@ -1125,34 +1125,50 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   Widget _buildChatView() {
     return Container(
-      color: Colors.white.withOpacity(0.5),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.bgDark,
+            AppColors.bgDark.withOpacity(0.95),
+            AppColors.bgDark.withOpacity(0.9),
+          ],
+        ),
+      ),
       child: ListView.builder(
-        controller: _chatScrollController, // Connected Controller
-        padding: const EdgeInsets.symmetric(vertical: 16), // Top/Bottom padding
+        controller: _chatScrollController,
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
         itemCount: _session.messages.length,
         itemBuilder: (context, index) {
           final msg = _session.messages[index];
           final sender = msg['sender'] ?? '';
           
+          // Determine spacing based on previous sender
+          double topSpacing = 16.0;
+          if (index > 0) {
+            final prevSender = _session.messages[index - 1]['sender'];
+            if (prevSender == sender) {
+              topSpacing = 4.0;
+            }
+          }
+
           // --- 2.2 SYSTEM MESSAGE ---
           if (sender == 'SYSTEM') {
              return Center(
               child: Container(
-                margin: const EdgeInsets.symmetric(vertical: 12),
+                margin: EdgeInsets.only(top: topSpacing, bottom: 4),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],  // Neutral Background
+                  color: Colors.white.withOpacity(0.1),  // Glassy System Msg
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.grey[300]!,
-                    width: 1,
-                  ),
+                  border: Border.all(color: Colors.white12),
                 ),
                 child: Text(
                   msg['text'] ?? '',
                   style: GoogleFonts.alexandria(
-                    fontSize: 12,        // Caption
-                    color: Colors.grey[600],
+                    fontSize: 12,
+                    color: Colors.white70,
                     fontWeight: FontWeight.w500,
                   ),
                   textAlign: TextAlign.center,
@@ -1161,27 +1177,27 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             );
           }
 
-          // --- 2.3 QUESTION / ANSWER SYSTEM MESSAGE ---
+          // --- 2.3 QUESTION / ANSWER SYSTEM MESSAGE (Card Style) ---
           if (sender == 'SYSTEM_Q' || sender == 'SYSTEM_A') {
-             final player = msg['player']; // Owner of the interaction
-             final Color userColor = (player == 'A') ? AppColors.hostPrimary : AppColors.guestPrimary;
-             
+             final player = msg['player'];
+             // Pastel Card Colors
+             final Color cardColor = (player == 'A') ? AppColors.playerA : AppColors.playerB;
+             final Color textColor = AppColors.textDark; // Dark Text for contrast on light pastel
+             final Color borderColor = (player == 'A') ? AppColors.hostPrimary.withOpacity(0.3) : AppColors.guestPrimary.withOpacity(0.3);
+
              return Center(
               child: Container(
-                margin: const EdgeInsets.symmetric(vertical: 16),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
+                margin: EdgeInsets.only(top: topSpacing, bottom: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.85),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: userColor.withOpacity(0.3), // Light border of user color
-                    width: 1,
-                  ),
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(16), // More card-like
+                  border: Border.all(color: borderColor, width: 1),
                   boxShadow: [
                     BoxShadow(
-                      color: userColor.withOpacity(0.05),
-                      blurRadius: 8,
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 6,
                       offset: const Offset(0, 2),
                     )
                   ],
@@ -1189,8 +1205,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 child: Text(
                   msg['text'] ?? '', 
                   style: GoogleFonts.doHyeon(
-                    fontSize: 15, // Prominent text
-                    color: userColor.withOpacity(0.8), // Colored text
+                    fontSize: 15,
+                    color: textColor,
                     height: 1.4,
                   ),
                   textAlign: TextAlign.center,
@@ -1199,110 +1215,95 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             );
           }
 
-          // --- 2.1 CHAT MESSAGE ---
+          // --- 2.1 CHAT MESSAGE (Glassy Vibrant) ---
           final isMe = sender == _session.myRole;
           final time = DateTime.tryParse(msg['timestamp'] ?? '') ?? DateTime.now();
           final timeStr = DateFormat('h:mm a').format(time);
-
-          if (isMe) {
-            // MY MESSAGE (Right Aligned)
-            return Container(
-              margin: const EdgeInsets.only(
-                left: 60,    // Max width constraint
-                right: 12,   // Screen margin
-                bottom: 8,   // Gap
-              ),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: _session.myRole == 'A' ? const Color(0xFFF4E7E8) : const Color(0xFFF0E7F4), // Tint based on My Role
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                  bottomLeft: Radius.circular(16),
-                  bottomRight: Radius.circular(4),  // Tail
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  )
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    msg['text'] ?? '',
-                    style: GoogleFonts.doHyeon(
-                      fontSize: 13,        // Body 2
-                      color: Colors.black87,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    timeStr,
-                    style: GoogleFonts.alexandria(
-                      fontSize: 10,        // Micro
-                      color: Colors.black45,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          } else {
-            // OPPONENT MESSAGE (Left Aligned)
-            // Determine opponent role color for tint
-            final oppRole = _session.myRole == 'A' ? 'B' : 'A';
-            final tintColor = oppRole == 'A' ? const Color(0xFFF4E7E8) : const Color(0xFFF0E7F4);
-
-            return Container(
-              margin: const EdgeInsets.only(
-                left: 12,
-                right: 60,
-                bottom: 8,
-              ),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: tintColor, 
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                  bottomLeft: Radius.circular(4),  // Tail
-                  bottomRight: Radius.circular(16),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  )
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                   Text(
-                    msg['text'] ?? '',
-                    style: GoogleFonts.doHyeon(
-                      fontSize: 13,
-                      color: Colors.black87,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    timeStr,
-                    style: GoogleFonts.alexandria(
-                      fontSize: 10,
-                      color: Colors.black45,
-                    ),
-                  ),
-                ],
-              ),
-            );
+          
+          // Nickname Logic
+          String senderName = '';
+          if (!isMe) {
+             senderName = (sender == 'A') 
+                ? (_session.hostNickname ?? 'Host') 
+                : (_session.guestNickname ?? 'Guest');
           }
+
+          // Chat Bubble Colors (Vibrant Dark)
+          final Color bubbleColor;
+          if (sender == 'A') {
+             bubbleColor = AppColors.hostPrimary.withOpacity(0.85);
+          } else {
+             bubbleColor = AppColors.guestPrimary.withOpacity(0.85);
+          }
+
+          return Column(
+            crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            children: [
+               // Group Spacing
+               SizedBox(height: topSpacing),
+
+               // Opponent Name Label
+               if (!isMe && (topSpacing > 4.0)) // Show only if new group
+                 Padding(
+                   padding: const EdgeInsets.only(left: 16, bottom: 4),
+                   child: Text(
+                     senderName,
+                     style: GoogleFonts.alexandria(fontSize: 11, color: Colors.white70, fontWeight: FontWeight.bold),
+                   ),
+                 ),
+
+               // Message Bubble
+               Row(
+                 mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+                 crossAxisAlignment: CrossAxisAlignment.end,
+                 children: [
+                   // Time Stamp (Left for Me)
+                   if (isMe)
+                     Padding(
+                       padding: const EdgeInsets.only(right: 6, bottom: 2),
+                       child: Text(timeStr, style: GoogleFonts.alexandria(fontSize: 9, color: Colors.white38)),
+                     ),
+
+                   Container(
+                      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: bubbleColor,
+                        borderRadius: BorderRadius.only(
+                          topLeft: const Radius.circular(18),
+                          topRight: const Radius.circular(18),
+                          bottomLeft: isMe ? const Radius.circular(18) : const Radius.circular(2),
+                          bottomRight: isMe ? const Radius.circular(2) : const Radius.circular(18),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFBD0558).withOpacity(0.15), // Subtle glow hint
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          )
+                        ],
+                        // border: Border.all(color: Colors.white.withOpacity(0.1), width: 0.5), // Glass edge
+                      ),
+                      child: Text(
+                        msg['text'] ?? '',
+                        style: GoogleFonts.doHyeon(
+                          fontSize: 14,
+                          color: Colors.white, // White text for contrast
+                          height: 1.4,
+                        ),
+                      ),
+                   ),
+
+                   // Time Stamp (Right for Opponent)
+                   if (!isMe)
+                     Padding(
+                       padding: const EdgeInsets.only(left: 6, bottom: 2),
+                       child: Text(timeStr, style: GoogleFonts.alexandria(fontSize: 9, color: Colors.white38)),
+                     ),
+                 ],
+               ),
+            ],
+          );
         },
       ),
     );
