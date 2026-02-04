@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
@@ -69,6 +70,11 @@ class _RewardScreenState extends State<RewardScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // 1. Header
+              SvgPicture.asset(
+                'assets/images/logo_vector.svg',
+                height: 40,
+              ),
+              const SizedBox(height: 24),
               Text(
                 finalWinner == 'DRAW' ? "DRAW GAME" : 
                 finalWinner == myRole ? "YOU WON! 🏆" : "GAME OVER",

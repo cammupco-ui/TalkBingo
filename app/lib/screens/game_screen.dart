@@ -639,7 +639,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           children: [
             // 1. Logo Only
             SvgPicture.asset(
-              'assets/images/Logo Vector.svg',
+              'assets/images/logo_vector.svg', // Corrected filename
               height: 30,
             ),
             
