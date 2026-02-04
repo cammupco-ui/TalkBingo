@@ -27,7 +27,7 @@ class SignOutLandingScreen extends StatelessWidget {
               
               // Title
               Text(
-                'See you again!',
+                'We support you!',
                 style: GoogleFonts.alexandria(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -39,7 +39,7 @@ class SignOutLandingScreen extends StatelessWidget {
               
               // Subtitle
               Text(
-                'You have been successfully signed out.',
+                '당신의 대화를 응원합니다!\nWe are cheering for your conversation!',
                 style: GoogleFonts.alexandria(
                   fontSize: 14,
                   color: Colors.grey[600],
@@ -80,22 +80,6 @@ class SignOutLandingScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // Option 2: Exit App
-              AnimatedOutlinedButton(
-                onPressed: () {
-                  SystemNavigator.pop(); // Note: Might not work on iOS based on Apple guidelines, but standard for Android
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.grey[700],
-                  side: BorderSide(color: Colors.grey[300]!),
-                  fixedSize: const Size.fromHeight(48),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text(
-                  'Exit App',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
             ],
           ),
         ),
