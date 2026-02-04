@@ -94,18 +94,18 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Text(AppLocalizations.get('cancel'), style: const TextStyle(color: Colors.grey)),
             ),
             TextButton(
-              onPressed: () async {
-                Navigator.pop(context);
+              onPressed: () {
+                final nav = Navigator.of(context);
+                nav.pop(); // Close Dialog
                 
-                // Clear the pending code now that user is acting on it
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.remove('pending_invite_code');
+                // Clear prefs in background (fire & forget, or await if needed but don't block UI)
+                SharedPreferences.getInstance().then((prefs) {
+                   prefs.remove('pending_invite_code');
+                });
 
-                if (context.mounted) {
-                  Navigator.of(context).push(
-                     MaterialPageRoute(builder: (_) => InviteCodeScreen(initialCode: code)),
-                  );
-                }
+                nav.push(
+                   MaterialPageRoute(builder: (_) => InviteCodeScreen(initialCode: code)),
+                );
               },
               child: Text(AppLocalizations.get('join'), style: const TextStyle(color: AppColors.hostPrimary, fontWeight: FontWeight.bold)),
             ),
