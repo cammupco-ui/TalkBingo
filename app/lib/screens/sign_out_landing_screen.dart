@@ -27,7 +27,9 @@ class SignOutLandingScreen extends StatelessWidget {
               
               // Title
               Text(
-                'We support you!',
+                Localizations.localeOf(context).languageCode == 'ko' 
+                    ? '우리 다시 만나요!' 
+                    : 'Hope we meet again soon',
                 style: GoogleFonts.alexandria(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -39,10 +41,13 @@ class SignOutLandingScreen extends StatelessWidget {
               
               // Subtitle
               Text(
-                '당신의 대화를 응원합니다!\nWe are cheering for your conversation!',
+                Localizations.localeOf(context).languageCode == 'ko'
+                    ? '당신의 이야기가 멈추지 않도록 곁에 있을게요'
+                    : 'We’ll be right here, so your story never has to stop.',
                 style: GoogleFonts.alexandria(
                   fontSize: 14,
                   color: Colors.grey[600],
+                  height: 1.5,
                 ),
                 textAlign: TextAlign.center,
               ),
