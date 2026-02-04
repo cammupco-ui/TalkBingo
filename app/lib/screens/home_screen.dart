@@ -64,10 +64,8 @@ class _HomeScreenState extends State<HomeScreen> {
        code = prefs.getString('pending_invite_code');
        if (code != null) {
           debugPrint("💾 Valid Code recovered from Storage: $code");
-          // Clear immediately so we don't handle it again on next reload if user cancels
-          // actually, we clear it ONLY if we successfully start the flow?
-          // No, safer to assume we handle it now.
-          await prefs.remove('pending_invite_code');
+          // Do NOT clear immediately. Persist until explicit join or manual clear.
+          // await prefs.remove('pending_invite_code'); 
        }
     }
 
@@ -96,11 +94,18 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Text(AppLocalizations.get('cancel'), style: const TextStyle(color: Colors.grey)),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(context);
-                Navigator.of(context).push(
-                   MaterialPageRoute(builder: (_) => InviteCodeScreen(initialCode: code)),
-                );
+                
+                // Clear the pending code now that user is acting on it
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.remove('pending_invite_code');
+
+                if (context.mounted) {
+                  Navigator.of(context).push(
+                     MaterialPageRoute(builder: (_) => InviteCodeScreen(initialCode: code)),
+                  );
+                }
               },
               child: Text(AppLocalizations.get('join'), style: const TextStyle(color: AppColors.hostPrimary, fontWeight: FontWeight.bold)),
             ),
