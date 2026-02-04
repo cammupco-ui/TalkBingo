@@ -145,17 +145,22 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
   Color get _hoverColor => widget.isHost ? AppColors.hostPrimary : AppColors.guestPrimary;
   
   void _handleTap() {
-    // 1. Shake if Locked or Not Selectable
-    if (!_canSelect && !_isFilled) { // Allow tapping filled ones just for fun? No, usually ignore
-       if (_isLocked) {
-         HapticFeedback.lightImpact(); // Light error vibration
-         _shakeController.forward(from: 0);
-       }
+    // 1. Shake if Locked (Visual Feedback) but ALLOW Tap to proceed
+    if (_isLocked) {
+       HapticFeedback.lightImpact(); 
+       _shakeController.forward(from: 0);
+       // Fall through to execute onTap so GameScreen can handle the "Challenge" logic
+    } else if (!_canSelect && !_isFilled) {
+       // If not locked but not selectable (e.g. turn mismatch managed by parent, or filled?),
+       // Actually _canSelect is !_isFilled && !_isLocked.
+       // So this block handles: Filled tiles? Or just other cases?
+       // If filled, usually we ignore.
        return;
     }
 
     // 2. Click Logic
-    if (_canSelect) {
+    // Allow tap if selectable OR Locked (to trigger mini game)
+    if (_canSelect || _isLocked) {
       // Haptic feedback for tactile response
       HapticFeedback.mediumImpact();
       
@@ -224,7 +229,13 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
                       : null,
                     borderRadius: BorderRadius.circular(12),
                     gradient: _isFilled
-                        ? null
+                        ? (_isLocked 
+                            ? LinearGradient( // Locked Gradient (Dark Black/Grey)
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [Colors.black87, Colors.black54],
+                              )
+                            : null) 
                         : LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -233,6 +244,32 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
                   ),
                   child: Stack(
                     children: [
+                      // Watermark for MP/CP
+                      if (widget.owner == 'A')
+                        const Center(
+                          child: Text(
+                            "M",
+                            style: TextStyle(
+                              fontFamily: 'NURA',
+                              fontSize: 60,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white12, // Very subtle transparent white
+                            ),
+                          ),
+                        ),
+                      if (widget.owner == 'B')
+                        const Center(
+                          child: Text(
+                            "C",
+                            style: TextStyle(
+                              fontFamily: 'NURA',
+                              fontSize: 60,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white12, 
+                            ),
+                          ),
+                        ),
+
                       // Base Text
                       Center(
                         child: Text(
@@ -245,6 +282,20 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
                           ),
                         ),
                       ),
+                      
+                      // Locked Icon (Centered, Large, Semi-transparent)
+                      if (_isLocked)
+                        Center(
+                          child: Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                               color: Colors.black.withOpacity(0.3), // Darker semi-transparent backing shape
+                               shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.lock, color: Colors.white.withOpacity(0.9), size: 28),
+                          ),
+                        ),
                       
                       // Liquid Fill
                       // Use IgnorePointer for visual layers so InkWell gets clicks
@@ -308,14 +359,6 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
                         ),
                       ),
                       
-                      // Locked Icon
-                      if (_isLocked)
-                        IgnorePointer(
-                          child: Center(
-                            child: Icon(Icons.lock, color: _isFilled ? Colors.white70 : Colors.grey.shade600, size: 24),
-                          ),
-                        ),
-
                       // Winning Shimmer
                       if (widget.isWinningTile)
                         IgnorePointer(

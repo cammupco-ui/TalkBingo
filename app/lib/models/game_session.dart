@@ -139,6 +139,10 @@ class GameSession with ChangeNotifier {
   RealtimeChannel? _gameChannel;
   bool isGameActive = false;
   
+  // Turn Tracking
+  int turnCount = 1;
+  Map<String, int> lockedTurns = {}; // Key: Index String, Value: Turn Count when locked
+  
   // Hover Sync (Real-time Broadcast)
   ValueNotifier<int?> remoteHoverIndex = ValueNotifier(null);
   Timer? _hoverDebounce;
@@ -988,15 +992,22 @@ class GameSession with ChangeNotifier {
 
   Future<void> updateTurn(String nextTurn) async {
     currentTurn = nextTurn;
+    turnCount++; // Increment Tick
     notifyListeners();
     await _syncGameState();
   }
 
-  Future<void> startInteraction(int index, String type, String player, {String? q, String? A, String? B, String? suggestions}) async {
+  Future<void> startInteraction(int index, String type, String player, {String? q, String? A, String? B, List<String>? suggestions}) async {
+    // Randomly select specific mini game if generic 'mini' requested
+    String finalType = type;
+    if (type == 'mini') {
+       finalType = Random().nextBool() ? 'mini_target' : 'mini_penalty';
+    }
+
     interactionState = {
       'index': index,
       'step': 'answering',
-      'type': type,
+      'type': finalType,
       'player': player,
       'question': q,
       'optionA': A,
@@ -1097,44 +1108,102 @@ class GameSession with ChangeNotifier {
 
 
   
-  Future<void> resolveMiniGame(String winner) async {
-    if (interactionState == null) return;
-    
-    // If I am the winner, I claim the tile.
-    // Ideally HOST should resolve this to avoid race conditions.
-    // For MVP, if 'winner' == myRole, I claim it.
-    // BUT 'resolveInteraction' logic uses 'approved' boolean.
-    // Let's reuse 'resolveInteraction(true)' logic if possible.
-    // But 'resolveInteraction' assumes 'answering/reviewing' flow.
-    // Let's create specific logic or adapt.
-    
-    final int index = interactionState!['index'];
-    
-    // Update Tile Ownership
-    _tileOwnership[index] = winner;
-    
-    // Add Points? Maybe? 
-    // Usually winning a locked tile gives points or just the tile.
-    
-    // Clear State
-    interactionState = null;
-    
-    // Switch Turn? 
-    // Rules: "Winner takes turn" or "Turn passes"?
-    // Usually if you unlock, maybe you keep turn?
-    // Let's stick to: Winner gets tile. Turn passes to... whom?
-    // If A attacks Locked and Wins -> A gets tile. Turn -> B.
-    // If A attacks and Loses -> Tile stays Locked? Or B gets it?
-    // Dice Duel: Higher roll wins tile?
-    
-    // Let's say Winner gets tile.
-    // Handle "Draw" (re-roll) in UI.
-    
-    currentTurn = winner == 'A' ? 'B' : 'A'; // Turn passes after action
-    
+  // Challenge Mechanic
+  Map<String, int> challengeCounts = {'A': 2, 'B': 2};
+
+  Future<void> startChallenge(int index) async {
+    // Check Challenge Count
+    if ((challengeCounts[myRole] ?? 0) <= 0) {
+      return; // UI should have blocked this, but safety check
+    }
+
+    interactionState = {
+      'index': index,
+      'step': 'playing',
+      'type': 'challenge', // Special type for Challenge
+      'subType': Random().nextBool() ? 'mini_target' : 'mini_penalty', // Actual Game
+      'player': myRole, // Aggressor
+      'activePlayer': myRole,
+      'round': 1,
+      'scores': {'A': 0, 'B': 0},
+    };
     notifyListeners();
     await _syncGameState();
   }
+
+  Future<void> resolveChallenge(String winner) async {
+    if (interactionState == null) return;
+    
+    final int index = interactionState!['index'];
+    final String aggressor = interactionState!['player'];
+    final String defender = (aggressor == 'A') ? 'B' : 'A';
+    
+    // Decrement Aggressor's Challenge Count regardless of outcome
+    int count = challengeCounts[aggressor] ?? 0;
+    if (count > 0) challengeCounts[aggressor] = count - 1;
+
+    if (winner == aggressor) {
+       // SUCCESS: Take Tile
+       _tileOwnership[index] = aggressor;
+       
+       // Reward Aggressor (Attack Bonus)
+       if (myRole == aggressor) {
+          addPoints(a: 10);
+          addHistory("earn", 10, "Successful Challenge", price: "Challenge");
+       }
+       
+       // System Msg
+       addSystemMessage("Challenge SUCCESS! Tile Stolen!");
+
+    } else {
+       // FAILURE: Defender keeps tile (or Draw keeps it)
+       // Reward Defender (Defense Bonus)
+       // Only if it wasn't a Draw? Let's say Draw = Defender wins/keeps.
+       // "Winner takes/keeps tile".
+       
+       if (myRole == defender) {
+          addPoints(a: 5);
+          addHistory("earn", 5, "Successful Defense", price: "Challenge");
+       }
+
+       addSystemMessage("Challenge FAILED! Tile Defended!");
+    }
+    
+    // Turn Consumption: Turn ALWAYS passes to the other player
+    currentTurn = (currentTurn == 'A') ? 'B' : 'A'; // Simple switch
+
+    interactionState = null;
+    notifyListeners();
+    await _syncGameState();
+  }
+
+  // Helper to check if a tile belongs to a completed line
+  bool isTileInCompletedLine(int index) {
+      // Check Rows
+      int row = index ~/ 5;
+      if ([0,1,2,3,4].every((c) {
+          int idx = row * 5 + c;
+          return _tileOwnership[idx] == _tileOwnership[index]; // Same owner as target
+      })) return true;
+
+      // Check Cols
+      int col = index % 5;
+      if ([0,1,2,3,4].every((r) {
+          int idx = r * 5 + col;
+          return _tileOwnership[idx] == _tileOwnership[index];
+      })) return true;
+
+      // Check Diagonals
+      if ([0,6,12,18,24].contains(index)) {
+         if ([0,6,12,18,24].every((i) => _tileOwnership[i] == _tileOwnership[index])) return true;
+      }
+      if ([4,8,12,16,20].contains(index)) {
+         if ([4,8,12,16,20].every((i) => _tileOwnership[i] == _tileOwnership[index])) return true;
+      }
+
+      return false;
+  }
+
 
   Future<void> submitAnswer(String answer) async {
     if (interactionState != null) {
@@ -1212,9 +1281,11 @@ class GameSession with ChangeNotifier {
     } else {
        // Failed/Rejected
        // Lock the tile for the AGGRESSOR (or whoever was answering)
-       // If Duel Draw -> Lock remains? Or 'LOCKED_Aggressor'?
-       // Let's stick to LOCKED_Aggressor for consistency
        _tileOwnership[index] = 'LOCKED_$aggressor'; 
+       
+       // Record Lock Time (Turn Count)
+       lockedTurns[index.toString()] = turnCount;
+       
        currentTurn = aggressor == 'A' ? 'B' : 'A';
     }
     interactionState = null;
@@ -1267,6 +1338,12 @@ class GameSession with ChangeNotifier {
     if (interactionState == null) return;
     final winner = interactionState!['winner'] as String?;
     
+    // Route to Challenge Logic
+    if (interactionState!['type'] == 'challenge') {
+       await resolveChallenge(winner ?? 'DRAW');
+       return;
+    }
+
     if (winner != null) {
         await resolveInteraction(true, winnerOverride: winner);
     } else {
@@ -1358,6 +1435,9 @@ class GameSession with ChangeNotifier {
       'relationSub': relationSub,
       'intimacyLevel': intimacyLevel,
       'guestGender': guestGender,
+      'challengeCounts': challengeCounts,
+      'turnCount': turnCount,
+      'lockedTurns': lockedTurns,
     };
 
     try {
@@ -1413,6 +1493,16 @@ class GameSession with ChangeNotifier {
       }
       if (state['messages'] != null) {
         messages = List<Map<String, dynamic>>.from(state['messages']);
+      }
+      
+      if (state['challengeCounts'] != null) {
+         challengeCounts = Map<String, int>.from(state['challengeCounts']);
+      }
+      if (state['turnCount'] != null) {
+         turnCount = state['turnCount'];
+      }
+      if (state['lockedTurns'] != null) {
+         lockedTurns = Map<String, int>.from(state['lockedTurns']);
       }
       
       // Also sync questions if present and local is empty (e.g. guest join)
@@ -1659,6 +1749,9 @@ class GameSession with ChangeNotifier {
     currentTurn = 'A';
     myRole = '';
     hostRatingProcessed = false; // Reset flag
+    challengeCounts = {'A': 2, 'B': 2};
+    turnCount = 1;
+    lockedTurns = {};
     // do not reset Host info or points
     notifyListeners();
   }
@@ -1795,5 +1888,9 @@ class GameSession with ChangeNotifier {
   */
   }
   
+
+  // --- Missing Methods Implementation ---
+  
+
 
 }

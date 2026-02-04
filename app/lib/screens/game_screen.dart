@@ -1456,7 +1456,54 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     final owner = _session.tileOwnership[index];
     
     // 1. Basic Validations
-    if (owner.isNotEmpty && owner != 'LOCKED') {
+    // Check if tile is owned by OPPONENT (Challenge Logic)
+    if (owner.isNotEmpty && owner != _session.myRole && !owner.startsWith('LOCKED')) {
+       // It's an Opponent's Tile!
+       
+       // 1. Check Turn
+       if (_session.currentTurn != _session.myRole) {
+          _showSnackBar("It's not your turn!");
+          return;
+       }
+       
+       // 2. Check Immunity (Completed Line)
+       if (_session.isTileInCompletedLine(index)) {
+          _showSnackBar("Cannot challenge a completed Bingo line!");
+          HapticFeedback.heavyImpact(); // Negative feedback
+          return;
+       }
+
+       // 3. Check Challenge Count
+       final int remaining = _session.challengeCounts[_session.myRole] ?? 0;
+       if (remaining <= 0) {
+          _showSnackBar("No Challenge attempts remaining!");
+          return;
+       }
+
+       // 4. Show Challenge Dialog
+       showDialog(
+         context: context, 
+         builder: (ctx) => AlertDialog(
+           title: Text("Challenge Opponent?"),
+           content: Text("Steal this tile by winning a Mini Game!\n\nUse Challenge Attempt? ($remaining/2)"),
+           actions: [
+             TextButton(child: Text("Cancel"), onPressed: () => Navigator.pop(ctx)),
+             ElevatedButton(
+               child: Text("Challenge!"), 
+               onPressed: () {
+                 Navigator.pop(ctx);
+                 _session.startChallenge(index);
+               },
+               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white),
+             )
+           ],
+         )
+       );
+       return;
+    }
+
+    // Standard "Taken" check for OWN tiles or other statuses
+    if (owner.isNotEmpty && !owner.startsWith('LOCKED')) {
       _showSnackBar('This tile is already taken!');
       return;
     }
@@ -1466,19 +1513,32 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     }
     
     // 2. Turn Validation (or Mini Game Trigger)
-    if (owner == 'LOCKED') {
+    // 2. Turn Validation (or Mini Game Trigger)
+    if (owner.startsWith('LOCKED')) {
+       // Cooldown Logic
+       // Check if locked recently
+       final int lockedAt = _session.lockedTurns[index.toString()] ?? 0;
+       final int turnsSinceLock = _session.turnCount - lockedAt;
+       
+       // Rule: 1 Round Cooldown (Current Turn + Next Turn = 2 Turns)
+       // e.g. Locked entirely at Turn 10.
+       // Turn 11 (Opponent): 11-10 = 1 (Cooldown)
+       // Turn 12 (Me): 12-10 = 2 (Cooldown)
+       // Turn 13 (Opponent): 13-10 = 3 (Available)
+       if (turnsSinceLock <= 2) {
+           _showSnackBar("🔒 Locked! Cooldown active for ${3 - turnsSinceLock} turns.");
+           HapticFeedback.heavyImpact();
+           return;
+       }
+
        // Mini Game Trigger (M-Type)
-       // Anyone can trigger? Or maybe still turn based?
-       // Rules: "Next turn anyone can challenge".
-       // For simplicity MVP, let's allow ANYONE to trigger if it's locked.
-       // Or stick to turn: "Next turn". Let's assume Turn is required.
-       // Actually rules say: "Next turn from... anyone can press". 
-       // Let's enforce Turn for now to avoid chaos.
        if (_session.currentTurn != _session.myRole) {
           _showSnackBar("It's not your turn!");
           return;
        }
        // Start Mini Game
+       // We pass 'mini' type. The actual game (Target/Penalty) is determined by ID? or random?
+       // For now logic is just 'mini'.
        _session.startInteraction(index, 'mini', _session.myRole);
        return;
     }
@@ -1524,7 +1584,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   String type = 'balance';
   String optA = '';
   String optB = '';
-  String suggestions = ''; // For Truth Game
+  List<String>? suggestions; // For Truth Game
   
   if (index < _session.questions.length) {
      qText = _session.questions[index];
@@ -1534,7 +1594,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
      type = opts['type'] ?? 'balance';
      optA = opts['A'] ?? '';
      optB = opts['B'] ?? '';
-     suggestions = opts['answer'] ?? ''; // Extract Truth suggestions
+     if (opts['answer'] is List) {
+       suggestions = List<String>.from(opts['answer']);
+     }
   }
 
   await _session.startInteraction(
@@ -1864,17 +1926,25 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildTurnIndicator() {
+    final currentTurn = _session.currentTurn;
     final myRole = _session.myRole;
-    final turn = _session.currentTurn;
-    final isMyTurn = (myRole.isNotEmpty && myRole == turn);
+    final isMyTurn = (currentTurn == myRole);
+    final isA = (currentTurn == 'A');
     
-    // Debug fallback: If empty, assume it's starting or valid
+    final String label = isMyTurn 
+        ? "MY TURN"
+        : (isA 
+            ? "MP ${_session.hostNickname ?? 'Host'}" 
+            : "CP ${_session.guestNickname ?? 'Guest'}");
+    
+    final Color turnColor = isA ? AppColors.hostPrimary : AppColors.guestPrimary;
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-        color: isMyTurn ? const Color(0xFFBD0558) : const Color(0xFF757575), // Explicit colors
+        color: turnColor, 
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.5), width: 1.5), // Add border for visibility
+        border: Border.all(color: Colors.white.withOpacity(0.5), width: 1.5),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
@@ -1887,15 +1957,15 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            isMyTurn ? Icons.play_circle_fill : Icons.hourglass_empty,
+            Icons.play_circle_fill, // Always show play icon for current turn
             color: Colors.white,
             size: 14,
           ),
           const SizedBox(width: 6),
           Text(
-            isMyTurn ? "MY TURN" : "WAIT",
+            label,
             style: GoogleFonts.alexandria(
-              fontSize: 12, // Slightly smaller to prevent overflow
+              fontSize: 12,
               fontWeight: FontWeight.bold,
               color: Colors.white,
               letterSpacing: 0.5,
@@ -1903,9 +1973,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
-    ).animate(target: isMyTurn ? 1 : 0)
-     .scale(begin: const Offset(0.95, 0.95), end: const Offset(1.05, 1.05), duration: 800.ms, curve: Curves.easeInOut)
-     .then().scale(end: const Offset(0.95, 0.95), duration: 800.ms); // Pulse animation
+    );
   }
 
   Widget _buildBingoTile(int index) {
