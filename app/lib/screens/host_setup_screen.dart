@@ -86,32 +86,32 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
           '참여 코드: $_inviteCode\n'
           '바로 입장하기: $link';
 
-      // 1. Try to open System Share Sheet (Mobile Only)
-      // On Web, Share.share often falls back to 'mailto:' which causes UI issues.
-      // So on Web, we skip direct sharing and default to Clipboard Copy.
-      if (!kIsWeb) {
-        final box = context.findRenderObject() as RenderBox?;
-        
-        try {
-          await Share.share(
-            message,
-            subject: 'TalkBingo Invite Code',
-            sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
-          );
-        } catch (e) {
-          debugPrint('Share failed: $e');
-        }
+      // 1. Try to open System Share Sheet
+      // We attempt this on ALL platforms (including Web).
+      // Modern mobile browsers (iOS Safari, Chrome Android) support proper sharing.
+      // Legacy browsers/PC might fall back to 'mailto', but the 'Copy to Clipboard' below ensures the user is covered.
+      final box = context.findRenderObject() as RenderBox?;
+      
+      try {
+        await Share.share(
+          message,
+          subject: 'TalkBingo Invite Code',
+          sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+        );
+      } catch (e) {
+        debugPrint('Share failed: $e');
       }
       
-      // 2. Also Copy to Clipboard for convenience (Primary action on Web)
+      // 2. ALWAYS Copy to Clipboard as a safety net
+      // This ensures that even if Share fails (or opens mailto), the user has the link ready to paste.
       await Clipboard.setData(ClipboardData(text: message));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(kIsWeb ? 'Link copied to clipboard!' : 'Invite copied to clipboard!'),
-            duration: const Duration(seconds: 2),
-            backgroundColor: const Color(0xFFBD0558),
+          const SnackBar(
+            content: Text('Link is ready! (Copied to clipboard & Opening Share...)'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Color(0xFFBD0558),
           ),
         );
       }
