@@ -878,7 +878,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   // 2. Main Content
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 120.0), // Increased to 120 for safer clearance
+                      padding: EdgeInsets.zero, // Removed bottom padding to maximize Chat/Board area
                       child: Stack(
                         children: [
                          PageView(
