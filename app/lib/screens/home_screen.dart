@@ -55,8 +55,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _checkInitialFlows() {
     // 1. Fast Track Join (Deep Link)
-    if (GameSession().pendingInviteCode != null) {
-      final code = GameSession().pendingInviteCode!;
+    String? code = GameSession().pendingInviteCode;
+
+    // Safety Validation (Double Check)
+    if (code != null && (code.length != 6 || !RegExp(r'^[A-Z0-9]+$', caseSensitive: false).hasMatch(code))) {
+       debugPrint("⚠️ HomeScreen: Invalid Pending Code detected and cleared: $code");
+       code = null;
+       GameSession().pendingInviteCode = null;
+    }
+
+    if (code != null) {
       GameSession().pendingInviteCode = null; // Clear it
       
       _inviteCodeController.text = code;

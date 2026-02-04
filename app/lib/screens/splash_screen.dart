@@ -25,6 +25,7 @@ class _SplashScreenState extends State<SplashScreen> {
   double _progress = 0.0;
   String? _initialInviteCode;
   StreamSubscription<AuthState>? _authSubscription;
+  bool _isAuthInProgress = false; // Add this line
   
   // Debug Logs
   final List<String> _logs = [];
@@ -87,45 +88,72 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _initDeepLinks() async {
     try {
+      Uri? targetUri;
       if (kIsWeb) {
-        // Web Logic (Existing)
-        final uri = Uri.base;
-        _initialInviteCode = uri.queryParameters['code']?.trim();
-        if (_initialInviteCode != null && _initialInviteCode!.isNotEmpty) {
-           GameSession().pendingInviteCode = _initialInviteCode; // Set immediately
-           UrlCleaner.removeCodeParam(); // Clear from URL to prevent loop
-        }
-        _addLog("Captured Web URL Code: $_initialInviteCode");
+        targetUri = Uri.base;
       } else {
-        // Mobile Logic (AppLinks)
         final appLinks = AppLinks();
+        targetUri = await appLinks.getInitialLink();
         
-        // 1. Check Initial Link
-        final initialUri = await appLinks.getInitialLink();
-        if (initialUri != null) {
-          _initialInviteCode = initialUri.queryParameters['code']?.trim();
-          if (_initialInviteCode != null) {
-             GameSession().pendingInviteCode = _initialInviteCode; // Set immediately
-          }
-          _addLog("Captured Mobile Initial Code: $_initialInviteCode");
-        }
-
-        // 2. Listen for Stream (Foreground/Background)
-        appLinks.uriLinkStream.listen((uri) {
-           if (!mounted) return;
-           final code = uri.queryParameters['code']?.trim();
-           if (code != null) {
-              _initialInviteCode = code; 
-              GameSession().pendingInviteCode = code; // Set immediately
-              _addLog("Captured Mobile Stream Code: $code");
-              // Retrigger Auth check if we were stuck waiting
-              _checkExistingSession(); 
-           }
-        });
+        // Listen for Stream (Foreground/Background)
+        appLinks.uriLinkStream.listen((uri) => _handleDeepLink(uri));
       }
+
+      if (targetUri != null) {
+        _handleDeepLink(targetUri);
+      }
+
     } catch (e) {
       _addLog("Error capturing Deep Link: $e");
     }
+  }
+
+  void _handleDeepLink(Uri uri) {
+     if (!mounted) return;
+
+     // 1. Check for Auth Params (Magic Link, Signup, Recovery)
+     final hasFragmentToken = uri.fragment.contains('access_token');
+     final hasQueryToken = uri.queryParameters.containsKey('access_token');
+     final authType = uri.queryParameters['type']; // signup, recovery, magiclink, invite
+     
+     if (hasFragmentToken || hasQueryToken || authType == 'signup' || authType == 'recovery' || authType == 'magiclink') {
+        _addLog("🔐 Auth Params Detected! (Type: $authType)");
+        setState(() {
+          _isAuthInProgress = true;
+        });
+        return; 
+     }
+
+     // 2. Check for Invite Code
+     String? code = uri.queryParameters['code']?.trim();
+     
+     if (code != null) {
+        // Recursive Clean: If code acts as a URL container (bug fix)
+        if (code.contains('http') || code.contains('://')) {
+            try {
+               final innerUri = Uri.parse(code);
+               code = innerUri.queryParameters['code']?.trim();
+            } catch (e) { /* ignore */ }
+        }
+
+        // Validate Format (6 Chars, Alphanumeric)
+        // Note: invite codes generated are 6 chars, usually uppercase + numbers.
+        final bool isValid = code != null && RegExp(r'^[A-Z0-9]{6}$', caseSensitive: false).hasMatch(code!);
+
+        if (isValid) { 
+           // Standardize to Uppercase
+           code = code!.toUpperCase();
+           
+           _initialInviteCode = code; 
+           GameSession().pendingInviteCode = code; 
+           _addLog("📩 Invite Code Captured: $code");
+           UrlCleaner.removeCodeParam(); 
+           
+           if (!_isAuthInProgress) _checkExistingSession(); 
+        } else {
+           _addLog("⚠️ Invalid Code Ignored: ${uri.queryParameters['code']}");
+        }
+     }
   }
 
   @override
@@ -159,58 +187,33 @@ class _SplashScreenState extends State<SplashScreen> {
       final event = data.event;
       _addLog("Auth Event: $event");
 
-      // Use _initialInviteCode if present, or check current URI
-      final uri = Uri.base; 
-      final currentCode = uri.queryParameters['code']?.trim();
-      final effectiveCode = _initialInviteCode ?? currentCode;
-
-      // Handle Invite Code (Deep Link / URL Param)
-      if (effectiveCode != null && effectiveCode.length == 6) {
-           _addLog("Invite Code Found: $effectiveCode -> Preparing Fast Track");
-           GameSession().pendingInviteCode = effectiveCode;
-           
-           if (session != null) {
-             _handleAuthenticatedUser(session);
-           } else {
-             // AUTO-LOGIN ANONYMOUSLY FOR FAST TRACK
-             _addLog("No Session. Auto-login for Fast Track...");
-             try {
-                final authResponse = await Supabase.instance.client.auth.signInAnonymously();
-                if (authResponse.session != null) {
-                   _handleAuthenticatedUser(authResponse.session!);
-                } else {
-                   throw Exception("Anon Sign-in failed");
-                }
-             } catch (e) {
-                // If failed, we don't navigate here. The timeout logic will catch it and send to Login.
-                _addLog("Auto-login failed: $e. Waiting for timeout logic.");
-             }
-           }
-           return;
-      }
-
-      // Handle Auth Session
       if (session != null) {
-           _addLog("Session Found in Listener. Handling User.");
+           _addLog("✅ Session Found in Listener. Handling User.");
+           if (mounted) setState(() => _isAuthInProgress = false);
            _handleAuthenticatedUser(session);
+      } else if (event == AuthChangeEvent.signedOut) {
+         if (mounted) setState(() => _isAuthInProgress = false);
       }
     });
 
     // 2. Initial Checks (Timeouts)
-    // Extended timeout to 4.0s for Mobile Web latency
     Future.delayed(const Duration(milliseconds: 4000), () async {
       if (!mounted) return;
-      _addLog("Timeout (4s) Reached. Checking State.");
+      _addLog("⏳ Timeout (4s) Reached.");
       
+      // If Auth is in Progress, DO NOT REDIRECT yet.
+      if (_isAuthInProgress) {
+         _addLog("✋ Auth In Progress. Skipping Timeout Redirect. Waiting for Stream...");
+         return;
+      }
+
       final session = Supabase.instance.client.auth.currentSession;
-      String? inviteCode = _initialInviteCode; 
+      String? inviteCode = _initialInviteCode ?? GameSession().pendingInviteCode; 
       
-      bool isAuthCode = inviteCode != null && inviteCode.length > 6;
       bool isInviteCode = inviteCode != null && inviteCode.length == 6;
 
       if (isInviteCode) {
          _addLog("Invite Code Detected: $inviteCode. Fast Track...");
-         GameSession().pendingInviteCode = inviteCode;
          
          if (session == null) {
             _addLog("No Session. Auto-login for Fast Track...");
@@ -233,20 +236,18 @@ class _SplashScreenState extends State<SplashScreen> {
          return;
       }
 
-      if (session == null && !isAuthCode) {
-         _addLog("No Session. Navigating to Signup...");
+      if (session == null) {
+         _addLog("No Session & No Auth in Progress. Navigating to Login...");
          Navigator.of(context).pushReplacement(
            MaterialPageRoute(builder: (_) => const LoginScreen()),
          );
-      } else if (isAuthCode) {
-         _addLog("Auth Code Detected. Waiting...");
       }
     });
 
-    // Check 2: Safety Net (10s)
-    Future.delayed(const Duration(seconds: 10), () {
+    // Check 2: Safety Net (20s)
+    Future.delayed(const Duration(seconds: 20), () {
         if (!mounted) return;
-        _addLog("Safety Net (10s) Reached.");
+        _addLog("🚨 Safety Net (20s) Reached.");
         
         final session = Supabase.instance.client.auth.currentSession;
         if (session == null) {
@@ -267,11 +268,12 @@ class _SplashScreenState extends State<SplashScreen> {
 
     // 2. Load Host Info to check if profile exists
     final gameSession = GameSession();
-    await gameSession.loadHostInfoFromPrefs();
+    
+    // CRITICAL FIX: Ensure we try to load from Server BEFORE checking validity
+    await gameSession.loadProfile(); 
+
     _addLog("Host Nickname: ${gameSession.hostNickname}");
       
-      // If code is pending, SKIP HostInfo requirement to allow Fast Track
-      // This is crucial for "Guest Mode" join where we don't want to force profile setup yet.
       // If code is pending, SKIP HostInfo requirement to allow Fast Track
       // This is crucial for "Guest Mode" join where we don't want to force profile setup yet.
       // Also check for empty string to prevent false positives from stale/default data

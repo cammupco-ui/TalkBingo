@@ -229,17 +229,17 @@
 ### **호스트 경로 (Host Flows):**
 
 **1. 신규 가입 (New User Onboarding):**
-`Splash` -> `Signup` (이메일 인증) -> **`HostInfo` (프로필 설정)** -> `HostSetup` (게임 생성) -> `Waiting` -> `Game` -> `Reward` -> `Home`
+`Splash` -> `Signup` (이메일 인증) -> `Link/Splash` (인증확인) -> **`Home`** (프로필없음 확인) -> **`HostInfo`** (프로필설정) -> `Home` -> `HostSetup` -> ...
+*(참고: 이메일 인증 후 로그인 화면을 거치지 않고 바로 홈으로 진입하며, 프로필이 없을 경우에만 설정화면으로 이동합니다)*
 
 **2. 기존 회원 (Existing User):**
-`Splash` -> `Home` (자동 로그인)
+`Splash` -> **`Home`** (자동 로그인)
 
 **3. 게임 생성 (Game Creation from Home):**
 `Home` -> `HostSetup` -> `GameSetup` -> `Waiting` -> `Game` -> `Reward` -> `Home`
 
 **4. 초대된 게임 참여 (Join Game as Guest):**
 `Home` ("초대된 게임 참여") -> `InviteCode` -> `Waiting` -> `Game` -> `Reward` -> `Home`
-or `Link/Splash` (초대코드) -> `Home`("초대된 게임 참여") -> `InviteCode` -> `Waiting` -> `Game` -> `Reward` -> `Home`
 
 **5. 재대결 (Rematch - Host):**
 `Home` (History [R]) -> `HostSetup` (코드 생성/공유) -> `GameSetup` (**자동통과** / 설정 프리셋) -> `Waiting` -> ...
@@ -247,24 +247,22 @@ or `Link/Splash` (초대코드) -> `Home`("초대된 게임 참여") -> `InviteC
 ### **게스트 경로 (Guest Flows):**
 
 **1. 일반 게스트 (General Guest):**
-`Splash` -> `Signup` -> `Link/Splash` (초대코드) -> `InviteCode` -> `GuestInfo` -> `Waiting` -> `Game` -> `Reward` -> `Signup` / `Exit`
-
-
+`Splash` -> `Signup` -> `Link/Splash` (초대코드) -> **`Home`** -> **Guest Mode 팝업** -> `InviteCode` (자동입력) -> `Waiting` -> `Game` -> `Reward` -> `Signup` / `Exit`
 
 **2. 재방문 게스트 (Returning Guest):**
-인증되지 않은(익명) 상태로 재접속 시, 이전 세션을 유지하여 홈으로 진입하며 목적에 따라 두 가지 경로로 나뉩니다.
+인증되지 않은(익명) 상태로 재접속 시, 이전 세션을 유지하여 **`Home`으로 즉시 진입**하며 목적에 따라 두 가지 경로로 나뉩니다.
 
     **2-1. 홈 화면 진입 시 가입 유도 (Conversion Nudge) [NEW]:**
     익명 사용자가 `HomeScreen`에 진입할 때(앱 실행 또는 게임 종료 후), 사용자의 데이터 보존을 권장하는 안내를 노출합니다.
     -   **메시지:** "포인트 적립과 게임 기록 보존을 위해 계정을 등록하세요!"
-    -   **UI:** 상단 배너(Banner) 또는 스낵바(SnackBar), 혹은 3회 이상 플레이 시 모달 팝업.
+    -   **UI:** 상단 배너(Banner).
     -   **Action:** 클릭 시 -> `Settings` -> `SignupScreen` 연결.
 
     **2-2. 게임 참여 (Fast Track Join):**
     초대 링크로 들어온 경우, 복잡한 절차 없이 빠르게 게임에 합류합니다.
-    `Link` -> `Splash` -> `Home` (초대코드 자동입력 상태) -> **"Guest Mode로 참여하시겠습니까?" 팝업** -> `InviteCode` -> `Waiting`
+    `Link` -> `Splash` -> **`Home`** (초대코드 보유상태) -> **"Guest Mode로 참여하시겠습니까?" 팝업** -> `InviteCode` -> `Waiting`
 
     **2-3. 자발적 회원 전환 (Manual Conversion):**
     사용자가 설정 메뉴를 통해 스스로 계정을 연동합니다.
-    `Home` -> `Settings` -> **`Sign Up / Link Account`** -> `Signup` (이메일/Google) -> `HostInfo` -> `Home` (정식 회원 승격)
+    `Home` -> `Settings` -> **`Sign Up / Link Account`** -> `Signup` (이메일/Google) -> **`Home`** (기존 데이터 유지 + 정식 회원 승격)
 

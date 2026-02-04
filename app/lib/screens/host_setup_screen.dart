@@ -86,31 +86,32 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
           '참여 코드: $_inviteCode\n'
           '바로 입장하기: $link';
 
-      // 1. Try to open System Share Sheet
-      // renderBox is needed for iPad/Tablet popover anchor
-      final box = context.findRenderObject() as RenderBox?;
-      
-      try {
-        await Share.share(
-          message,
-          subject: 'TalkBingo Invite Code',
-          sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
-        );
-      } catch (e) {
-        // Fallback: Copy to Clipboard if Share fails
-        debugPrint('Share failed: $e');
-        // Continue to show snackbar
+      // 1. Try to open System Share Sheet (Mobile Only)
+      // On Web, Share.share often falls back to 'mailto:' which causes UI issues.
+      // So on Web, we skip direct sharing and default to Clipboard Copy.
+      if (!kIsWeb) {
+        final box = context.findRenderObject() as RenderBox?;
+        
+        try {
+          await Share.share(
+            message,
+            subject: 'TalkBingo Invite Code',
+            sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+          );
+        } catch (e) {
+          debugPrint('Share failed: $e');
+        }
       }
       
-      // 2. Also Copy to Clipboard for convenience (or as confirmation)
+      // 2. Also Copy to Clipboard for convenience (Primary action on Web)
       await Clipboard.setData(ClipboardData(text: message));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invite copied to clipboard! (Share sheet opened)'),
-            duration: Duration(seconds: 2),
-            backgroundColor: Color(0xFFBD0558),
+          SnackBar(
+            content: Text(kIsWeb ? 'Link copied to clipboard!' : 'Invite copied to clipboard!'),
+            duration: const Duration(seconds: 2),
+            backgroundColor: const Color(0xFFBD0558),
           ),
         );
       }
