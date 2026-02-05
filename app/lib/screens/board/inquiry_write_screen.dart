@@ -3,8 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'dart:io';
-import 'package:flutter/foundation.dart'; // For kIsWeb
+// import 'dart:io' removed for Web compatibility
+import 'package:flutter/foundation.dart'; // For kIsWeb, defaultTargetPlatform
 import 'package:talkbingo_app/utils/localization.dart';
 
 class InquiryWriteScreen extends StatefulWidget {
@@ -56,9 +56,9 @@ class _InquiryWriteScreenState extends State<InquiryWriteScreen> {
         
         if (kIsWeb) {
             deviceInfo = {'platform': 'web'};
-        } else if (Platform.isAndroid) {
+        } else if (defaultTargetPlatform == TargetPlatform.android) {
             deviceInfo = {'platform': 'android'}; 
-        } else if (Platform.isIOS) {
+        } else if (defaultTargetPlatform == TargetPlatform.iOS) {
             deviceInfo = {'platform': 'ios'};
         }
       } catch (e) {

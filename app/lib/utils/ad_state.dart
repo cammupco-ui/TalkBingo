@@ -1,6 +1,5 @@
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'dart:io';
-import 'package:flutter/foundation.dart'; // For kIsWeb
+import 'package:flutter/foundation.dart'; // For kIsWeb, defaultTargetPlatform
 
 class AdState {
   static final ValueNotifier<bool> showAd = ValueNotifier<bool>(true);
@@ -9,9 +8,9 @@ class AdState {
   // Test Ad Unit IDs
   static String get interstitialAdUnitId {
     if (kIsWeb) return ''; // Not used on web mock
-    if (Platform.isAndroid) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
       return 'ca-app-pub-3940256099942544/1033173712';
-    } else if (Platform.isIOS) {
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       return 'ca-app-pub-3940256099942544/4411468910';
     } else {
       throw UnsupportedError('Unsupported platform');
