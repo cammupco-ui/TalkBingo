@@ -870,233 +870,226 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           interactive: true,
           child: Stack(
             children: [
-              Column(
-                children: [
-                  // 1. New Header
-                  _buildHeader(),
+              // 1. Main Layout (Header + Content)
+              Positioned.fill(
+                child: Column(
+                  children: [
+                    // New Header
+                    _buildHeader(),
 
-                  // 2. Main Content
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.zero, // Removed bottom padding to maximize Chat/Board area
-                      child: Stack(
-                        children: [
-                         PageView(
-                           // Physics removed to allow swiping
-                           controller: _pageController,
-                          // Listener is handled in initState
+                    // Main Content Area
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.zero,
+                        child: Stack(
                           children: [
-                              _buildChatView(),
-                              _buildBingoBoard(),
-                          ],
-                        ),
+                             // A. PageView (Chat + Board)
+                             PageView(
+                               controller: _pageController,
+                               children: [
+                                   _buildChatView(),
+                                   _buildBingoBoard(),
+                               ],
+                             ),
 
-                        if (_session.interactionState != null && _targetPage == 1)
-                          Builder(
-                            builder: (context) {
-                              final state = _session.interactionState!;
-                              // Check for Mini Game Types
-                              final String? type = state['type'];
-                              if (type == 'mini_target' || type == 'mini_penalty') {
-                                return const SizedBox.shrink(); // Rendered at Top Level instead
-                              }
+                             // B. Quiz Overlay (Inner, below Input)
+                             if (_session.interactionState != null && _targetPage == 1)
+                               Builder(
+                                 builder: (context) {
+                                   final state = _session.interactionState!;
+                                   final String? type = state['type'];
+                                   if (type == 'mini_target' || type == 'mini_penalty') {
+                                     return const SizedBox.shrink(); 
+                                   }
 
-                              // Default Quiz Overlay Logic
-                              final int index = (state['index'] as num?)?.toInt() ?? -1;
-                              final bool hasPayloadData = state.containsKey('question');
-                              
-                              if (!hasPayloadData && (index < 0)) {
-                                return Center(
-                                    child: Container(
-                                      padding: const EdgeInsets.all(24),
-                                      margin: const EdgeInsets.all(32),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black87,
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(Icons.sync_problem, color: Colors.amber, size: 48),
-                                            const SizedBox(height: 16),
-                                            Text("Sync Error", style: GoogleFonts.alexandria(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                                            const SizedBox(height: 8),
-                                            ElevatedButton(
-                                                style: ElevatedButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.black),
-                                                onPressed: () { _session.cancelInteraction(); },
-                                                child: const Text("Reset State"),
-                                            )
-                                          ]
-                                      )
-                                    )
-                                );
-                              }
+                                   // Default Quiz Logic
+                                   final int index = (state['index'] as num?)?.toInt() ?? -1;
+                                   final bool hasPayloadData = state.containsKey('question');
+                                   
+                                   if (!hasPayloadData && (index < 0)) {
+                                     return Center(
+                                         child: Container(
+                                           padding: const EdgeInsets.all(24),
+                                           margin: const EdgeInsets.all(32),
+                                           decoration: BoxDecoration(
+                                             color: Colors.black87,
+                                             borderRadius: BorderRadius.circular(16),
+                                           ),
+                                           child: Column(
+                                               mainAxisSize: MainAxisSize.min,
+                                               children: [
+                                                 const Icon(Icons.sync_problem, color: Colors.amber, size: 48),
+                                                 const SizedBox(height: 16),
+                                                 Text("Sync Error", style: GoogleFonts.alexandria(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                                                 const SizedBox(height: 8),
+                                                 ElevatedButton(
+                                                     style: ElevatedButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.black),
+                                                     onPressed: () { _session.cancelInteraction(); },
+                                                     child: const Text("Reset State"),
+                                                 )
+                                               ]
+                                           )
+                                         )
+                                     );
+                                   }
 
-                              // Hide Overlay if on Chat Tab (0)
-                              if (_targetPage == 0) return const SizedBox.shrink();
+                                   if (_targetPage == 0) return const SizedBox.shrink();
 
-                              // Dynamic Localization
-                              String q = state['question'] ?? ''; // Default from DB snapshot
-                              String optA = state['optionA'] ?? 'A';
-                              String optB = state['optionB'] ?? 'B';
-                              String interactionType = state['type'] ?? 'balance';
-                              String answer = state['answer'] ?? '';
+                                   String q = state['question'] ?? '';
+                                   String optA = state['optionA'] ?? 'A';
+                                   String optB = state['optionB'] ?? 'B';
+                                   String interactionType = state['type'] ?? 'balance';
+                                   String answer = state['answer'] ?? '';
 
-                              // Override with Real-time Localized strings if available locally
-                              if (index >= 0) {
-                                final localized = _session.getLocalizedContent(index);
-                                if (localized.isNotEmpty) {
-                                  if (localized['q']!.isNotEmpty) q = localized['q']!;
-                                  if (localized['A']!.isNotEmpty) optA = localized['A']!;
-                                  if (localized['B']!.isNotEmpty) optB = localized['B']!;
-                                }
-                              }
+                                   // Localize
+                                   if (index >= 0) {
+                                     final localized = _session.getLocalizedContent(index);
+                                     if (localized.isNotEmpty) {
+                                       if (localized['q']!.isNotEmpty) q = localized['q']!;
+                                       if (localized['A']!.isNotEmpty) optA = localized['A']!;
+                                       if (localized['B']!.isNotEmpty) optB = localized['B']!;
+                                     }
+                                   }
 
-                              return SizedBox.expand(
-                                child: Container(
-                                  color: Colors.black54,
-                                  child: QuizOverlay(
-                                    question: q,
-                                    optionA: optA,
-                                    optionB: optB,
-                                    type: interactionType,
-                                    answer: answer,
-                                    interactionStep: state['step'] ?? 'answering',
-                                    answeringPlayer: state['answeringPlayer'] ?? 'A',
-                                    submittedAnswer: state['submittedAnswer'],
-                                    isPaused: _session.gameStatus == 'paused',
-                                    onOptionSelected: _handleOptionSelected,
-                                    onClose: () => _session.cancelInteraction(),
-                                    onInputFocus: (val) {
-                                        if (mounted && _isQuizInputFocused != val) {
-                                            setState(() => _isQuizInputFocused = val);
-                                        }
-                                    },
-                                  ),
-                                ),
-                              );
-                            }
-                          ),
-                  
-                  // 3. Persistent Input Field (Visible on ALL tabs)
-                  // Wrapped in Container to ensure visibility
-                  if (!_isQuizInputFocused) 
-                    Container(
-                       color: Colors.white,
-                       child: SafeArea(
-                         top: false, // Ensure top doesn't push down
-                         child: _buildBottomControls(),
-                       ),
-                    ),
-              
-                      // Rematch Button (Review Mode Only)
-                      if (widget.isReviewMode && _currentPage == 1)
-                        Positioned(
-                          top: 16,
-                          right: 16,
-                          child: FloatingActionButton.extended(
-                            heroTag: 'rematch_btn',
-                            backgroundColor: const Color(0xFFE91E63),
-                            foregroundColor: Colors.white,
-                            label: const Text("REMATCH", style: TextStyle(fontFamily: 'NURA', fontWeight: FontWeight.bold)),
-                            icon: const Icon(Icons.refresh),
-                            onPressed: () {
-                               Navigator.of(context).push(
-                                 MaterialPageRoute(
-                                   builder: (_) => HostSetupScreen(
-                                     initialGender: _session.guestGender,
-                                     initialMainRelation: _session.relationMain,
-                                     initialSubRelation: _session.relationSub,
-                                     initialIntimacyLevel: _session.intimacyLevel,
-                                   ),
+                                   return SizedBox.expand(
+                                     child: Container(
+                                       color: Colors.black54,
+                                       child: QuizOverlay(
+                                         question: q,
+                                         optionA: optA,
+                                         optionB: optB,
+                                         type: interactionType,
+                                         answer: answer,
+                                         interactionStep: state['step'] ?? 'answering',
+                                         answeringPlayer: state['answeringPlayer'] ?? 'A',
+                                         submittedAnswer: state['submittedAnswer'],
+                                         isPaused: _session.gameStatus == 'paused',
+                                         onOptionSelected: _handleOptionSelected,
+                                         onClose: () => _session.cancelInteraction(),
+                                         onInputFocus: (val) {
+                                             if (mounted && _isQuizInputFocused != val) {
+                                                 setState(() => _isQuizInputFocused = val);
+                                             }
+                                         },
+                                       ),
+                                     ),
+                                   );
+                                 }
+                               ),
+                      
+                             // C. Persistent Input Field (Positioned at Bottom)
+                             if (!_isQuizInputFocused) 
+                               Positioned(
+                                 left: 0, right: 0, bottom: 0,
+                                 child: Container(
+                                    color: Colors.white,
+                                    child: SafeArea(
+                                      top: false, 
+                                      child: _buildBottomControls(),
+                                    ),
                                  ),
-                               );
-                            },
-                          ),
-                        ),
+                               ),
+                    
+                             // D. Rematch Button
+                             if (widget.isReviewMode && _currentPage == 1)
+                               Positioned(
+                                 top: 16, right: 16,
+                                 child: FloatingActionButton.extended(
+                                   heroTag: 'rematch_btn',
+                                   backgroundColor: const Color(0xFFE91E63),
+                                   foregroundColor: Colors.white,
+                                   label: const Text("REMATCH", style: TextStyle(fontFamily: 'NURA', fontWeight: FontWeight.bold)),
+                                   icon: const Icon(Icons.refresh),
+                                   onPressed: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => HostSetupScreen(
+                                            initialGender: _session.guestGender,
+                                            initialMainRelation: _session.relationMain,
+                                            initialSubRelation: _session.relationSub,
+                                            initialIntimacyLevel: _session.intimacyLevel,
+                                          ),
+                                        ),
+                                      );
+                                   },
+                                 ),
+                               ),
+                          ], 
+                        ), // Stack (Inner)
+                      ), // Padding
+                    ), // Expanded
+                  ],
+                ), // Column
+              ), // Positioned.fill
 
-          
-          // 5. Full-size Quiz Overlay (Top Level)
+              // 2. Global Overlays (Outer Stack Level)
+              
+              // Full-Size Mini Game Overlay
+              if (_session.interactionState != null)
+                Builder(
+                  builder: (context) {
+                    final state = _session.interactionState!;
+                    final String? type = state['type'];
+                    
+                    if (type == 'mini_target') {
+                        return TargetShooterGame(
+                          onWin: () async { await _session.resolveInteraction(true); },
+                          onClose: () { _session.resolveInteraction(false); },
+                        );
+                    } else if (type == 'mini_penalty') {
+                        return PenaltyKickGame(
+                          onWin: () async { await _session.resolveInteraction(true); },
+                          onClose: () { _session.resolveInteraction(false); },
+                        );
+                    }
+                    return const SizedBox.shrink();
+                  }
+                ),
 
+              // Floating Scores
+              ..._floatingScores,
 
-
-          // 3. Mini Game Overlay (Full Screen, Covers Header)
-          if (_session.interactionState != null)
-            Builder(
-              builder: (context) {
-                final state = _session.interactionState!;
-                final String? type = state['type'];
-                
-                if (type == 'mini_target') {
-                    return TargetShooterGame(
-                      onWin: () async { await _session.resolveInteraction(true); },
-                      onClose: () { _session.resolveInteraction(false); },
-                    );
-                } else if (type == 'mini_penalty') {
-                    return PenaltyKickGame(
-                      onWin: () async { await _session.resolveInteraction(true); },
-                      onClose: () { _session.resolveInteraction(false); },
-                    );
-                }
-                return const SizedBox.shrink();
-              }
-            ),
-
-          // Floating Scores Layer
-          ..._floatingScores,
-
-          // Confetti Layer (Top Center)
-          Align(
-            alignment: Alignment.topCenter,
-            child: IgnorePointer(
-              child: ConfettiWidget(
-                confettiController: _confettiController,
-                blastDirection: pi / 2, // Down
-                maxBlastForce: 5,
-                minBlastForce: 2,
-                emissionFrequency: 0.05,
-                numberOfParticles: 20,
-                gravity: 0.2,
-                colors: const [Colors.green, Colors.blue, Colors.pink, Colors.orange, Colors.purple],
+              // Confetti
+              Align(
+                alignment: Alignment.topCenter,
+                child: IgnorePointer(
+                  child: ConfettiWidget(
+                    confettiController: _confettiController,
+                    blastDirection: pi / 2, 
+                    maxBlastForce: 5,
+                    minBlastForce: 2,
+                    emissionFrequency: 0.05,
+                    numberOfParticles: 20,
+                    gravity: 0.2,
+                    colors: const [Colors.green, Colors.blue, Colors.pink, Colors.orange, Colors.purple],
+                  ),
+                ),
               ),
-            ),
-          ),
-          _buildAdWaitOverlay(),
-          
-          // Draggable Floating Button (Top Layer)
-          DraggableFloatingButton(
-            // Removed Key to persist state across page swipes (fixes flicker)
-            isOnChatTab: _targetPage == 0,
-            unreadCount: _unreadCount,
-            latestMessage: _latestChatPreview,
-            themeColor: _themePrimary,
-            dragThreshold: 8.0, // Increased threshold to prevent micro-drags
-            onTap: () { // Reverted to VoidCallback
-               // Toggle Page with Sound Feedback
-               SoundService().playButtonSound();
-               
-               final nextPage = _targetPage == 0 ? 1 : 0;
-               setState(() {
-                 _targetPage = nextPage;
-               });
-               
-               if (_pageController.hasClients) {
-                 _pageController.animateToPage(
-                   nextPage, 
-                   duration: const Duration(milliseconds: 300), 
-                   curve: Curves.easeInOut
-                 );
-               }
-            },
-          ),
-        ], // Stack Children
-        ), // Stack (Inner)
-                        ), // Padding
-                      ), // Expanded
-                    ],
-                  ), // Column
-                ],
-              ), // Stack (Outer)
+              
+              _buildAdWaitOverlay(),
+              
+              // Draggable Menu Button
+              DraggableFloatingButton(
+                isOnChatTab: _targetPage == 0,
+                unreadCount: _unreadCount,
+                latestMessage: _latestChatPreview,
+                themeColor: _themePrimary,
+                dragThreshold: 8.0, 
+                onTap: () { 
+                   SoundService().playButtonSound();
+                   final nextPage = _targetPage == 0 ? 1 : 0;
+                   setState(() => _targetPage = nextPage);
+                   if (_pageController.hasClients) {
+                     _pageController.animateToPage(
+                       nextPage, 
+                       duration: const Duration(milliseconds: 300), 
+                       curve: Curves.easeInOut
+                     );
+                   }
+                },
+              ),
+            ],
+          ), // Stack (Outer)
       ), // BubbleBackground
     ), // Scaffold
     ), // WillPopScope
