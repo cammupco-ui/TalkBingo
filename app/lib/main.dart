@@ -1,19 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'dart:ui'; // Required for PointerDeviceKind
-import 'package:flutter/foundation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:talkbingo_app/utils/dev_config.dart';
-import 'package:talkbingo_app/widgets/dev_navigation_bar.dart';
-import 'package:talkbingo_app/utils/ad_state.dart';
-import 'package:talkbingo_app/services/sound_service.dart';
-import 'package:talkbingo_app/screens/splash_screen.dart';
-import 'package:talkbingo_app/screens/home_screen.dart';
-
-import 'package:talkbingo_app/styles/app_colors.dart';
-import 'package:flutter/services.dart';
+import 'package:talkbingo_app/services/deep_link_service.dart'; // Added Import
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +6,8 @@ Future<void> main() async {
   // Fire and forget - don't block app startup
   AdState.initialize(); 
   SoundService().init(); 
+  DeepLinkService().init(); // Initialize Deep Link Listener Globally
+  
   
   // Hybrid Config: Check build-time args first (Web Release), then .env (Local Dev)
   String supabaseUrl = const String.fromEnvironment('SUPABASE_URL');

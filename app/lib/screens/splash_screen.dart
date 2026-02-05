@@ -24,8 +24,8 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   double _progress = 0.0;
-  String? _initialInviteCode;
   StreamSubscription<AuthState>? _authSubscription;
+
   bool _isAuthInProgress = false; // Add this line
   
   // Debug Logs
@@ -82,126 +82,17 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _sequenceInitialization() async {
-    await _initDeepLinks();
-    _isDeepLinkCheckDone = true;
-    _addLog("Deep Link Check Complete. Proceeding to Session Check.");
+    // Deep Link is now handled by DeepLinkService in main.dart globally.
+    // We just need to give it a moment or simply proceed to check auth/session.
+    // The Service writes to GameSession().pendingInviteCode, which we check later.
+    
+    _addLog("Sequence Init. Deep Link handled globally.");
+    _isDeepLinkCheckDone = true; 
     await _checkExistingSession();
   }
 
-  Future<void> _initDeepLinks() async {
-    try {
-      Uri? targetUri;
-      if (kIsWeb) {
-        // Direct Window Location access for mostly accurate full URL
-        try {
-           // We use a predefined import stub or conditional import if possible, 
-           // but since we are in a single file here, we used kIsWeb.
-           // To avoid direct dart:html import issues in this file if compiled for mobile, 
-           // we rely on Uri.base which usually works, BUT for Hash routing fragments we add manual checks.
-           
-           // Ideally we should use the same logic as UrlCleaner
-           targetUri = Uri.parse(Uri.base.toString()); 
-           _addLog("Web Base URI: $targetUri");
-           
-           // Manual Fragment Parsing Hack because Uri.base might parse differently
-           // We will rely on _handleDeepLink's improved parsing logic.
-        } catch (e) {
-           targetUri = Uri.base;
-        }
-      } else {
-        final appLinks = AppLinks();
-        targetUri = await appLinks.getInitialLink();
-        appLinks.uriLinkStream.listen((uri) => _handleDeepLink(uri));
-      }
 
-      if (targetUri != null) {
-        _handleDeepLink(targetUri);
-      }
 
-    } catch (e) {
-      _addLog("Error capturing Deep Link: $e");
-    }
-  }
-
-  void _handleDeepLink(Uri uri) {
-     if (!mounted) return;
-
-     _addLog("Processing URI: $uri");
-     _addLog("Fragment: ${uri.fragment}");
-     _addLog("Query: ${uri.queryParameters}");
-
-     // 1. Check for Auth Params
-     final hasFragmentToken = uri.fragment.contains('access_token');
-     final hasQueryToken = uri.queryParameters.containsKey('access_token');
-     final authType = uri.queryParameters['type'];
-     
-     if (hasFragmentToken || hasQueryToken || authType == 'signup' || authType == 'recovery' || authType == 'magiclink') {
-        _isAuthInProgress = true;
-        _addLog("🔐 Auth Params Detected!");
-        return; 
-     }
-
-     // 2. Check for Invite Code
-     String? code = uri.queryParameters['code']?.trim();
-     
-     // Robust Fallback for Hash Routing (e.g. /#/?code=...)
-     if (code == null) {
-        // Search in Fragment
-        final frag = uri.fragment;
-        if (frag.contains('code=')) {
-            // Regex to extract value after code= until & or end
-            final match = RegExp(r'[?&]code=([A-Za-z0-9]+)').firstMatch(frag);
-            if (match != null) {
-               code = match.group(1);
-               _addLog("Found code in fragment via Regex: $code");
-            }
-        }
-     }
-     
-     // 3. Fallback: Search absolute string (last resort)
-     if (code == null) {
-        final fullStr = uri.toString();
-        final match = RegExp(r'[?&]code=([A-Za-z0-9]+)').firstMatch(fullStr);
-        if (match != null) {
-           code = match.group(1);
-           _addLog("Found code in Full String via Regex: $code");
-        }
-     }
-
-     if (code != null) {
-        // Recursive Clean
-        if (code.contains('http') || code.contains('://')) {
-            try {
-               final inner = Uri.parse(code);
-               code = inner.queryParameters['code']?.trim();
-            } catch (e) { /* ignore */ }
-        }
-
-        // Validate Format (6 Chars)
-        final bool isValid = code != null && RegExp(r'^[A-Z0-9]{6}$', caseSensitive: false).hasMatch(code!);
-
-        if (isValid) { 
-           code = code!.toUpperCase();
-           _initialInviteCode = code; 
-           GameSession().pendingInviteCode = code; 
-           
-           // PERSISTENCE: Save to SharedPreferences immediately
-           SharedPreferences.getInstance().then((prefs) {
-             prefs.setString('pending_invite_code', code!);
-             _addLog("💾 Persisted Invite Code: $code");
-           });
-
-           _addLog("📩 Invite Code Captured & Store: $code");
-           
-           // Only clean URL if we successfully captured it
-           UrlCleaner.removeCodeParam(); 
-           
-           // If we are NOT waiting for Auth, we can check session (but sequenceInitialization will do it anyway)
-        } else {
-           _addLog("⚠️ Invalid Code Ignored: $code");
-        }
-     }
-  }
 
   @override
   void dispose() {
@@ -259,7 +150,7 @@ class _SplashScreenState extends State<SplashScreen> {
       if (_isAuthInProgress) return;
 
       final session = Supabase.instance.client.auth.currentSession;
-      String? inviteCode = _initialInviteCode ?? GameSession().pendingInviteCode; 
+      String? inviteCode = GameSession().pendingInviteCode; 
       
       bool isInviteCode = inviteCode != null && inviteCode.length == 6;
 
