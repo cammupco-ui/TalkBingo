@@ -486,29 +486,32 @@ class GameSession with ChangeNotifier {
           content = q['content_en'] as String;
       }
       
-      // 2. Details (Options): Check Language Preference
-      // Prefer 'details_en' column if exists, otherwise fallback to 'details'
+      // 2. Options Extraction (Flattened Schema Support)
+      // Check top-level columns first (New Schema)
+      String optA = q['choice_a']?.toString() ?? '';
+      String optB = q['choice_b']?.toString() ?? '';
+      String answers = q['answers']?.toString() ?? '';
+      String optAEn = q['choice_a_en']?.toString() ?? '';
+      String optBEn = q['choice_b_en']?.toString() ?? '';
+      String answersEn = q['answers_en']?.toString() ?? '';
+
+      // Fallback to 'details' JSON if top-level is empty (Old Schema or Not Migrated)
+      // Prefer 'details_en' column if exists for English fallback
       dynamic rawDetails = q['details'];
-      if (_language == 'en' && q['details_en'] != null) {
-         rawDetails = q['details_en'];
-      }
+      dynamic rawDetailsEn = q['details_en'];
 
-      final details = rawDetails ?? {};
+      final details = (rawDetails is Map) ? rawDetails : (rawDetails is String ? jsonDecode(rawDetails) : {});
+      final detailsEn = (rawDetailsEn is Map) ? rawDetailsEn : (rawDetailsEn is String ? jsonDecode(rawDetailsEn) : {});
       
-      Map<String, dynamic> safeDetails = {};
-      if (details is Map) {
-         safeDetails = Map<String, dynamic>.from(details);
-      } else if (details is String) {
-         try {
-           safeDetails = Map<String, dynamic>.from(jsonDecode(details));
-         } catch (e) {
-           debugPrint('Error decoding details JSON: $e');
-         }
-      }
+      // Korean Fallbacks
+      if (optA.isEmpty) optA = details['choice_a']?.toString() ?? details['A']?.toString() ?? details['a']?.toString() ?? '';
+      if (optB.isEmpty) optB = details['choice_b']?.toString() ?? details['B']?.toString() ?? details['b']?.toString() ?? '';
+      if (answers.isEmpty) answers = details['answers']?.toString() ?? '';
 
-      String optA = safeDetails['choice_a']?.toString() ?? safeDetails['A']?.toString() ?? safeDetails['a']?.toString() ?? '';
-      String optB = safeDetails['choice_b']?.toString() ?? safeDetails['B']?.toString() ?? safeDetails['b']?.toString() ?? '';
-      String answers = safeDetails['answers']?.toString() ?? '';
+      // English Fallbacks
+      if (optAEn.isEmpty) optAEn = detailsEn['choice_a']?.toString() ?? '';
+      if (optBEn.isEmpty) optBEn = detailsEn['choice_b']?.toString() ?? '';
+      if (answersEn.isEmpty) answersEn = detailsEn['answers']?.toString() ?? '';
 
       // Normalize Type
       String? qId = q['q_id']?.toString();
@@ -558,24 +561,9 @@ class GameSession with ChangeNotifier {
       } catch (e) {
         debugPrint('Error parsing gender_variants: $e');
       }
-
-      // Parse English Details
-      String optAEn = '';
-      String optBEn = '';
-      String answersEn = '';
-      try {
-        if (q['details_en'] != null) {
-           final dEn = q['details_en'];
-           if (normalizedType == 'balance') {
-              optAEn = dEn['choice_a'] ?? '';
-              optBEn = dEn['choice_b'] ?? '';
-           } else {
-              answersEn = dEn['answers'] ?? '';
-           }
-        }
-      } catch (e) {
-         debugPrint('Error parsing details_en: $e');
-      }
+      
+      // Use 'game_code' from details if needed
+      String gameCode = details['game_code']?.toString() ?? '';
 
       return {
         'id': q['id']?.toString() ?? '',
@@ -591,7 +579,7 @@ class GameSession with ChangeNotifier {
           'B_en': optBEn,
           'answer': answers,
           'answer_en': answersEn,
-          'game_code': safeDetails['game_code']?.toString() ?? '',
+          'game_code': gameCode,
           'variants': variants, 
           'variants_en': variantsEn, 
         }

@@ -163,7 +163,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
   void _showReportDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text("질문 신고하기"),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -171,23 +171,32 @@ class _QuizOverlayState extends State<QuizOverlay> {
             ListTile(
               leading: const Icon(Icons.text_format),
               title: const Text("맞춤법 오류 (Typo)"),
-              onTap: () => _submitReport("Typo"),
+              onTap: () {
+                Navigator.pop(dialogContext);
+                _submitReport("Typo");
+              },
             ),
             ListTile(
               leading: const Icon(Icons.help_outline),
               title: const Text("내용 이상함 (Weird)"),
-              onTap: () => _submitReport("Weird Content"),
+              onTap: () {
+                Navigator.pop(dialogContext);
+                _submitReport("Weird Content");
+              },
             ),
             ListTile(
               leading: const Icon(Icons.bug_report),
               title: const Text("기타 (Other)"),
-              onTap: () => _submitReport("Other"),
+              onTap: () {
+                Navigator.pop(dialogContext);
+                _submitReport("Other");
+              },
             ),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text("Cancel"),
           ),
         ],
@@ -196,7 +205,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
   }
 
   void _submitReport(String reason) {
-    Navigator.pop(context); // Close Dialog
+    // Dialog is already closed by the time this is called
     
     // Resolve Question ID if possible (from Session or Widget)
     // Widget doesn't have ID directly, but Session does.

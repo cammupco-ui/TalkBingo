@@ -31,6 +31,11 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:talkbingo_app/widgets/draggable_floating_button.dart';
+import 'package:record/record.dart'; // Audio Recorder
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
+import 'package:audioplayers/audioplayers.dart'; // For Playback
 
 class GameScreen extends StatefulWidget {
   final bool isReviewMode;
@@ -124,6 +129,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   // Sound Logic
   String _previousText = "";
+  
+  // Voice Recording & Playback State
+  late AudioRecorder _audioRecorder;
+  late AudioPlayer _audioPlayer;
+  String? _recordingPath;
+  bool _isRecording = false;
+  DateTime? _recordStartTime;
+  bool _isConvertingSTT = false; // specific flag for STT visual state
 
   @override
   void initState() {
@@ -139,6 +152,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     
     // Initialize Sound Service
     SoundService().init(); // Fire and forget initialization
+    _audioRecorder = AudioRecorder(); // Initialize Recorder
+    _audioPlayer = AudioPlayer(); // Initialize Player
+    
     _bingoLineController = AnimationController(
        vsync: this,
        duration: const Duration(milliseconds: 600),
@@ -243,6 +259,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
     SoundService().stopBgm(); // Stop music when leaving screen
+    _audioRecorder.dispose();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -574,15 +592,22 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   void _initSpeech() async {
     try {
+       // Initialize with a bit more aggression for dictation
        _speechEnabled = await _speech.initialize(
          onStatus: (val) {
-            debugPrint('onStatus: $val');
+            debugPrint('[STT] Status: $val');
             if (val == 'done' || val == 'notListening') {
-               if (mounted) setState(() => _isListening = false);
+               // Only reset if we didn't manually stop or explicit intent
+               if (mounted && _isListening) { 
+                 // It stopped by itself (silence). 
+                 setState(() => _isListening = false);
+               }
+            } else if (val == 'listening') {
+               if (mounted) setState(() => _isListening = true);
             }
          },
          onError: (val) {
-            debugPrint('onError: $val');
+            debugPrint('[STT] Error: $val');
             if (mounted) setState(() => _isListening = false);
          },
        );
@@ -594,22 +619,33 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   void _startListening() async {
     SoundService().playButtonSound(); // Feedback
-    if (!_speechEnabled) {
-       // Try re-init
-       _speechEnabled = await _speech.initialize(); 
-       if (!_speechEnabled) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Microphone permission denied or not supported.")));
-          return;
-       }
+    
+    // Check Permissions first (Robustness)
+    var status = await Permission.microphone.status;
+    if (!status.isGranted) {
+        status = await Permission.microphone.request();
+        if (!status.isGranted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Microphone permission required.")));
+            return;
+        }
     }
+
+    if (!_speechEnabled) {
+       _speechEnabled = await _speech.initialize(); 
+       if (!_speechEnabled) return;
+    }
+    
+    // Start Listening with Dictation Mode
+    setState(() => _isListening = true);
     
     await _speech.listen(
       onResult: _onSpeechResult,
       localeId: _session.language == 'ko' ? 'ko-KR' : 'en-US',
+      listenMode: stt.ListenMode.dictation, // Smoother for continuous speech
+      cancelOnError: false,
+      partialResults: true,
+      pauseFor: const Duration(seconds: 3), // Wait longer before stopping
     );
-    setState(() {
-      _isListening = true;
-    });
   }
 
   void _stopListening() async {
@@ -620,10 +656,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   }
 
   void _onSpeechResult(result) {
-    debugPrint('_onSpeechResult: ${result.recognizedWords} (final: ${result.finalResult})');
-    setState(() {
-      _chatController.text = result.recognizedWords;
-    });
+    // Only update if we have confidence or valid words
+    if (result.recognizedWords.isNotEmpty) {
+        // Debounce or smart append logic could go here, but direct mapping is usually fine for dictation
+        setState(() {
+          _chatController.text = result.recognizedWords;
+          // optional: move cursor to end
+          _chatController.selection = TextSelection.fromPosition(TextPosition(offset: _chatController.text.length));
+          _hasInput = true;
+        });
+    }
   }
 
   // --- New Header Implementation ---
@@ -1271,14 +1313,38 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                         ],
                         // border: Border.all(color: Colors.white.withOpacity(0.1), width: 0.5), // Glass edge
                       ),
-                      child: Text(
-                        msg['text'] ?? '',
-                        style: GoogleFonts.doHyeon(
-                          fontSize: 14,
-                          color: Colors.white, // White text for contrast
-                          height: 1.4,
-                        ),
-                      ),
+                        child: (msg['type'] == 'audio') 
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.play_circle_fill, color: Colors.white, size: 28),
+                                const SizedBox(width: 8),
+                                Text("Voice Message", style: GoogleFonts.alexandria(color: Colors.white)),
+                                const SizedBox(width: 8),
+                                // Simple Play Handler (In real app, manage state per bubble)
+                                GestureDetector(
+                                    onTap: () async {
+                                        final url = msg['extra']?['url'] ?? msg['url']; // backward compat
+                                        if (url != null) {
+                                           await _audioPlayer.play(UrlSource(url));
+                                        }
+                                    },
+                                    child: Container(
+                                        padding: EdgeInsets.all(4),
+                                        decoration: BoxDecoration(color: Colors.white24, shape: BoxShape.circle),
+                                        child: Icon(Icons.volume_up, color: Colors.white, size: 20)
+                                    ), 
+                                )
+                              ],
+                            )
+                          : Text(
+                              msg['text'] ?? '',
+                              style: GoogleFonts.doHyeon(
+                                fontSize: 14,
+                                color: Colors.white, // White text for contrast
+                                height: 1.4,
+                              ),
+                            ),
                    ),
 
                    // Time Stamp (Right for Opponent)
@@ -1363,12 +1429,41 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           const SizedBox(width: 8),
           Padding(
             padding: const EdgeInsets.only(top: 4.0),
-            child: AnimatedButton(
-               onPressed: _isPaused ? null : () {
+          Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: GestureDetector(
+               onLongPressStart: (_) {
+                  if (!_hasInput) _startRecording();
+               },
+               onLongPressEnd: (_) {
+                  if (_isRecording) _stopRecording(send: true);
+               },
+               onLongPressCancel: () {
+                  if (_isRecording) _stopRecording(send: false); // Cancel
+               },
+               child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                     shape: BoxShape.circle,
+                     color: _isRecording ? Colors.red : (_isListening ? Colors.redAccent : (_hasInput ? _themePrimary : Colors.grey[400])),
+                     boxShadow: _isRecording || _isListening ? [
+                        BoxShadow(color: Colors.red.withOpacity(0.5), blurRadius: 10, spreadRadius: 2)
+                     ] : [],
+                  ),
+                  child: Icon(
+                     _hasInput 
+                         ? Icons.send 
+                         : (_isRecording ? Icons.mic : (_isListening ? Icons.graphic_eq : Icons.mic)), 
+                      color: Colors.white,
+                      size: 20,
+                  ),
+               ),
+               onTap: () {
                   if (_hasInput) {
                       _handleSendMessage();
                   } else {
-                      // Toggle Speech
+                      // Toggle STT
                       if (_isListening) {
                          _stopListening();
                       } else {
@@ -1376,23 +1471,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                       }
                   }
                },
-               style: ElevatedButton.styleFrom(
-                  shape: const CircleBorder(),
-                  backgroundColor: _isListening ? Colors.redAccent : (_isPaused ? Colors.grey : _themePrimary),
-                  padding: const EdgeInsets.all(10),
-                  foregroundColor: Colors.white,
-                  elevation: 2,
-                  disabledBackgroundColor: Colors.grey,
-                  disabledForegroundColor: Colors.white70,
-               ),
-               child: Icon(
-                  _hasInput 
-                      ? Icons.send 
-                      : (_isListening ? Icons.mic_off : Icons.mic), // Toggle Icon
-                   color: Colors.white,
-                   size: 20,
-               ),
             ),
+          ),
           ),
         ],
       ),
@@ -1926,26 +2006,35 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     
     final Color turnColor = isA ? AppColors.hostPrimary : AppColors.guestPrimary;
     
+    // Style Logic:
+    // If Not My Turn (Waiting) -> Transparent Background/Outline, Colored Text (Subtle)
+    // If My Turn -> Colored Background, White Text (Prominent)
+    
+    final Color bgColor = isMyTurn ? turnColor : Colors.transparent;
+    final Color borderColor = isMyTurn ? Colors.white.withOpacity(0.5) : Colors.transparent;
+    final Color contentColor = isMyTurn ? Colors.white : turnColor.withOpacity(0.8);
+    final List<BoxShadow> shadows = isMyTurn ? [
+       BoxShadow(
+        color: Colors.black.withOpacity(0.2),
+        blurRadius: 4,
+        offset: const Offset(0, 2),
+      )
+    ] : [];
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-        color: turnColor, 
+        color: bgColor, 
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.5), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          )
-        ],
+        border: Border.all(color: borderColor, width: 1.5),
+        boxShadow: shadows,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.play_circle_fill, // Always show play icon for current turn
-            color: Colors.white,
+            Icons.play_circle_fill, 
+            color: contentColor,
             size: 14,
           ),
           const SizedBox(width: 6),
@@ -1954,7 +2043,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             style: GoogleFonts.alexandria(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: contentColor,
               letterSpacing: 0.5,
             ),
           ),

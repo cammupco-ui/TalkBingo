@@ -56,6 +56,10 @@ dependencies:
   package_info_plus: ^9.0.0
   app_links: ^6.4.1
   flutter_markdown: ^0.7.7+1
+  record: ^5.1.0
+  path_provider: ^2.1.2
+  permission_handler: ^11.3.0
+
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
