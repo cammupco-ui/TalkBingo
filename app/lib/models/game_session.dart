@@ -330,17 +330,30 @@ class GameSession with ChangeNotifier {
       return lastPlayed.isBefore(thirtyDaysAgo);
     }).toList();
 
+    // FAILSAFE: If filtering removed everything (user played all available questions),
+    // we must reuse them rather than freezing.
+    if (pool.isEmpty) {
+       debugPrint('⚠️ All questions played recently. Resetting pool to raw questions to avoid freeze.');
+       pool = List.from(rawQuestions);
+    }
+
     // 2. Fallback if not enough for 50 items
     // We aim for 50 (25 Main + 25 Reserve). 
-    // If < 25, that's critical (handled by caller fallback).
-    // If 25 <= N < 50, we reuse existing or duplicate to fill reserve.
     if (pool.length < 50) {
-      debugPrint('⚠️ Pool size (${pool.length}) < 50. Some reserves might be duplicated/reused.');
-      // Add from history if needed? Or just duplicate from raw?
-      // Simple strategy: Dupe the pool to ensure we have enough to fill slots.
-      // (Ideally we iterate Supabase with offset, but for MVP local duping is safe)
-      while (pool.length < 50) {
-          pool.addAll(List.from(pool)); 
+      debugPrint('⚠️ Pool size (${pool.length}) < 50. Duplicating to fill reserves.');
+      
+      // Critical Safety: Prevent infinite loop if pool is somehow still empty
+      if (pool.isNotEmpty) {
+          while (pool.length < 50) {
+              pool.addAll(List.from(pool)); 
+          }
+      } else {
+          // Should not happen due to failsafe above, but absolute safety:
+          debugPrint('❌ Critical Error: Pool is empty even after reset. Using fallback mock.');
+          _generateFallbackQuestions();
+          gameStatus = 'playing';
+           await _syncGameState();
+          return;
       }
     }
     
