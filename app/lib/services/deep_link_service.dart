@@ -6,7 +6,7 @@ import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/utils/url_cleaner.dart';
 import 'package:talkbingo_app/screens/invite_code_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:talkbingo_app/main.dart'; // For navigatorKey
+import 'package:talkbingo_app/globals.dart'; // For navigatorKey
 
 class DeepLinkService {
   // Singleton Pattern

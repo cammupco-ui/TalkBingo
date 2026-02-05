@@ -1,4 +1,5 @@
-import 'package:talkbingo_app/services/deep_link_service.dart'; // Added Import
+import 'package:talkbingo_app/globals.dart'; // Added Import
+import 'package:talkbingo_app/services/deep_link_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,7 +37,6 @@ Future<void> main() async {
   runApp(const TalkBingoApp());
 }
 
-final navigatorKey = GlobalKey<NavigatorState>();
 
 class TalkBingoApp extends StatefulWidget {
   const TalkBingoApp({super.key});
