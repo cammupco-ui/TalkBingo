@@ -148,6 +148,51 @@ class AppLocalizations {
       'sign_in_another': 'Sign In Another Account',
       'exit_talkbingo': 'Exit TalkBingo (Delete Data)',
       'reset_exit': 'Exit Guest Mode',
+      
+      // Guides
+      'guide_read_confirm': 'I have read and understood the above.',
+      'guide_confirm_btn': 'Confirm',
+      
+      'guide_bingo_content': '''
+1. **Talk & Lock**: Talk about the topic on the cell to lock it.
+2. **5x5 Grid**: Complete 5 cells in a row, column, or diagonal to make a BINGO.
+3. **Steal (Challenge)**: You can challenge an opponent's locked cell to steal it! (Max 2 attempts per game).
+   - *Line Immunity*: Cells that are part of a completed Bingo line cannot be stolen.
+   - *Cooldown*: A newly locked cell is protected for 3 turns.
+4. **Win**: The player with the most Bingo lines wins!
+''',
+
+      'guide_points_content': '''
+* **VP (Victory Points)**: 
+  - Earned by winning games.
+  - Used for Global Rankings.
+
+* **AP (Action Points)**: 
+  - Earned by talking and locking cells.
+  - Used to use Items or Challenge opponents.
+
+* **EP (Engagement Points)**: 
+  - Earned by receiving 'Likes' or 'Manner Scores' from partners.
+  - High EP unlocks special avatars.
+''',
+      'guide_terms_content': '''
+**Terms of Service**
+
+1. **Acceptance**: By using TalkBingo, you agree to these terms.
+2. **User Conduct**: No abusive behavior or harassment.
+3. **Data**: We store minimal data for gameplay.
+4. **Liability**: We are not responsible for user disputes.
+(This is a summarized placeholder. Full terms will be updated.)
+''',
+      'guide_privacy_content': '''
+**Privacy Policy**
+
+1. **Information Collection**: We collect email, nickname, and game data.
+2. **Usage**: Data is used for gameplay, auth, and analytics.
+3. **Sharing**: We do not share data with 3rd parties without consent.
+4. **Deletion**: You can delete your account at any time in Settings.
+(This is a summarized placeholder. Full policy will be updated.)
+''',
     },
     'ko': {
       'new_game': '새 게임',
@@ -201,7 +246,7 @@ class AppLocalizations {
       'level_4_title': '고민 상담 가능',
       'level_5_title': '깊은 신뢰',
       'settings_saved': '설정이 저장되었습니다!',
-       'start_new_game': '새 게임을 시작하시겠습니까?',
+      'start_new_game': '새 게임을 시작하시겠습니까?',
       'start_new_warning': '현재 진행 중인 게임 기록은 저장되지 않습니다.',
       'start_new': '새로 시작',
       'coming_soon': '준비 중',
@@ -293,9 +338,53 @@ class AppLocalizations {
       'sign_in_another': '다른 계정으로 로그인',
       'exit_talkbingo': 'TalkBingo 나가기 (데이터 삭제)',
       'reset_exit': '게스트 모드 종료',
+
+      // Guides
+      'guide_read_confirm': '위 내용을 모두 확인했습니다.',
+      'guide_confirm_btn': '확인',
+      
+      'guide_bingo_content': '''
+1. **대화 후 잠금 (Talk & Lock)**: 셀의 주제에 대해 대화하고 셀을 터치해 잠그세요.
+2. **빙고 완성**: 가로, 세로, 대각선으로 5개의 셀을 잠그면 빙고!
+3. **스틸 (챌린지)**: 상대방이 잠근 셀을 뺏어올 수 있습니다! (게임당 최대 2회)
+   - *라인 면역*: 이미 완성된 빙고 라인에 속한 셀은 뺏을 수 없습니다.
+   - *쿨타임*: 방금 잠긴 셀은 3턴 동안 보호됩니다.
+4. **승리**: 더 많은 빙고 라인을 완성한 사람이 승리합니다!
+''',
+
+      'guide_points_content': '''
+* **VP (승리 포인트)**: 
+  - 빙고 게임 승리 시 획득합니다.
+  - 글로벌 랭킹 산정에 사용됩니다.
+
+* **AP (액션 포인트)**: 
+  - 대화를 하거나 셀을 잠글 때 획득합니다.
+  - 아이템 사용이나 '스틸(챌린지)'을 할 때 소모됩니다.
+
+* **EP (참여/매너 포인트)**: 
+  - 상대방에게 '좋아요'나 '매너 점수'를 받으면 획득합니다.
+  - 높은 EP를 모으면 특별한 아바타를 해금할 수 있습니다.
+''',
+      'guide_terms_content': '''
+**서비스 이용약관**
+
+1. **동의**: TalkBingo를 사용함으로써 본 약관에 동의합니다.
+2. **사용자 행동**: 욕설 및 비방 등 부적절한 행위를 금지합니다.
+3. **데이터**: 게임 진행을 위한 최소한의 데이터를 저장합니다.
+4. **책임**: 사용자 간의 분쟁에 대해 당사는 책임을 지지 않습니다.
+(요약된 내용입니다. 추후 업데이트될 예정입니다.)
+''',
+      'guide_privacy_content': '''
+**개인정보 처리방침**
+
+1. **수집 항목**: 이메일, 닉네임, 게임 진행 데이터.
+2. **사용 목적**: 게임 서비스 제공, 인증, 통계 분석.
+3. **제3자 제공**: 동의 없이 데이터를 제3자에게 제공하지 않습니다.
+4. **파기**: 회원 탈퇴 시 데이터를 즉시 파기합니다.
+(요약된 내용입니다. 추후 업데이트될 예정입니다.)
+''',
     },
   };
-
   static String get(String key) {
     final lang = GameSession().language; // 'en' or 'ko'
     return _localizedValues[lang]?[key] ?? _localizedValues['en']?[key] ?? key;

@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:talkbingo_app/screens/guide_screen.dart';
 import 'package:flutter/services.dart'; // Added for SystemNavigator
 import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -258,13 +259,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                    _buildSettingsTile(
                      icon: Icons.help_outline,
                      title: AppLocalizations.get('bingo_guide'),
-                     onTap: () => _launchLocalizedUrl('https://talkbingo.app/guide_bingo.html'),
+                     onTap: () {
+                       Navigator.of(context).push(
+                         MaterialPageRoute(builder: (_) => GuideScreen(
+                           title: AppLocalizations.get('bingo_guide'),
+                           contentKey: 'guide_bingo_content'
+                         ))
+                       );
+                     },
                    ),
                    const Divider(height: 1),
                    _buildSettingsTile(
                      icon: Icons.stars_outlined,
                      title: AppLocalizations.get('points_guide'),
-                     onTap: () => _launchLocalizedUrl('https://talkbingo.app/guide_points.html'),
+                     onTap: () {
+                       Navigator.of(context).push(
+                         MaterialPageRoute(builder: (_) => GuideScreen(
+                           title: AppLocalizations.get('points_guide'),
+                           contentKey: 'guide_points_content'
+                         ))
+                       );
+                     },
                    ),
                  ],
                ),
@@ -278,13 +293,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                    _buildSettingsTile(
                      icon: Icons.description_outlined,
                      title: AppLocalizations.get('terms'),
-                     onTap: () => _launchLocalizedUrl('https://talkbingo.app/terms.html'),
+                     onTap: () {
+                       Navigator.of(context).push(
+                         MaterialPageRoute(builder: (_) => GuideScreen(
+                           title: AppLocalizations.get('terms'),
+                           contentKey: 'guide_terms_content'
+                         ))
+                       );
+                     },
                    ),
                     const Divider(height: 1),
                    _buildSettingsTile(
                      icon: Icons.privacy_tip_outlined,
                      title: AppLocalizations.get('privacy'),
-                     onTap: () => _launchLocalizedUrl('https://talkbingo.app/privacy.html'),
+                     onTap: () {
+                       Navigator.of(context).push(
+                         MaterialPageRoute(builder: (_) => GuideScreen(
+                           title: AppLocalizations.get('privacy'),
+                           contentKey: 'guide_privacy_content'
+                         ))
+                       );
+                     },
                    ),
                     const Divider(height: 1),
                    ListTile( 
