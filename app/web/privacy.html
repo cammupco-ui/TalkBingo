@@ -37,12 +37,13 @@
         purposes.</p>
 
     <h2>2. Microphone Usage (Record Audio)</h2>
-    <p>Our app requires access to your device's microphone ("RECORD_AUDIO" permission) solely for the generic
-        <strong>Speech-to-Text (Voice Recognition)</strong> feature during gameplay. </p>
+    <p>Our app requires access to your device's microphone ("RECORD_AUDIO" permission) for two features:</p>
     <ul>
-        <li>Audio data is processed by your device's operating system (Android/iOS) to convert speech into text.</li>
-        <li>We <strong>do not</strong> record, save, or transmit your voice data to our servers.</li>
-        <li>This permission is used strictly to enable voice inputs for the Bingo game.</li>
+        <li><strong>Speech-to-Text (Dictation):</strong> Audio is processed locally or via OS services to convert speech
+            to text. This data is not saved by us.</li>
+        <li><strong>Voice Messages:</strong> If you use the "Voice Message" feature (Long Press Mic), we <strong>record
+                and upload</strong> your audio to our secure servers (Supabase) to deliver it to the chat recipient.
+            These files are stored strictly for communication purposes.</li>
     </ul>
 
     <h2>3. Data Retention</h2>
