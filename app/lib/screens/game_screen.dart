@@ -668,6 +668,70 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     }
   }
 
+  // --- Voice Recording Logic ---
+
+  Future<void> _startRecording() async {
+    try {
+      if (await _audioRecorder.hasPermission()) {
+        final dir = await getApplicationDocumentsDirectory();
+        final String fileName = 'voice_msg_${DateTime.now().millisecondsSinceEpoch}.m4a';
+        final String path = '${dir.path}/$fileName';
+        
+        await _audioRecorder.start(const RecordConfig(), path: path);
+        
+        setState(() {
+          _isRecording = true;
+          _recordStartTime = DateTime.now();
+          _recordingPath = path;
+        });
+        HapticFeedback.mediumImpact(); // Start Feedback
+      }
+    } catch (e) {
+      debugPrint("Start Recording Error: $e");
+    }
+  }
+
+  Future<void> _stopRecording({bool send = true}) async {
+    try {
+      final path = await _audioRecorder.stop();
+      setState(() => _isRecording = false);
+      
+      if (path != null && send) {
+         _uploadAndSendVoice(path);
+      }
+    } catch (e) {
+      debugPrint("Stop Recording Error: $e");
+    }
+  }
+  
+  Future<void> _uploadAndSendVoice(String localPath) async {
+     try {
+        final file = File(localPath);
+        if (!await file.exists()) return;
+
+        // 1. Upload to Supabase
+        final fileName = localPath.split('/').last;
+        final String path = 'voice/${_session.sessionId}/$fileName';
+        
+        await Supabase.instance.client.storage
+            .from('voice-messages')
+            .upload(path, file);
+            
+        // 2. Get Public URL
+        final publicUrl = Supabase.instance.client.storage
+            .from('voice-messages')
+            .getPublicUrl(path);
+            
+        // 3. Send Message
+        _session.sendMessage("🎤 Voice Message", type: 'audio', extra: {'url': publicUrl, 'duration': 0}); 
+        
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Voice message sent!")));
+     } catch (e) {
+        debugPrint("Upload Error: $e");
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Failed to send voice message.")));
+     }
+  }
+
   // --- New Header Implementation ---
   // --- Redesigned Header (Transparent + Floating Text) ---
   Widget _buildHeader() {
@@ -1429,8 +1493,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           const SizedBox(width: 8),
           Padding(
             padding: const EdgeInsets.only(top: 4.0),
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
             child: GestureDetector(
                onLongPressStart: (_) {
                   if (!_hasInput) _startRecording();
@@ -1472,7 +1534,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   }
                },
             ),
-          ),
           ),
         ],
       ),

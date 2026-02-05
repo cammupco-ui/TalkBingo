@@ -1425,12 +1425,13 @@ class GameSession with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> sendMessage(String text) async {
+  Future<void> sendMessage(String text, {String type = 'chat', Map<String, dynamic>? extra}) async {
     final newMessage = {
       'sender': myRole,
       'text': text,
       'timestamp': DateTime.now().toIso8601String(),
-      'type': 'chat',
+      'type': type,
+      if (extra != null) 'extra': extra,
     };
     messages.add(newMessage);
     notifyListeners();
