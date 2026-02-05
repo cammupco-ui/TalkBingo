@@ -34,7 +34,7 @@ import 'package:talkbingo_app/widgets/draggable_floating_button.dart';
 import 'package:record/record.dart'; // Audio Recorder
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'dart:io';
+import 'package:talkbingo_app/utils/file_helper.dart';
 import 'package:audioplayers/audioplayers.dart'; // For Playback
 
 class GameScreen extends StatefulWidget {
@@ -673,18 +673,23 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   Future<void> _startRecording() async {
     try {
       if (await _audioRecorder.hasPermission()) {
-        final dir = await getApplicationDocumentsDirectory();
-        final String fileName = 'voice_msg_${DateTime.now().millisecondsSinceEpoch}.m4a';
-        final String path = '${dir.path}/$fileName';
+        String? path;
+        
+        // Only generate path on Mobile/Desktop
+        if (!kIsWeb) {
+           final dir = await getApplicationDocumentsDirectory();
+           final String fileName = 'voice_msg_${DateTime.now().millisecondsSinceEpoch}.m4a';
+           path = '${dir.path}/$fileName';
+        }
         
         await _audioRecorder.start(const RecordConfig(), path: path);
         
         setState(() {
           _isRecording = true;
           _recordStartTime = DateTime.now();
-          _recordingPath = path;
+          _recordingPath = path; // Null on Web
         });
-        HapticFeedback.mediumImpact(); // Start Feedback
+        HapticFeedback.mediumImpact(); 
       }
     } catch (e) {
       debugPrint("Start Recording Error: $e");
@@ -693,6 +698,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   Future<void> _stopRecording({bool send = true}) async {
     try {
+      // On Web, stop() returns the Blob URL
       final path = await _audioRecorder.stop();
       setState(() => _isRecording = false);
       
@@ -706,23 +712,29 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   
   Future<void> _uploadAndSendVoice(String localPath) async {
      try {
-        final file = File(localPath);
-        if (!await file.exists()) return;
+        // Read bytes using platform-specific helper
+        final bytes = await readFileBytes(localPath);
+        if (bytes.isEmpty) return;
 
-        // 1. Upload to Supabase
-        final fileName = localPath.split('/').last;
+        // Generate filename
+        final fileName = 'voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
         final String path = 'voice/${_session.sessionId}/$fileName';
         
+        // Upload Binary (Works on Web & Mobile)
         await Supabase.instance.client.storage
             .from('voice-messages')
-            .upload(path, file);
+            .uploadBinary(
+                path, 
+                bytes,
+                fileOptions: const FileOptions(contentType: 'audio/m4a')
+            );
             
-        // 2. Get Public URL
+        // Get Public URL
         final publicUrl = Supabase.instance.client.storage
             .from('voice-messages')
             .getPublicUrl(path);
             
-        // 3. Send Message
+        // Send Message
         _session.sendMessage("🎤 Voice Message", type: 'audio', extra: {'url': publicUrl, 'duration': 0}); 
         
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Voice message sent!")));
