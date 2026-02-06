@@ -366,23 +366,25 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
        }
        _previousLineCount = currentLineCount;
        
-       // Entrance Notification Logic (One-time)
+    // Entrance Notification Logic REMOVED as per user request
+    /*
        if (!_hasShownEntranceToast) {
          if (_isHost) {
             // Host: Wait for Guest Nickname
             if (_session.guestNickname != null && _session.guestNickname!.isNotEmpty) {
                _hasShownEntranceToast = true;
-               _showEntranceNotification("${_session.guestNickname} has entered!"); 
+               // _showEntranceNotification("${_session.guestNickname} has entered!"); 
             }
          } else {
             // Guest: Host is always present (owner)
             // Just show immediately if we are connected
             if (_session.hostNickname != null) {
                _hasShownEntranceToast = true;
-               _showEntranceNotification("Host has entered!");
+               // _showEntranceNotification("Host has entered!");
             }
          }
        }
+    */
     }
 
     // 2. Check for Game Over (Synced)
@@ -749,19 +751,21 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
+      // Reduced vertical padding to move content up
+      padding: const EdgeInsets.only(top: 0, bottom: 4), 
       child: SafeArea(
         bottom: false,
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          // Align start to avoid centering if container grows
+          mainAxisAlignment: MainAxisAlignment.start, 
           children: [
             // 1. Logo Only
             SvgPicture.asset(
-              'assets/images/logo_vector.svg', // Corrected filename
-              height: 30,
+              'assets/images/logo_vector.svg', 
+              height: 24, // Slightly smaller logo to save space
             ),
             
-            const SizedBox(height: 18),
+            const SizedBox(height: 10), // Reduced spacing from 18 to 10
             
             // 2. Floating Text Row (POINT | TURN | MENU)
             Row(
@@ -1243,7 +1247,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       ),
       child: ListView.builder(
         controller: _chatScrollController,
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
+        // Increased bottom padding to 140 to prevent overlap with input field & ad
+        padding: const EdgeInsets.fromLTRB(8, 20, 8, 140),
         itemCount: _session.messages.length,
         itemBuilder: (context, index) {
           final msg = _session.messages[index];
