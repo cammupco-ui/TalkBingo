@@ -246,39 +246,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     }
   }
 
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this); // Remove Observer updates (Fix for Web IME)
-    _chatController.addListener(() {
-       final text = _chatController.text;
-       final hasText = text.trim().isNotEmpty;
-       
-       if (_hasInput != hasText) {
-          setState(() => _hasInput = hasText);
-       }
-       
-       // Sound Logic (Heuristics)
-       if (text.length > _previousText.length) {
-         // Added character(s)
-         if (text.endsWith(' ')) {
-           SoundService().playSpaceSound();
-         } else if (text.endsWith('\n')) {
-           SoundService().playEnterSound();
-         } else {
-           SoundService().playTypingSound();
-         }
-       } else if (text.length < _previousText.length) {
-         // Deleted character(s)
-         SoundService().playDeleteSound();
-       }
-       _previousText = text;
-    });
-  }
-
   Timer? _pollingTimer;
   
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // Remove Keyboard Metrics Observer
     AdState.isGameActive.value = false;
     _pollingTimer?.cancel();
     _bingoLineController.dispose();
@@ -289,7 +261,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     _chatScrollController.dispose();
     _messageController.dispose();
     _scrollController.dispose();
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
     SoundService().stopBgm(); // Stop music when leaving screen
     _audioRecorder.dispose();
@@ -717,7 +688,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
            path = '${dir.path}/$fileName';
         }
         
-        await _audioRecorder.start(const RecordConfig(), path: path);
+        await _audioRecorder.start(const RecordConfig(), path: path ?? '');
         
         setState(() {
           _isRecording = true;

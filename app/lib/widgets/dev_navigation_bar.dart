@@ -12,7 +12,7 @@ import 'package:talkbingo_app/screens/guest_info_screen.dart';
 import 'package:talkbingo_app/screens/waiting_screen.dart';
 import 'package:talkbingo_app/screens/reward_screen.dart'; // Import RewardScreen
 import 'package:talkbingo_app/screens/point_purchase_screen.dart'; // Import PointPurchaseScreen
-import 'package:talkbingo_app/main.dart'; // Import for navigatorKey
+import 'package:talkbingo_app/globals.dart'; // Import for navigatorKey
 
 class DevNavigationBar extends StatelessWidget {
   const DevNavigationBar({super.key});

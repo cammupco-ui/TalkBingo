@@ -347,7 +347,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
         if (mode == 'reviewing')
             Row(
               children: [
-                // Reject Button
+                // Reject Button (Outline - Grey)
                 Expanded(
                   child: SizedBox(
                     height: 48,
@@ -357,24 +357,26 @@ class _QuizOverlayState extends State<QuizOverlay> {
                         side: const BorderSide(color: Colors.grey, width: 2),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         foregroundColor: Colors.grey,
+                        backgroundColor: Colors.transparent, // No fill
                       ),
                       child: const Text('비공감', style: TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ),
                 const SizedBox(width: 16),
-                // Approve Button
+                // Approve Button (Outline - Pink, NOT filled)
                 Expanded(
                   child: SizedBox(
                     height: 48,
-                    child: AnimatedButton(
+                    child: AnimatedOutlinedButton(
                       onPressed: () => widget.onOptionSelected(widget.submittedAnswer ?? 'APPROVED'), 
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.hostPrimary,
-                        foregroundColor: Colors.white,
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: AppColors.hostPrimary, width: 2),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        foregroundColor: AppColors.hostPrimary,
+                        backgroundColor: Colors.transparent, // No fill - appears unselected
                       ),
-                      child: const Text('공감', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: Text('공감', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.hostPrimary)),
                     ),
                   ),
                 ),

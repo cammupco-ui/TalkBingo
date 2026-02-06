@@ -100,9 +100,7 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Center(
-              child: SvgPicture.asset('assets/images/logo_vector.svg', width: 60, height: 60),
-            ),
+            // Logo removed - already in AppBar
             const SizedBox(height: 20),
 
             const Text(

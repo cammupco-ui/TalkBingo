@@ -1,5 +1,20 @@
-import 'package:talkbingo_app/globals.dart'; // Added Import
+import 'dart:ui'; // For PointerDeviceKind
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:talkbingo_app/globals.dart';
+import 'package:talkbingo_app/models/game_session.dart';
+import 'package:talkbingo_app/screens/home_screen.dart';
+import 'package:talkbingo_app/screens/splash_screen.dart';
 import 'package:talkbingo_app/services/deep_link_service.dart';
+import 'package:talkbingo_app/services/sound_service.dart';
+import 'package:talkbingo_app/styles/app_colors.dart';
+import 'package:talkbingo_app/utils/ad_state.dart';
+import 'package:talkbingo_app/utils/dev_config.dart';
+import 'package:talkbingo_app/widgets/dev_navigation_bar.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
