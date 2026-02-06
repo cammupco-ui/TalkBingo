@@ -1083,7 +1083,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                                          type: interactionType,
                                          answer: answer,
                                          interactionStep: state['step'] ?? 'answering',
-                                         answeringPlayer: state['answeringPlayer'] ?? 'A',
+                                         answeringPlayer: state['player'] ?? 'A',
                                          submittedAnswer: state['submittedAnswer'],
                                          isPaused: _session.gameStatus == 'paused',
                                          onOptionSelected: _handleOptionSelected,
