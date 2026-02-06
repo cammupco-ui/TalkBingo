@@ -46,7 +46,7 @@ dependencies:
   shared_preferences: ^2.2.3
   flutter_chat_bubble: ^2.0.2
   confetti: ^0.8.0
-  # google_mobile_ads: ^5.1.0 # Temporarily disabled for web build debug
+  google_mobile_ads: ^5.1.0
   iamport_flutter: ^0.10.21
   url_launcher: ^6.3.2
   # lottie: ^3.3.2 # Commented out to fix build error
