@@ -51,7 +51,7 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
+class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, WidgetsBindingObserver {
   late PageController _pageController;
   int _currentPage = 1;
   final GameSession _session = GameSession();
@@ -215,7 +215,40 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
        }
     });
 
-    // Listen to chat controller for robust state updates (Fix for Web IME)
+    // Listen to chat controller for robust state
+    _chatController.addListener(() {
+         final hasInput = _chatController.text.trim().isNotEmpty;
+         if (_hasInput != hasInput) {
+            setState(() => _hasInput = hasInput);
+         }
+    });
+
+    WidgetsBinding.instance.addObserver(this); // Add Observer for Keyboard Metrics
+  }
+
+  @override
+  void didChangeMetrics() {
+    super.didChangeMetrics();
+    // Detect Keyboard Opening (Inset increases)
+    final bottomInset = WidgetsBinding.instance.window.viewInsets.bottom;
+    if (bottomInset > 0 && _targetPage == 0) {
+       // Keyboard active on Chat Tab
+       // Wait slightly for resize to happen, then scroll
+       Future.delayed(const Duration(milliseconds: 100), () {
+          if (_chatScrollController.hasClients) {
+             _chatScrollController.animateTo(
+               _chatScrollController.position.maxScrollExtent,
+               duration: const Duration(milliseconds: 200),
+               curve: Curves.easeOut,
+             );
+          }
+       });
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this); // Remove Observer updates (Fix for Web IME)
     _chatController.addListener(() {
        final text = _chatController.text;
        final hasText = text.trim().isNotEmpty;

@@ -79,7 +79,11 @@ class _QuizOverlayState extends State<QuizOverlay> {
     
     final String title = isTruthGame ? 'TRUTH' : 'BALANCE';
 
+    // Get keyboard height manually since Scaffold resize is disabled for Quiz
+    final double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
     return Container(
+      padding: EdgeInsets.only(bottom: keyboardHeight), // Push content up by keyboard height
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.98), // Nearly Opaque for readability
       ),
