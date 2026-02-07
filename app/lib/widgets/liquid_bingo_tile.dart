@@ -132,7 +132,7 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
   
   // Helper getters
   bool get _isFilled => widget.owner != null && widget.owner!.isNotEmpty && widget.owner != 'X';
-  bool get _isLocked => widget.owner == 'LOCKED' || widget.owner == 'X';
+  bool get _isLocked => (widget.owner ?? '').startsWith('LOCKED') || widget.owner == 'X';
   bool get _canSelect => !_isFilled && !_isLocked;
   
   Color get _fillColor {
@@ -145,31 +145,16 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
   Color get _hoverColor => widget.isHost ? AppColors.hostPrimary : AppColors.guestPrimary;
   
   void _handleTap() {
-    // 1. Shake if Locked (Visual Feedback) but ALLOW Tap to proceed
+    // 1. Shake if Locked (Visual Feedback)
     if (_isLocked) {
        HapticFeedback.lightImpact(); 
        _shakeController.forward(from: 0);
-       // Fall through to execute onTap so GameScreen can handle the "Challenge" logic
-    } else if (!_canSelect && !_isFilled) {
-       // If not locked but not selectable (e.g. turn mismatch managed by parent, or filled?),
-       // Actually _canSelect is !_isFilled && !_isLocked.
-       // So this block handles: Filled tiles? Or just other cases?
-       // If filled, usually we ignore.
-       return;
     }
 
-    // 2. Click Logic
-    // Allow tap if selectable OR Locked (to trigger mini game)
-    if (_canSelect || _isLocked) {
-      // Haptic feedback for tactile response
-      HapticFeedback.mediumImpact();
-      
-      // Play tap bounce animation
-      _tapController.forward(from: 0);
-      
-      // Execute callback
-      widget.onTap();
-    }
+    // 2. Always allow tap through to parent (GameScreen handles all logic)
+    HapticFeedback.mediumImpact();
+    _tapController.forward(from: 0);
+    widget.onTap();
   }
 
   @override

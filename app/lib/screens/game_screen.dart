@@ -678,27 +678,44 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
 
   Future<void> _startRecording() async {
     try {
-      if (await _audioRecorder.hasPermission()) {
-        String? path;
-        
-        // Only generate path on Mobile/Desktop
-        if (!kIsWeb) {
-           final dir = await getApplicationDocumentsDirectory();
-           final String fileName = 'voice_msg_${DateTime.now().millisecondsSinceEpoch}.m4a';
-           path = '${dir.path}/$fileName';
+      // Use permission_handler for explicit permission request
+      var status = await Permission.microphone.status;
+      if (!status.isGranted) {
+        status = await Permission.microphone.request();
+        if (!status.isGranted) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('마이크 권한이 필요합니다.')),
+            );
+          }
+          return;
         }
-        
-        await _audioRecorder.start(const RecordConfig(), path: path ?? '');
-        
-        setState(() {
-          _isRecording = true;
-          _recordStartTime = DateTime.now();
-          _recordingPath = path; // Null on Web
-        });
-        HapticFeedback.mediumImpact(); 
       }
+
+      String? path;
+      
+      // Only generate path on Mobile/Desktop
+      if (!kIsWeb) {
+         final dir = await getApplicationDocumentsDirectory();
+         final String fileName = 'voice_msg_${DateTime.now().millisecondsSinceEpoch}.m4a';
+         path = '${dir.path}/$fileName';
+      }
+      
+      await _audioRecorder.start(const RecordConfig(), path: path ?? '');
+      
+      setState(() {
+        _isRecording = true;
+        _recordStartTime = DateTime.now();
+        _recordingPath = path; // Null on Web
+      });
+      HapticFeedback.mediumImpact(); 
     } catch (e) {
       debugPrint("Start Recording Error: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('녹음 시작 실패: $e')),
+        );
+      }
     }
   }
 
@@ -1569,6 +1586,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         const SnackBar(content: Text('Voice to text not implemented yet.')),
       );
       return;
+    }
+
+    // Stop STT before sending to prevent _onSpeechResult re-populating the input
+    if (_isListening) {
+      _stopListening();
     }
 
     _session.sendMessage(text);
