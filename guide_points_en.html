@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Points Guide - TalkBingo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --vp-color: #FFD700;
+            /* Gold */
+            --ap-color: #00E5FF;
+            /* Cyan */
+            --ep-color: #FF4081;
+            /* Pink */
+            --text-color: #333;
+            --bg-color: #F8F9FA;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header h1 {
+            color: #333;
+            margin: 0;
+            font-size: 1.4rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            min-height: 100vh;
+        }
+
+        .point-card {
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            background: #fff;
+            border: 1px solid #eee;
+            display: flex;
+            align-items: flex-start;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+        }
+
+        .icon-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            margin-right: 15px;
+            flex-shrink: 0;
+            font-size: 1.1rem;
+        }
+
+        .vp-icon {
+            background-color: var(--vp-color);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            color: #fff;
+        }
+
+        .ap-icon {
+            background-color: var(--ap-color);
+            color: #fff;
+        }
+
+        .ep-icon {
+            background-color: var(--ep-color);
+            color: #fff;
+        }
+
+        .content h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.1rem;
+        }
+
+        .content p {
+            margin: 0 0 8px 0;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        .rule-box {
+            background-color: #f9f9f9;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .convert-arrow {
+            color: #888;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Points Guide</h1>
+    </div>
+
+    <div class="container">
+        <!-- VP -->
+        <div class="point-card">
+            <div class="icon-box vp-icon">VP</div>
+            <div class="content">
+                <h3>Victory Point (VP)</h3>
+                <p>The most prestigious point earned by the <b>Game Winner</b>.</p>
+                <div class="rule-box">
+                    • Earn: Win <b>+50 VP</b> (2x/3x for Streaks)<br>
+                    • Use: Remove Ads (Cost 200 VP)
+                </div>
+            </div>
+        </div>
+
+        <!-- AP -->
+        <div class="point-card">
+            <div class="icon-box ap-icon">AP</div>
+            <div class="content">
+                <h3>Activity Point (AP)</h3>
+                <p>Earned whenever you <b>complete a Bingo line</b>.</p>
+                <div class="rule-box">
+                    • Earn: 1 Line (+20), 2 Lines (+40), 3 Lines (+60)<br>
+                    • Convert: <b>100 AP <span class="convert-arrow">→</span> 50 VP</b>
+                </div>
+            </div>
+        </div>
+
+        <!-- EP -->
+        <div class="point-card">
+            <div class="icon-box ep-icon">EP</div>
+            <div class="content">
+                <h3>Experience Point (EP)</h3>
+                <p>Earned by passing quizzes or <b>claiming cells</b>.</p>
+                <div class="rule-box">
+                    • Earn: Claim Cell <b>+1 EP</b><br>
+                    • Convert: <b>100 EP <span class="convert-arrow">→</span> 50 VP</b>
+                </div>
+            </div>
+        </div>
+
+        <div class="point-card" style="background-color: #fff3e0; border-color: #ffe0b2;">
+            <div class="content">
+                <h3>⚠️ Data Saving Warning</h3>
+                <p><b>Guest Mode</b> data may be lost if the app is deleted.<br>
+                    Please <b>Link Account</b> in settings to save your points and records permanently.</p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

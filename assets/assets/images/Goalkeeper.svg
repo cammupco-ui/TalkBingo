@@ -1,0 +1,18 @@
+<svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Styles -->
+  <defs>
+    <style>
+      .outline { stroke: #0C0219; stroke-width: 6; fill: #6B14EC; }
+      .head { fill: #2A103E; }
+    </style>
+  </defs>
+
+  <!-- Arms (Long Horizontal Bar) -->
+  <rect x="5" y="22" width="110" height="16" rx="8" class="outline" />
+  
+  <!-- Body (Central Wide Oval/Rect) -->
+  <rect x="35" y="15" width="50" height="30" rx="15" class="outline" />
+  
+  <!-- Head (Center Circle, Darker) -->
+  <circle cx="60" cy="30" r="14" class="head" />
+</svg>
