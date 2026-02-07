@@ -2273,10 +2273,26 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     final winnerName = isWinner 
         ? (_isHost ? (_session.hostNickname ?? 'Host') : (_session.guestNickname ?? 'Guest'))
         : (_isHost ? (_session.guestNickname ?? 'Guest') : (_session.hostNickname ?? 'Host'));
-    final opponentName = _isHost ? (_session.guestNickname ?? 'Guest') : (_session.hostNickname ?? 'Host');
 
     // Helper to build content
     Widget buildContent() {
+       // Build main message
+       String mainMsg;
+       if (isWinner) {
+         mainMsg = isGameOver 
+             ? AppLocalizations.get('bingo_winner_final')
+             : "$lines${AppLocalizations.get('bingo_winner')}";
+       } else {
+         mainMsg = isGameOver
+             ? "${AppLocalizations.get('bingo_loser_final')}$winnerName${AppLocalizations.get('bingo_loser_final_suffix')}"
+             : "${AppLocalizations.get('bingo_loser')}$winnerName${AppLocalizations.get('bingo_loser_suffix')}";
+       }
+
+       // Ad hint
+       final adHint = isGameOver
+           ? AppLocalizations.get('bingo_ad_hint_final')
+           : "${_session.language == 'ko' ? '광고 시청 후 ${lines + 1}' : 'After watching an ad, round ${lines + 1} '}${AppLocalizations.get('bingo_ad_hint_round')}";
+
        return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -2287,34 +2303,28 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
              // Title
              Text(
                isWinner 
-                 ? (isGameOver ? "BINGO! 🏆" : "BINGO! 🎉")
-                 : "OPPONENT BINGO!",
-               style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87),
+                 ? (isGameOver ? AppLocalizations.get('bingo_title_final') : AppLocalizations.get('bingo_title'))
+                 : AppLocalizations.get('bingo_opponent'),
+               style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
              ),
              const SizedBox(height: 10),
              
              // Main message
              Text(
-               isWinner 
-                 ? (isGameOver 
-                     ? "축하합니다! 3줄 빙고 완성!\n게임이 종료됩니다." 
-                     : "$lines줄 빙고를 완성했습니다!")
-                 : (isGameOver
-                     ? "아쉽게도 ${winnerName}님이\n3줄을 먼저 완성하셨습니다."
-                     : "아쉽게도 ${winnerName}님이\n$lines줄을 먼저 완성하셨습니다."),
+               mainMsg,
                textAlign: TextAlign.center,
-               style: GoogleFonts.alexandria(color: Colors.grey[700]),
+               style: AppLocalizations.getTextStyle(baseStyle: TextStyle(color: Colors.grey[700])),
              ),
              
              // Ad hint text at bottom
-             const SizedBox(height: 16),
-             Text(
-               isGameOver
-                 ? "광고 시청 후 포인트 확인됩니다"
-                 : "광고 시청 후 ${lines + 1}라운드 시작입니다",
-               textAlign: TextAlign.center,
-               style: GoogleFonts.alexandria(fontSize: 11, color: Colors.grey[400]),
-             ),
+             if (!_session.adFree) ...[
+               const SizedBox(height: 16),
+               Text(
+                 adHint,
+                 textAlign: TextAlign.center,
+                 style: AppLocalizations.getTextStyle(baseStyle: TextStyle(fontSize: 11, color: Colors.grey[400])),
+               ),
+             ],
           ],
        );
     }
@@ -2331,14 +2341,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
           if (!isGameOver)
             ElevatedButton(
               onPressed: () async {
-                  _isBingoDialogVisible = false; // Reset flag first
+                  _isBingoDialogVisible = false;
                   Navigator.pop(context);
                   
-                  // Shared Logic: Continue
                   if (_session.adFree || _session.vp >= 200) {
-                      _session.setGameStatus('playing'); // Resume immediately
+                      _session.setGameStatus('playing');
                   } else {
-                      await _session.startAdBreak(); // Trigger Handshake
+                      await _session.startAdBreak();
                   }
               },
               style: ElevatedButton.styleFrom(
@@ -2346,17 +2355,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                 foregroundColor: Colors.black87,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text("Continue Play"),
+              child: Text(AppLocalizations.get('bingo_continue')),
             ),
           
           ElevatedButton(
             onPressed: () {
                 _isBingoDialogVisible = false;
                 Navigator.pop(context);
-                
-                // Set navigating to true to prevent _onSessionUpdate from reacting to 'finished' state
                 _navigating = true;
-
                 _session.endGame(); 
                 _proceedToReward();
             },
@@ -2364,10 +2370,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
               backgroundColor: const Color(0xFFE91E63),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text("End Game", style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.get('bingo_end'), style: const TextStyle(color: Colors.white)),
           )
         ] : [
-          // Opponent (waiter) gets a dismiss button  
           ElevatedButton(
             onPressed: () {
                 _isBingoDialogVisible = false;
@@ -2378,7 +2383,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
               foregroundColor: Colors.black87,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text("확인"),
+            child: Text(AppLocalizations.get('bingo_confirm')),
           )
         ],
       ),
@@ -2387,6 +2392,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     });
 
   }
+
 
   // Ad Overlay Logic
   void _showAdOverlay() {

@@ -176,18 +176,100 @@ class _HomeScreenState extends State<HomeScreen> {
                    height: designHeight,
                    onTap: () {
                      // Helper to check profile
-                     void startNewGame() {
-                       final session = GameSession();
-                       if (session.hostNickname == null || session.hostNickname!.isEmpty) {
-                          // Redirect to Profile Setup first
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const HostInfoScreen(isGameSetupFlow: true))
-                          );
-                       } else {
-                          // Proceed to Game Setup
-                          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HostSetupScreen()));
-                       }
-                     }
+                      void startNewGame() {
+                        final session = GameSession();
+                        if (session.hostNickname == null || session.hostNickname!.isEmpty) {
+                           // Redirect to Profile Setup first
+                           Navigator.of(context).push(
+                             MaterialPageRoute(builder: (_) => const HostInfoScreen(isGameSetupFlow: true))
+                           );
+                           return;
+                        }
+                        
+                        // Show Ad-Free VP Modal
+                        showDialog(
+                          context: context,
+                          builder: (ctx) {
+                            final hasEnoughVp = session.vp >= 200;
+                            return AlertDialog(
+                              backgroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                              title: Text(
+                                AppLocalizations.get('ad_free_title'),
+                                style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
+                                textAlign: TextAlign.center,
+                              ),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.block, color: Color(0xFFE91E63), size: 40),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    AppLocalizations.get('ad_free_desc'),
+                                    textAlign: TextAlign.center,
+                                    style: AppLocalizations.getTextStyle(baseStyle: TextStyle(color: Colors.grey[700], fontSize: 14)),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[100],
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      "${AppLocalizations.get('ad_free_current_vp')}${session.vp}",
+                                      style: AppLocalizations.getTextStyle(baseStyle: TextStyle(
+                                        fontWeight: FontWeight.bold, 
+                                        fontSize: 16,
+                                        color: hasEnoughVp ? const Color(0xFFE91E63) : Colors.grey,
+                                      )),
+                                    ),
+                                  ),
+                                  if (!hasEnoughVp) ...[
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      AppLocalizations.get('ad_free_not_enough'),
+                                      style: AppLocalizations.getTextStyle(baseStyle: TextStyle(color: Colors.red[300], fontSize: 11)),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              actionsAlignment: MainAxisAlignment.spaceEvenly,
+                              actions: [
+                                // Play with Ads
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(ctx);
+                                    session.adFree = false;
+                                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HostSetupScreen()));
+                                  },
+                                  child: Text(
+                                    AppLocalizations.get('ad_free_skip'),
+                                    style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(color: Colors.grey, fontSize: 13)),
+                                  ),
+                                ),
+                                // Use 200 VP
+                                ElevatedButton(
+                                  onPressed: hasEnoughVp ? () {
+                                    session.useVpForAdRemoval();
+                                    Navigator.pop(ctx);
+                                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HostSetupScreen()));
+                                  } : null,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFE91E63),
+                                    disabledBackgroundColor: Colors.grey[300],
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  child: Text(
+                                    AppLocalizations.get('ad_free_use'),
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
 
                      if (GameSession().isGameActive) {
                         showDialog(
