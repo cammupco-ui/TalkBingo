@@ -2270,29 +2270,50 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     _isBingoDialogVisible = true;
 
     final isGameOver = lines >= 3;
-    final dialogTitle = isGameOver ? "BINGO! 🏆" : "BINGO! 🎉";
-    final dialogMsg = isGameOver 
-        ? "Congratulations! You completed 3 lines!\nThe game is finished." 
-        : "You completed $lines line${lines > 1 ? 's' : ''}!";
-        
+    final winnerName = isWinner 
+        ? (_isHost ? (_session.hostNickname ?? 'Host') : (_session.guestNickname ?? 'Guest'))
+        : (_isHost ? (_session.guestNickname ?? 'Guest') : (_session.hostNickname ?? 'Host'));
     final opponentName = _isHost ? (_session.guestNickname ?? 'Guest') : (_session.hostNickname ?? 'Host');
-    final waitMsg = "Waiting for $opponentName to decide...";
 
     // Helper to build content
     Widget buildContent() {
        return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-             Icon(isWinner ? Icons.celebration : Icons.hourglass_top, 
+             Icon(isWinner ? Icons.celebration : Icons.sentiment_dissatisfied, 
                   color: isWinner ? const Color(0xFFE91E63) : Colors.grey, size: 40),
              const SizedBox(height: 10),
-             Text(isWinner ? dialogTitle : "OPPONENT BINGO!", 
-                  style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, color: Colors.black87)),
-             const SizedBox(height: 10),
+             
+             // Title
              Text(
-               isWinner ? dialogMsg : "$opponentName completed a line!\n$waitMsg",
+               isWinner 
+                 ? (isGameOver ? "BINGO! 🏆" : "BINGO! 🎉")
+                 : "OPPONENT BINGO!",
+               style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87),
+             ),
+             const SizedBox(height: 10),
+             
+             // Main message
+             Text(
+               isWinner 
+                 ? (isGameOver 
+                     ? "축하합니다! 3줄 빙고 완성!\n게임이 종료됩니다." 
+                     : "$lines줄 빙고를 완성했습니다!")
+                 : (isGameOver
+                     ? "아쉽게도 ${winnerName}님이\n3줄을 먼저 완성하셨습니다."
+                     : "아쉽게도 ${winnerName}님이\n$lines줄을 먼저 완성하셨습니다."),
                textAlign: TextAlign.center,
                style: GoogleFonts.alexandria(color: Colors.grey[700]),
+             ),
+             
+             // Ad hint text at bottom
+             const SizedBox(height: 16),
+             Text(
+               isGameOver
+                 ? "광고 시청 후 포인트 확인됩니다"
+                 : "광고 시청 후 ${lines + 1}라운드 시작입니다",
+               textAlign: TextAlign.center,
+               style: GoogleFonts.alexandria(fontSize: 11, color: Colors.grey[400]),
              ),
           ],
        );
@@ -2318,7 +2339,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                       _session.setGameStatus('playing'); // Resume immediately
                   } else {
                       await _session.startAdBreak(); // Trigger Handshake
-                      // _showAdOverlay() handled by listener now to avoid stacking
                   }
               },
               style: ElevatedButton.styleFrom(
@@ -2335,7 +2355,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                 Navigator.pop(context);
                 
                 // Set navigating to true to prevent _onSessionUpdate from reacting to 'finished' state
-                // (which would show the 'Game Over' dialog on top of our navigation)
                 _navigating = true;
 
                 _session.endGame(); 
@@ -2347,7 +2366,21 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
             ),
             child: const Text("End Game", style: TextStyle(color: Colors.white)),
           )
-        ] : [], // No actions for waiter
+        ] : [
+          // Opponent (waiter) gets a dismiss button  
+          ElevatedButton(
+            onPressed: () {
+                _isBingoDialogVisible = false;
+                Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.grey[300],
+              foregroundColor: Colors.black87,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text("확인"),
+          )
+        ],
       ),
     ).then((_) {
        _isBingoDialogVisible = false;
