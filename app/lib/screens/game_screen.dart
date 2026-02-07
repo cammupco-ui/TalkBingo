@@ -1943,8 +1943,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   }
 
     Widget _buildBingoBoard() {
+    // Bottom controls overlay ~120px at the bottom of the PageView.
+    // Add bottom padding so Center positions the board in the visible area above controls.
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 120.0),
       child: Center(
         child: AspectRatio(
           aspectRatio: 1,
