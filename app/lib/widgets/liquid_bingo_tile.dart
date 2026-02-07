@@ -229,28 +229,28 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
                   ),
                   child: Stack(
                     children: [
-                      // Watermark for MP/CP
-                      if (widget.owner == 'A')
-                        const Center(
+                      // Watermark for MP/CP (also on LOCKED tiles)
+                      if (widget.owner == 'A' || widget.owner == 'LOCKED_A')
+                        Center(
                           child: Text(
                             "M",
                             style: TextStyle(
                               fontFamily: 'NURA',
                               fontSize: 60,
                               fontWeight: FontWeight.w900,
-                              color: Colors.white12, // Very subtle transparent white
+                              color: Colors.white.withOpacity(0.38),
                             ),
                           ),
                         ),
-                      if (widget.owner == 'B')
-                        const Center(
+                      if (widget.owner == 'B' || widget.owner == 'LOCKED_B')
+                        Center(
                           child: Text(
                             "C",
                             style: TextStyle(
                               fontFamily: 'NURA',
                               fontSize: 60,
                               fontWeight: FontWeight.w900,
-                              color: Colors.white12, 
+                              color: Colors.white.withOpacity(0.38),
                             ),
                           ),
                         ),
