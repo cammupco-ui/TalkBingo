@@ -1886,7 +1886,62 @@ class GameSession with ChangeNotifier {
     super.dispose();
   }
 
-  // --- Realtime Hover Broadcast ---
+  // --- Realtime Cursor Broadcast ---
+  double opponentCursorX = 0.0;
+  double opponentCursorY = 0.0;
+  bool opponentCursorVisible = false;
+  Timer? _cursorThrottle;
+  Timer? _cursorFadeTimer;
+
+  /// Broadcast cursor position (normalized 0-1 coordinates) with 100ms throttle
+  void broadcastCursorPosition(double normalizedX, double normalizedY) {
+    if (_cursorThrottle?.isActive == true) return;
+    
+    _cursorThrottle = Timer(const Duration(milliseconds: 100), () {});
+    
+    sendGameEvent({
+      'type': 'cursor',
+      'x': normalizedX,
+      'y': normalizedY,
+      'role': myRole,
+    });
+  }
+
+  /// Broadcast cursor lifted (finger removed)
+  void broadcastCursorLifted() {
+    sendGameEvent({
+      'type': 'cursor_lift',
+      'role': myRole,
+    });
+  }
+
+  /// Handle incoming cursor events (called from gameEvents stream listener)
+  void handleCursorEvent(Map<String, dynamic> payload) {
+    final eventType = payload['type'];
+    final role = payload['role'];
+    
+    // Only process opponent's cursor
+    if (role == myRole) return;
+    
+    if (eventType == 'cursor') {
+      opponentCursorX = (payload['x'] as num?)?.toDouble() ?? 0.0;
+      opponentCursorY = (payload['y'] as num?)?.toDouble() ?? 0.0;
+      opponentCursorVisible = true;
+      
+      // Auto-hide after 2 seconds of no updates
+      _cursorFadeTimer?.cancel();
+      _cursorFadeTimer = Timer(const Duration(seconds: 2), () {
+        opponentCursorVisible = false;
+        notifyListeners();
+      });
+      
+      notifyListeners();
+    } else if (eventType == 'cursor_lift') {
+      opponentCursorVisible = false;
+      notifyListeners();
+    }
+  }
+
   void broadcastHover(int? index) {}
   Future<void> reportContent(String qId, String reason, {String? details}) async {
     try {

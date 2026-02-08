@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:async';
+import 'dart:math' as math;
 
 class DraggableFloatingButton extends StatefulWidget {
   final bool isOnChatTab;
@@ -26,17 +27,27 @@ class DraggableFloatingButton extends StatefulWidget {
   State<DraggableFloatingButton> createState() => _DraggableFloatingButtonState();
 }
 
-class _DraggableFloatingButtonState extends State<DraggableFloatingButton> {
+class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
+    with SingleTickerProviderStateMixin {
   Offset _position = const Offset(300, 500); // Default off-center
   bool _isDragging = false;
   bool _initialized = false;
   Timer? _previewTimer;
   bool _showPreview = false;
 
+  // Idle floating animation
+  late AnimationController _floatController;
+
   @override
   void initState() {
     super.initState();
     _loadSavedPosition();
+    
+    // Idle floating animation: continuous gentle bob
+    _floatController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2500),
+    )..repeat(reverse: true);
   }
   
   @override
@@ -57,6 +68,7 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton> {
   @override
   void dispose() {
     _previewTimer?.cancel();
+    _floatController.dispose();
     super.dispose();
   }
 
@@ -113,33 +125,7 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton> {
     }
   }
 
-  void _onPanEnd(DragEndDetails details) {
-    final size = MediaQuery.of(context).size;
-    final padding = MediaQuery.of(context).padding;
-    final buttonSize = 70.0;
-    
-    // Calculate safe boundaries
-    double minX = 16.0;
-    double maxX = size.width - buttonSize - 16.0;
-    double minY = padding.top + 60.0; // Avoid header
-    double maxY = size.height - buttonSize - 50.0; // Avoid bottom input
 
-    double targetX = _position.dx.clamp(minX, maxX);
-    double targetY = _position.dy.clamp(minY, maxY);
-    
-    // Snap to closest side horizontally for tidiness
-    if (targetX + buttonSize/2 < size.width/2) {
-       targetX = minX; // Snap Left
-    } else {
-       targetX = maxX; // Snap Right
-    }
-
-    setState(() {
-      _isDragging = false;
-      _position = Offset(targetX, targetY);
-    });
-    _savePosition();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -161,120 +147,142 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton> {
 
         final bool isChat = widget.isOnChatTab;
         final Color bgColor = isChat 
-            ? Colors.grey.withOpacity(0.7) 
-            : widget.themeColor.withOpacity(0.85);
+            ? Colors.grey.withValues(alpha: 0.7) 
+            : widget.themeColor.withValues(alpha: 0.85);
 
         return Stack(
           children: [
             Positioned(
               left: safeX,
               top: safeY,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque, // Ensure touches are captured
-                onPanStart: _onPanStart,
-                onPanUpdate: _onPanUpdate,
-                onPanEnd: (details) {
-                    if (_isDragging) {
-                        // Logic to snap and save only if dragged
-                    // We use parentWidth/Height here instead of MediaQuery
-                    double finalX = _position.dx.clamp(16.0, parentWidth - 70.0 - 16.0);
-                    double finalY = _position.dy.clamp(60.0, parentHeight - 70.0 - 50.0);
-                    
-                    if (finalX + 35 < parentWidth/2) {
-                       finalX = 16.0;
-                    } else {
-                       finalX = parentWidth - 70.0 - 16.0;
-                    }
+              child: AnimatedBuilder(
+                animation: _floatController,
+                builder: (context, child) {
+                  // Gentle vertical bob: -3px to +3px, paused while dragging
+                  final double bobOffset = _isDragging 
+                      ? 0.0 
+                      : math.sin(_floatController.value * math.pi) * 3.0;
+                  // Subtle glow pulse: shadow opacity oscillates
+                  final double glowPulse = _isDragging
+                      ? 0.0
+                      : 0.15 + (math.sin(_floatController.value * math.pi) * 0.1);
+                  
+                  return Transform.translate(
+                    offset: Offset(0, bobOffset),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onPanStart: _onPanStart,
+                      onPanUpdate: _onPanUpdate,
+                      onPanEnd: (details) {
+                          if (_isDragging) {
+                          double finalX = _position.dx.clamp(16.0, parentWidth - 70.0 - 16.0);
+                          double finalY = _position.dy.clamp(60.0, parentHeight - 70.0 - 50.0);
+                          
+                          if (finalX + 35 < parentWidth/2) {
+                             finalX = 16.0;
+                          } else {
+                             finalX = parentWidth - 70.0 - 16.0;
+                          }
 
-                    setState(() {
-                      _isDragging = false;
-                      _position = Offset(finalX, finalY);
-                    });
-                     _savePosition();
-                    }
-                },
-                onTap: () {
-                   if (!_isDragging) {
-                      widget.onTap();
-                   }
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  width: _isDragging ? 70 : ((_showPreview || (!isChat && widget.unreadCount > 0)) ? 220 : 60), 
-                  height: _isDragging ? 70 : 60,
-                  curve: Curves.easeOutBack,
-                  decoration: BoxDecoration(
-                    color: _isDragging ? bgColor.withOpacity(0.95) : bgColor,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(_isDragging ? 0.4 : 0.2),
-                        blurRadius: _isDragging ? 16 : 8,
-                        offset: Offset(0, _isDragging ? 8 : 4),
-                      )
-                    ],
-                  ),
-                  child: Stack(
-                    children: [
-                       // Content
-                       Center(
-                         child: isChat 
-                         ? Column(
-                             mainAxisSize: MainAxisSize.min,
-                             children: const [
-                               Icon(Icons.sports_esports, color: Colors.white, size: 28),
-                               Text("보드", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold))
-                             ],
-                           )
-                          : ((_showPreview || widget.unreadCount > 0) 
-                            ? Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                                child: Row(
-                                  children: [
-                                     Icon(Icons.chat_bubble, color: Colors.white.withOpacity(0.9), size: 24),
-                                     const SizedBox(width: 8),
-                                     Expanded(
+                          setState(() {
+                            _isDragging = false;
+                            _position = Offset(finalX, finalY);
+                          });
+                           _savePosition();
+                          }
+                      },
+                      onTap: () {
+                         if (!_isDragging) {
+                            widget.onTap();
+                         }
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: _isDragging ? 70 : ((_showPreview || (!isChat && widget.unreadCount > 0)) ? 220 : 60), 
+                        height: _isDragging ? 70 : 60,
+                        curve: Curves.easeOutBack,
+                        decoration: BoxDecoration(
+                          color: _isDragging ? bgColor.withValues(alpha: 0.95) : bgColor,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: _isDragging ? 0.4 : 0.2),
+                              blurRadius: _isDragging ? 16 : 8,
+                              offset: Offset(0, _isDragging ? 8 : 4),
+                            ),
+                            // Glow pulse shadow (colored)
+                            if (!_isDragging)
+                              BoxShadow(
+                                color: widget.themeColor.withValues(alpha: glowPulse),
+                                blurRadius: 12,
+                                spreadRadius: 2,
+                              ),
+                          ],
+                        ),
+                        child: Stack(
+                          children: [
+                             // Content
+                             Center(
+                               child: isChat 
+                               ? Column(
+                                   mainAxisSize: MainAxisSize.min,
+                                   children: const [
+                                     Icon(Icons.sports_esports, color: Colors.white, size: 28),
+                                     Text("보드", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold))
+                                   ],
+                                 )
+                                : ((_showPreview || widget.unreadCount > 0) 
+                                  ? Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                      child: Row(
+                                        children: [
+                                           Icon(Icons.chat_bubble, color: Colors.white.withValues(alpha: 0.9), size: 24),
+                                           const SizedBox(width: 8),
+                                           Expanded(
+                                             child: Text(
+                                               widget.latestMessage ?? "", 
+                                               style: const TextStyle(color: Colors.white, fontSize: 11),
+                                               maxLines: 2,
+                                               overflow: TextOverflow.ellipsis
+                                             ),
+                                           )
+                                        ],
+                                      ),
+                                    )
+                                  : const Icon(Icons.chat_bubble, color: Colors.white, size: 30)
+                                 )
+                             ),
+                             
+                             // Badge
+                             if (!isChat && widget.unreadCount > 0)
+                               Positioned(
+                                 right: 0,
+                                 top: 0,
+                                 child: IgnorePointer(
+                                   child: Container(
+                                     padding: const EdgeInsets.all(6),
+                                     decoration: const BoxDecoration(
+                                       color: Colors.red,
+                                       shape: BoxShape.circle,
+                                     ),
+                                     constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                                     child: Center(
                                        child: Text(
-                                         widget.latestMessage ?? "", 
-                                         style: const TextStyle(color: Colors.white, fontSize: 11), // Increased font size slightly since title is gone
-                                         maxLines: 2, // Allow 2 lines since we have space
-                                         overflow: TextOverflow.ellipsis
+                                         "${widget.unreadCount}",
+                                         style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                                        ),
-                                     )
-                                  ],
-                                ),
-                              )
-                            : const Icon(Icons.chat_bubble, color: Colors.white, size: 30) // Simple Icon
-                           )
-                       ),
-                       
-                       // Badge
-                       if (!isChat && widget.unreadCount > 0)
-                         Positioned(
-                           right: 0,
-                           top: 0,
-                           child: IgnorePointer(
-                             child: Container( // Wrap to ensure it doesn't block hits if large
-                               padding: const EdgeInsets.all(6),
-                               decoration: const BoxDecoration(
-                                 color: Colors.red,
-                                 shape: BoxShape.circle,
-                               ),
-                               constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
-                               child: Center(
-                                 child: Text(
-                                   "${widget.unreadCount}",
-                                   style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                     ),
+                                   ).animate(key: ValueKey(widget.unreadCount)).scale(duration: 300.ms, curve: Curves.elasticOut),
                                  ),
                                ),
-                             ).animate(key: ValueKey(widget.unreadCount)).scale(duration: 300.ms, curve: Curves.elasticOut),
-                           ),
-                         ),
-                    ],
-                  ),
-                )
-                .animate(target: (widget.unreadCount > 0 && !isChat) ? 1 : 0)
-                .shake(delay: 500.ms, hz: 4, curve: Curves.easeInOut), // Shake if unread
+                          ],
+                        ),
+                      )
+                      .animate(target: (widget.unreadCount > 0 && !isChat) ? 1 : 0)
+                      .shake(delay: 500.ms, hz: 4, curve: Curves.easeInOut), // Shake if unread
+                    ),
+                  );
+                },
               ),
             ),
           ]

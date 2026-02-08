@@ -28,6 +28,7 @@ import 'package:talkbingo_app/utils/dev_config.dart';
 import 'package:talkbingo_app/widgets/floating_score.dart';
 import 'package:talkbingo_app/screens/reward_screen.dart';
 import 'package:confetti/confetti.dart';
+import 'package:talkbingo_app/widgets/glowing_cursor_overlay.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:talkbingo_app/widgets/draggable_floating_button.dart';
@@ -179,6 +180,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     // Listen to Session
     _session.addListener(_onSessionUpdate);
     
+    // Listen to broadcast events for cursor sharing
+    _cursorEventSubscription = _session.gameEvents.listen((payload) {
+      final type = payload['type'];
+      if (type == 'cursor' || type == 'cursor_lift') {
+        _session.handleCursorEvent(payload);
+      }
+    });
+    
     // Listen to PageController for Tab Tracking
     _pageController.addListener(() {
        // PageController.page is double, round to check index
@@ -251,6 +260,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   }
 
   Timer? _pollingTimer;
+  StreamSubscription<Map<String, dynamic>>? _cursorEventSubscription;
   
   @override
   void dispose() {
@@ -259,6 +269,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     _pollingTimer?.cancel();
     _bingoLineController.dispose();
     _confettiController.dispose();
+    _cursorEventSubscription?.cancel();
     _session.removeListener(_onSessionUpdate);
     _pageController.removeListener(_onPageChanged);
     _pageController.dispose();
@@ -1381,6 +1392,17 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
               
               _buildAdWaitOverlay(),
               
+              // Glowing Cursor Overlay — shared touch position
+              if (!widget.isReviewMode)
+                GlowingCursorOverlay(
+                  opponentX: _session.opponentCursorX,
+                  opponentY: _session.opponentCursorY,
+                  opponentVisible: _session.opponentCursorVisible,
+                  opponentRole: _session.myRole == 'A' ? 'B' : 'A',
+                  onPointerMove: (nx, ny) => _session.broadcastCursorPosition(nx, ny),
+                  onPointerUp: () => _session.broadcastCursorLifted(),
+                ),
+
               // Draggable Menu Button — hidden during mini-games to avoid covering gameplay
               if (!(_session.interactionState != null && 
                     (_session.interactionState!['type'] == 'mini_target' || 
