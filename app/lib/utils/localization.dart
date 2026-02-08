@@ -496,6 +496,17 @@ If you have questions about this Privacy Policy or wish to exercise your data ri
 
 You may also manage your privacy settings directly within the App under Settings.
 ''',
+      // Challenge & Notification Modals
+      'challenge_confirm_title': 'Challenge Opponent?',
+      'challenge_confirm_desc': 'Steal this tile by winning a Mini Game!\n\nAttempts: {remaining}/2',
+      'challenge_btn': 'Challenge!',
+      'challenge_initiated': '{name} challenged your cell! ({remaining}/2)',
+      'challenge_initiated_other': '{name} challenged {owner}\'s cell! ({remaining}/2)',
+      'disagree_notify': '{name} disagreed.',
+      'disagree_unlock_hint': 'Unlock it on your next turn.',
+      'disagree_unlock_hint_other': '{owner} can unlock it on their next turn.',
+      'cell_won': '{name} captured the cell!',
+      'close_btn': 'Close',
     },
     'ko': {
       'new_game': '새 게임',
@@ -989,6 +1000,17 @@ TalkBingo는 14세 미만의 어린이를 대상으로 하지 않습니다. 당�
 
 앱 내 설정에서 직접 개인정보 설정을 관리할 수도 있습니다.
 ''',
+      // Challenge & Notification Modals
+      'challenge_confirm_title': '셀 빼앗기 도전?',
+      'challenge_confirm_desc': '미니게임에서 이기면 셀을 빼앗을 수 있습니다!\n\n남은 도전: {remaining}/2',
+      'challenge_btn': '도전!',
+      'challenge_initiated': '{name}님이 당신의 셀에 도전하셨습니다! ({remaining}/2)',
+      'challenge_initiated_other': '{name}님이 {owner}님의 셀에 도전하셨습니다! ({remaining}/2)',
+      'disagree_notify': '{name}님이 비공감 하셨습니다.',
+      'disagree_unlock_hint': '다음 당신의 차례에 잠금을 푸세요.',
+      'disagree_unlock_hint_other': '다음 {owner}님의 차례에 잠금을 풀 수 있어요.',
+      'cell_won': '{name}님이 셀을 획득하셨습니다!',
+      'close_btn': '닫기',
     },
   };
   static String get(String key) {

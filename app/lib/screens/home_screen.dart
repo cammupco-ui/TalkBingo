@@ -642,8 +642,9 @@ class _HomeScreenState extends State<HomeScreen> {
                AnimatedTextButton(
                  onPressed: () {
                    if (_inviteCodeController.text.length >= 2) {
+                       final code = _inviteCodeController.text.trim().toUpperCase();
                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => InviteCodeScreen(initialCode: _inviteCodeController.text)),
+                          MaterialPageRoute(builder: (_) => InviteCodeScreen(initialCode: code)),
                        );
                    }
                  },

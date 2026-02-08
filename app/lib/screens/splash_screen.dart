@@ -83,10 +83,48 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _sequenceInitialization() async {
     // Deep Link is now handled by DeepLinkService in main.dart globally.
-    // We just need to give it a moment or simply proceed to check auth/session.
-    // The Service writes to GameSession().pendingInviteCode, which we check later.
+    // But we add a direct web fallback for iOS Safari where app_links may not
+    // properly parse hash-based URLs (e.g. /#/?code=XXXXXX).
     
     _addLog("Sequence Init. Deep Link handled globally.");
+    
+    // WEB FALLBACK: Direct Uri.base parsing for iOS Safari compatibility
+    if (kIsWeb) {
+      final existingCode = GameSession().pendingInviteCode;
+      if (existingCode == null) {
+        _addLog("Web Fallback: Checking Uri.base for invite code...");
+        String? code;
+        final uri = Uri.base;
+        
+        // Try standard query param first
+        code = uri.queryParameters['code']?.trim();
+        
+        // Fallback: Parse hash fragment (e.g. /#/?code=XXXXXX)
+        if (code == null) {
+          final frag = uri.fragment; // e.g. "/?code=XXXXXX" or "?code=XXXXXX"
+          final fullStr = uri.toString();
+          var match = RegExp(r'[?&]code=([A-Za-z0-9]+)').firstMatch(frag);
+          match ??= RegExp(r'[?&]code=([A-Za-z0-9]+)').firstMatch(fullStr);
+          if (match != null) code = match.group(1);
+        }
+        
+        if (code != null && RegExp(r'^[A-Z0-9]{6}$', caseSensitive: false).hasMatch(code)) {
+          code = code.toUpperCase();
+          GameSession().pendingInviteCode = code;
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('pending_invite_code', code);
+          _addLog("✅ Web Fallback: Code $code extracted from Uri.base");
+          
+          // Clean URL
+          UrlCleaner.removeCodeParam();
+        } else {
+          _addLog("Web Fallback: No valid code found in Uri.base");
+        }
+      } else {
+        _addLog("Code already captured by DeepLinkService: $existingCode");
+      }
+    }
+    
     _isDeepLinkCheckDone = true; 
     await _checkExistingSession();
   }

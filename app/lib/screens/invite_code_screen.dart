@@ -287,7 +287,9 @@ class _InviteCodeScreenState extends State<InviteCodeScreen> {
   }
   Future<void> _joinGame(String code) async {
     try {
-      await GameSession().joinGame(code); // Will throw if fails
+      // Force uppercase: iOS Safari may not respect textCapitalization
+      final normalizedCode = code.trim().toUpperCase();
+      await GameSession().joinGame(normalizedCode); // Will throw if fails
       
       if (mounted) {
         final session = Supabase.instance.client.auth.currentSession;

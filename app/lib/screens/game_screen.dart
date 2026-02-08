@@ -104,7 +104,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   }
 
   // Mock State
-  final bool _isHost = true; // Assume Host for now
+  bool get _isHost => _session.myRole == 'A'; // Derive from session role
   bool _isPaused = false;
   final String _latestMessage = "Welcome to TalkBingo! Let's start.";
   final int _badgeCount = 0;
@@ -121,6 +121,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
 
   // State for Entrance Notification
   bool _hasShownEntranceToast = false;
+
+  // State for Challenge / Notification Modal Tracking
+  Map<String, dynamic>? _previousInteractionState;
+  bool _challengeNotificationShown = false;
   
   // Speech to Text
   late stt.SpeechToText _speech;
@@ -409,8 +413,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
          context: context,
          barrierDismissible: false,
          builder: (ctx) => AlertDialog(
-           title: Text("Game Over! 🏁", style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, color: _themePrimary)),
-           content: const Text("The game has ended.\nProceed to collect your rewards!"),
+           title: Text("Game Over! 🏁", style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
+           content: Text("The game has ended.\nProceed to collect your rewards!", style: GoogleFonts.alexandria(fontSize: 14, color: Colors.black87)),
            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
            actions: [
              ElevatedButton(
@@ -571,7 +575,131 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
        });
     }
 
+     // 6. Challenge & Notification Modal Detection
+     _detectNotificationEvents();
+
      if (mounted) setState(() {});
+  }
+
+  /// Detect changes in interactionState and tile ownership to show notification modals
+  void _detectNotificationEvents() {
+    final currentState = _session.interactionState;
+    final prevState = _previousInteractionState;
+
+    // --- Modal 1: Challenge Initiated (Defender sees this) ---
+    if (currentState != null &&
+        currentState['type'] == 'challenge' &&
+        currentState['step'] == 'playing' &&
+        !_challengeNotificationShown) {
+      final String aggressor = currentState['player'] ?? '';
+      // Only show to the DEFENDER (the person NOT initiating the challenge)
+      if (aggressor.isNotEmpty && aggressor != _session.myRole) {
+        _challengeNotificationShown = true;
+        final aggressorName = (aggressor == 'A')
+            ? (_session.hostNickname ?? 'Host')
+            : (_session.guestNickname ?? 'Guest');
+        final remaining = _session.challengeCounts[aggressor] ?? 0;
+        final title = AppLocalizations.get('challenge_confirm_title');
+        final msg = AppLocalizations.get('challenge_initiated')
+            .replaceAll('{name}', aggressorName)
+            .replaceAll('{remaining}', remaining.toString());
+        _showNotificationModal(title: title, message: msg, icon: Icons.sports_mma, iconColor: Colors.redAccent);
+      }
+    }
+
+    // Reset challenge notification flag when challenge ends
+    if (currentState == null || currentState['type'] != 'challenge') {
+      _challengeNotificationShown = false;
+    }
+
+    // --- Modal 2: Disagree (Reject / Lock) ---
+    // Detect tile changing from empty/owned to LOCKED_X where X is MY role
+    for (int i = 0; i < 25; i++) {
+      final cur = _session.tileOwnership[i];
+      final prev = _previousTileOwnership[i];
+      // A tile I was trying to claim got locked (rejected)
+      if (cur.startsWith('LOCKED_') && cur == 'LOCKED_${_session.myRole}' && prev != cur) {
+        // My claim was rejected by opponent
+        final opponentRole = _session.myRole == 'A' ? 'B' : 'A';
+        final opponentName = (opponentRole == 'A')
+            ? (_session.hostNickname ?? 'Host')
+            : (_session.guestNickname ?? 'Guest');
+        final title = '🔒';
+        final msg = AppLocalizations.get('disagree_notify').replaceAll('{name}', opponentName);
+        final hint = AppLocalizations.get('disagree_unlock_hint');
+        _showNotificationModal(title: title, message: msg, subMessage: hint, icon: Icons.thumb_down_alt, iconColor: Colors.orangeAccent);
+      }
+    }
+
+    // --- Modal 3: Cell Won (Opponent acquired a cell via challenge) ---
+    // Detect tile changing from MY ownership to OPPONENT ownership
+    for (int i = 0; i < 25; i++) {
+      final cur = _session.tileOwnership[i];
+      final prev = _previousTileOwnership[i];
+      if (prev == _session.myRole && cur.isNotEmpty && cur != _session.myRole && !cur.startsWith('LOCKED')) {
+        // My tile was stolen by opponent
+        final opponentName = (cur == 'A')
+            ? (_session.hostNickname ?? 'Host')
+            : (_session.guestNickname ?? 'Guest');
+        final title = '⚔️';
+        final msg = AppLocalizations.get('cell_won').replaceAll('{name}', opponentName);
+        _showNotificationModal(title: title, message: msg, icon: Icons.emoji_events, iconColor: Colors.amber);
+      }
+    }
+
+    // Update tracking state
+    _previousInteractionState = currentState != null ? Map<String, dynamic>.from(currentState) : null;
+  }
+
+  /// Reusable styled notification modal
+  void _showNotificationModal({
+    required String title,
+    required String message,
+    String? subMessage,
+    IconData icon = Icons.info_outline,
+    Color iconColor = Colors.white,
+  }) {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF2D2D3A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(icon, color: iconColor, size: 28),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(title,
+                style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(message, style: GoogleFonts.alexandria(fontSize: 14, color: Colors.white70)),
+            if (subMessage != null) ...[
+              const SizedBox(height: 8),
+              Text(subMessage, style: GoogleFonts.alexandria(fontSize: 12, color: Colors.white38, fontStyle: FontStyle.italic)),
+            ],
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: iconColor.withOpacity(0.8),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text(AppLocalizations.get('close_btn')),
+          ),
+        ],
+      ),
+    );
   }
 
   void _handleAdComplete() {
@@ -1082,7 +1210,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                    String optA = state['optionA'] ?? 'A';
                                    String optB = state['optionB'] ?? 'B';
                                    String interactionType = state['type'] ?? 'balance';
-                                   String answer = state['answer'] ?? '';
+                                   // Truth suggestions from DB (not player's submitted answer)
+                                   String? truthHints;
+                                   if (state['truthOptions'] is List) {
+                                     truthHints = (state['truthOptions'] as List).join(', ');
+                                   } else if (state['truthOptions'] is String) {
+                                     truthHints = state['truthOptions'] as String;
+                                   }
 
                                    // Localize
                                    if (index >= 0) {
@@ -1102,7 +1236,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                          optionA: optA,
                                          optionB: optB,
                                          type: interactionType,
-                                         answer: answer,
+                                         answer: truthHints,
                                          interactionStep: state['step'] ?? 'answering',
                                          answeringPlayer: state['player'] ?? 'A',
                                          submittedAnswer: state['answer'],
@@ -1133,28 +1267,49 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                  ),
                                ),
                     
-                             // D. Rematch Button
+                             // D. Rematch & Home Buttons
                              if (widget.isReviewMode && _currentPage == 1)
                                Positioned(
                                  top: 16, right: 16,
-                                 child: FloatingActionButton.extended(
-                                   heroTag: 'rematch_btn',
-                                   backgroundColor: const Color(0xFFE91E63),
-                                   foregroundColor: Colors.white,
-                                   label: const Text("REMATCH", style: TextStyle(fontFamily: 'NURA', fontWeight: FontWeight.bold)),
-                                   icon: const Icon(Icons.refresh),
-                                   onPressed: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) => HostSetupScreen(
-                                            initialGender: _session.guestGender,
-                                            initialMainRelation: _session.relationMain,
-                                            initialSubRelation: _session.relationSub,
-                                            initialIntimacyLevel: _session.intimacyLevel,
-                                          ),
-                                        ),
-                                      );
-                                   },
+                                 child: Row(
+                                   mainAxisSize: MainAxisSize.min,
+                                   children: [
+                                     // Home Button
+                                     FloatingActionButton(
+                                       heroTag: 'home_btn',
+                                       backgroundColor: Colors.white.withValues(alpha: 0.15),
+                                       foregroundColor: Colors.white,
+                                       mini: true,
+                                       onPressed: () {
+                                         Navigator.of(context).pushAndRemoveUntil(
+                                           MaterialPageRoute(builder: (_) => const HomeScreen()),
+                                           (route) => false,
+                                         );
+                                       },
+                                       child: const Icon(Icons.home, size: 22),
+                                     ),
+                                     const SizedBox(width: 8),
+                                     // Rematch Button
+                                     FloatingActionButton.extended(
+                                       heroTag: 'rematch_btn',
+                                       backgroundColor: const Color(0xFFE91E63),
+                                       foregroundColor: Colors.white,
+                                       label: const Text("REMATCH", style: TextStyle(fontFamily: 'NURA', fontWeight: FontWeight.bold)),
+                                       icon: const Icon(Icons.refresh),
+                                       onPressed: () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (_) => HostSetupScreen(
+                                                initialGender: _session.guestGender,
+                                                initialMainRelation: _session.relationMain,
+                                                initialSubRelation: _session.relationSub,
+                                                initialIntimacyLevel: _session.intimacyLevel,
+                                              ),
+                                            ),
+                                          );
+                                       },
+                                     ),
+                                   ],
                                  ),
                                ),
                           ], 
@@ -1184,6 +1339,21 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                           onWin: () async { await _session.resolveInteraction(true); },
                           onClose: () { _session.resolveInteraction(false); },
                         );
+                    } else if (type == 'challenge') {
+                        // Challenge uses subType to determine mini-game
+                        // Uses submitMiniGameScore flow for proper 2-round play
+                        final subType = state['subType'] ?? 'mini_target';
+                        if (subType == 'mini_target') {
+                            return TargetShooterGame(
+                              onWin: () async { await _session.closeMiniGame(); },
+                              onClose: () { _session.closeMiniGame(); },
+                            );
+                        } else {
+                            return PenaltyKickGame(
+                              onWin: () async { await _session.closeMiniGame(); },
+                              onClose: () { _session.closeMiniGame(); },
+                            );
+                        }
                     }
                     return const SizedBox.shrink();
                   }
@@ -1211,7 +1381,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
               
               _buildAdWaitOverlay(),
               
-              // Draggable Menu Button
+              // Draggable Menu Button — hidden during mini-games to avoid covering gameplay
+              if (!(_session.interactionState != null && 
+                    (_session.interactionState!['type'] == 'mini_target' || 
+                     _session.interactionState!['type'] == 'mini_penalty' ||
+                     _session.interactionState!['type'] == 'challenge')))
               DraggableFloatingButton(
                 isOnChatTab: _targetPage == 0,
                 unreadCount: _unreadCount,
@@ -1653,19 +1827,30 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
 
        // 4. Show Challenge Dialog
        showDialog(
-         context: context, 
+         context: context,
          builder: (ctx) => AlertDialog(
-           title: Text("Challenge Opponent?"),
-           content: Text("Steal this tile by winning a Mini Game!\n\nUse Challenge Attempt? ($remaining/2)"),
+           backgroundColor: const Color(0xFF2D2D3A),
+           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+           title: Row(
+             children: [
+               const Icon(Icons.sports_mma, color: Colors.redAccent, size: 28),
+               const SizedBox(width: 10),
+               Expanded(child: Text(AppLocalizations.get('challenge_confirm_title'), style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white))),
+             ],
+           ),
+           content: Text(
+             AppLocalizations.get('challenge_confirm_desc').replaceAll('{remaining}', remaining.toString()),
+             style: GoogleFonts.alexandria(fontSize: 14, color: Colors.white70),
+           ),
            actions: [
-             TextButton(child: Text("Cancel"), onPressed: () => Navigator.pop(ctx)),
+             TextButton(child: Text(AppLocalizations.get('cancel'), style: GoogleFonts.alexandria(color: Colors.white38)), onPressed: () => Navigator.pop(ctx)),
              ElevatedButton(
-               child: Text("Challenge!"), 
+               child: Text(AppLocalizations.get('challenge_btn')),
                onPressed: () {
                  Navigator.pop(ctx);
                  _session.startChallenge(index);
                },
-               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white),
+               style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
              )
            ],
          )
@@ -1767,8 +1952,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
      optB = opts['B'] ?? '';
      if (opts['answer'] is List) {
        suggestions = List<String>.from(opts['answer']);
+     } else if (opts['answer'] is String && (opts['answer'] as String).isNotEmpty) {
+       suggestions = (opts['answer'] as String).split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
      }
-  }
 
   await _session.startInteraction(
     index, 
@@ -1780,6 +1966,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     suggestions: suggestions // Pass to sync
   );
   }
+  } // end _onTileTapped
 
   void _handleOptionSelected(String value) {
      // This is called when 'Confirm' (Answer) is clicked OR 'Approve/Reject' is clicked.
@@ -2170,17 +2357,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         isHovered: false,
         isWinningTile: _winningTiles.contains(index),
         onTap: () {
-        if (!_isHost && !_session.isGameActive) return; 
-        
-        // Restore Mini-Game launch for Locked/X tiles
-        if (owner.startsWith('LOCKED') || owner == 'X') {
-           _launchRandomMiniGame(index);
-           return;
-        }
-        
-        if (_session.myRole == _session.currentTurn && owner.isEmpty) {
-           _onTileTapped(index);
-        }
+        // Delegate all validation to _onTileTapped (turn, pause, ownership, cooldown)
+        _onTileTapped(index);
       },
       ),
     );
@@ -2307,7 +2485,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                isWinner 
                  ? (isGameOver ? AppLocalizations.get('bingo_title_final') : AppLocalizations.get('bingo_title'))
                  : AppLocalizations.get('bingo_opponent'),
-               style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
+               style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF1A1A1A))),
              ),
              const SizedBox(height: 10),
              
@@ -2315,7 +2493,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
              Text(
                mainMsg,
                textAlign: TextAlign.center,
-               style: AppLocalizations.getTextStyle(baseStyle: TextStyle(color: Colors.grey[700])),
+               style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontSize: 14, color: Color(0xFF333333))),
              ),
              
              // Ad hint text at bottom
@@ -2324,7 +2502,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                Text(
                  adHint,
                  textAlign: TextAlign.center,
-                 style: AppLocalizations.getTextStyle(baseStyle: TextStyle(fontSize: 11, color: Colors.grey[400])),
+                 style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontSize: 11, color: Color(0xFF888888))),
                ),
              ],
           ],
@@ -2430,10 +2608,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                              onPressed: () async {
                                 // Ad Finished
                                 Navigator.pop(context);
-                                await _session.updateAdStatus(false); // watching = False
-                                
-                                // Check if we need to WAIT
-                                // The listener will handle the "Wait" overlay if status is still 'paused_ad'
+                                _handleAdComplete(); // Reset _navigating + sync ad status
                              }, 
                              child: const Text("Close Ad")
                            )
@@ -2570,10 +2745,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Restart Game?'),
-        content: const Text('This will clear the board and reset turns. Current progress will be lost.'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Restart Game?', style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
+        content: Text('This will clear the board and reset turns.\nCurrent progress will be lost.', style: GoogleFonts.alexandria(fontSize: 14, color: Colors.black87)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel', style: GoogleFonts.alexandria(color: Colors.black54))),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
@@ -2655,12 +2831,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('End Game?'),
-        content: const Text('Are you sure you want to end the game and return to Home?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('End Game?', style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
+        content: Text('Are you sure you want to end the game?', style: GoogleFonts.alexandria(fontSize: 14, color: Colors.black87)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            child: Text('Cancel', style: GoogleFonts.alexandria(color: Colors.black54)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -2821,10 +2998,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         final confirm = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Load Saved Game?'),
+            title: Text('Load Saved Game?', style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
             content: Text('Found a game saved on ${saveData!['timestamp']?.substring(0, 16).replaceAll('T', ' ')}. Load it?'),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+              TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Cancel', style: GoogleFonts.alexandria(color: Colors.black54))),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
                 child: const Text('Load'),
