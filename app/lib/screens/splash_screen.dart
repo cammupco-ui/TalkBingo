@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'; // For kIsWeb
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -73,6 +74,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    _randomIndex = Random().nextInt(_koreanTexts.length);
     _addLog("InitState Started");
     
     // 1. Capture URL state IMMEDIATELY and sequentially
@@ -263,7 +265,7 @@ class _SplashScreenState extends State<SplashScreen> {
               children: [
                 // Logo with Rotation Animation
                 SvgPicture.asset(
-                  'assets/images/Logo Vector.svg',
+                  'assets/images/logo_vector.svg',
                   width: 72,
                   height: 72,
                 )

@@ -60,8 +60,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   
   // Floating Scores State
   final List<Widget> _floatingScores = [];
-  int _previousEp = 0;
-  int _previousAp = 0;
+  int _previousGp = 0;
   
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -168,8 +167,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     _pageController = PageController(initialPage: 1); 
     
     // Initialize previous points
-    _previousEp = _session.ep;
-    _previousAp = _session.ap;
+    _previousGp = _session.gp;
     _previousTileOwnership = List.from(_session.tileOwnership);
     
     // Review Mode: Pause Interaction
@@ -446,7 +444,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
        return;
     }
     
-    // 2. Check for EP Gain (Tile Claim)
+    // 2. Check for GP Gain (Tile Claim)
     // Detect newly acquired tiles to award points locally and show animation AT THE TILE
     bool tileAnimationShown = false;
     for (int i = 0; i < 25; i++) {
@@ -455,7 +453,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
           // I gained this specific tile 'i'
           tileAnimationShown = true;
           // Award points
-          Future.microtask(() => _session.addPoints(e: 1));
+          Future.microtask(() => _session.addPoints(g: 1));
           
           // Show Animation at Tile Position
           final key = _tileKeys[i];
@@ -475,58 +473,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     }
 
     if (tileAnimationShown) {
-       // Sync previous EP to prevent double animation from generic check below
-       // We assume the tile gain adds 1 EP per tile.
-       // However, _session.ep might not be updated yet (microtask).
-       // But when it DOES update, _previousEp will be old.
-       // We should update _previousEp here to "expected" value?
-       // Or simpler: The generic check detects change in _session.ep.
-       // If we just showed animation, we want to skip the next generic check if the diff matches.
-       // But strictly speaking, the generic check is for "Any EP change".
-       // Let's rely on _previousEp matching _session.ep once the update propagates?
-       // Actually, safely we can just let it be. If double animation happens, it's rare.
-       // But better: Update _previousEp to current _session.ep + gained? No.
-       // Let's just update `_previousEp` to `_session.ep` when checking.
-       // And accept that if `addPoints` is instant, we might duplicate.
-       // Actually, `addPoints` calls notifyListeners.
-       // So `_onSessionUpdate` runs again.
-       // In that run, tile ownership is ALREADY updated (we updated `_previousTileOwnership` just now).
-       // So loop won't run. `tileAnimationShown` = false.
-       // Then `_session.ep > _previousEp` check runs. Animation shows again.
-       
-       // FIX: We need to handle the EP change in the generic block responsibly.
-       // If we assume ALL EP comes from tiles for now (or user mostly cares about tiles),
-       // We can change the generic block to ONLY fire if `tileAnimationShown` was false?
-       // No, because they run in different passes.
-       
-       // Solution: `_previousTileCount` is removed, but we can track `_expectedEp`?
-       // Or: In the generic block, check if `_previousTileOwnership` changed recently? No.
-       
-       // Best bet: Calculate `gainedEpFromTiles` in the generic block by comparing tile counts again?
-       // No.
-       
-       // Simple Fix: Just remove the generic EP check for now since the user specifically asked for "Tile Animation".
-       // If there are other EP sources, we'll miss them, but Tile is primary.
-       // Or we can keep it but check against tile count diff?
-       
-       // Let's suppress generic usage by updating _previousEp to the FUTURE value?
-       // _previousEp = _session.ep + 1; // Anticipate
+       // Sync previous GP to prevent double animation from generic check below
     }
     
-    // Generic EP Check (Modified to avoid double show for tiles if possible, or just accept double for safety & fun)
-    // Actually, user said "Make AP point appear above cell".
-    // If it appears in center too, it's confusing.
-    // I will COMMENT OUT the generic center animation to ensure only the Tile Specific one plays for tiles.
-    // If there are other EP events, they won't show +1 in center. This is acceptable/safer for this request.
-    /* 
-    if (_session.ep > _previousEp) {
-      final int diff = _session.ep - _previousEp;
-      // ... generic center animation ...
-    }
-    */
-    // Instead, just sync the variable to prevent future drift
-    if (_session.ep > _previousEp) {
-       _previousEp = _session.ep;
+    // Generic GP Check — just sync the variable to prevent future drift
+    if (_session.gp > _previousGp) {
+       _previousGp = _session.gp;
     }
     
     // 3. Check for Board Full (Draw / End)
@@ -943,15 +895,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                     offset: const Offset(0, 40),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     tooltip: '포인트 보기',
-                    child: _buildFloatingText("빙고 ${_session.ep}"),
+                    child: _buildFloatingText("빙고 ${_session.gp}"),
                      itemBuilder: (context) {
                          // Calculate Real-time Stats
                          int filledCells = _session.tileOwnership.where((o) => o == _session.myRole).length;
-                         // A simple line check logic for display (full logic is in session)
-                         // For now, just show EP as Cells and AP as Lines from session if updated,
-                         // OR rename the labels as requested mapping:
-                         // AP -> "빙고줄" (Bingo Lines)
-                         // EP -> "빙고셀" (Bingo Cells)
+                         // GP display: cells and lines
                          
                          return [
                             PopupMenuItem(
@@ -2266,7 +2214,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
           const SizedBox(width: 6),
           // Rolling Counter
           AnimatedFlipCounter(
-            value: _session.ep,
+            value: _session.gp,
             duration: const Duration(milliseconds: 1000), // Slow satisfying roll
             textStyle: GoogleFonts.alexandria(
               fontSize: 16,
@@ -2275,7 +2223,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
             ),
           ),
           const SizedBox(width: 4),
-          Text("EP", style: GoogleFonts.alexandria(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
+          Text("GP", style: GoogleFonts.alexandria(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
         ],
       )
     ).animate(target: 1).shimmer(delay: 500.ms, duration: 1500.ms, color: Colors.white);

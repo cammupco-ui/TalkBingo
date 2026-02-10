@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class FloatingScore extends StatelessWidget {
   final int points;
-  final String label; // e.g. "EP", "AP"
+  final String label; // e.g. "GP"
   final VoidCallback onComplete;
 
   const FloatingScore({

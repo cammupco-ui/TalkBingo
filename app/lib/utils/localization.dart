@@ -167,14 +167,54 @@ class AppLocalizations {
       'ad_free_title': 'Ad-Free Game',
       'ad_free_desc': 'Use 200 VP to remove ads for this game?',
       'ad_free_current_vp': 'Current VP: ',
+      'ad_free_current_cp': 'Current VP: ',
       'ad_free_use': 'Use 200 VP',
       'ad_free_skip': 'Play with Ads',
       'ad_free_not_enough': 'Not enough VP (need 200)',
-      
+      'rewarded_ad_title': 'Watch Ad → +5 VP',
+      'rewarded_ad_remaining': '/10 remaining today',
+      'rewarded_ad_watch': 'Watch',
+      'rewarded_ad_done': 'Done',
+      'rewarded_ad_earned': '+5 VP earned!',
+      'rewarded_ad_limit': 'Daily limit reached (10/10)',
+      'permanent_ad_removal': 'Remove Ads Permanently',
+      'permanent_ad_removal_desc': 'No more ads, forever!',
+      'permanent_ad_removal_cost': '8,000 VP',
+      'permanent_ad_removal_confirm': 'This will use 8,000 VP to permanently remove all ads from TalkBingo.',
+      'permanent_ad_removal_success': 'Ads removed permanently!\nEnjoy ad-free TalkBingo!',
+
+      // Purchase Screen
+      'purchase_title': 'Points & Ad-Free',
+      'purchase_points_title': 'Purchase Points',
+      'purchase_best_value': 'Best Value',
+      'purchase_bonus': 'Bonus',
+      'purchase_how_to_use': 'How to use VP?',
+      'purchase_ad_remove_1game': 'Remove Ads (1 game): 200 VP',
+      'purchase_ad_remove_permanent': 'Remove Ads (Permanent): 8,000 VP',
+      'purchase_watch_ad_earn': 'Watch Ad: +5 VP (max 10/day)',
+      'purchase_add_payment': 'Add Payment Method',
+      'purchase_history': 'Transaction History',
+      'purchase_free_tip': '💡 Watch ads daily to earn VP for free!',
+      'purchase_view': 'View',
+      'purchase_remaining_today': 'remaining today',
+      'ad_catalog_title': 'Earn Free VP',
+      'ad_catalog_subtitle': 'Watch ads to earn 5 VP each',
+      'ad_cat_gaming': 'Gaming',
+      'ad_cat_shopping': 'Shopping',
+      'ad_cat_food': 'Food & Drink',
+      'ad_cat_apps': 'Apps',
+      'ad_cat_travel': 'Travel',
+      'tier_bronze': 'Bronze',
+      'tier_silver': 'Silver',
+      'tier_gold': 'Gold',
+      'tier_platinum': 'Platinum',
+      'tier_king_royal': 'King Royal',
+      'tier_queen_royal': 'Queen Royal',
+
       // Guides
       'guide_read_confirm': 'I have read and understood the above.',
       'guide_confirm_btn': 'Confirm',
-      
+
       'guide_bingo_content': '''
 1. **Talk & Lock**: Talk about the topic on the cell to lock it.
 2. **5x5 Grid**: Complete 5 cells in a row, column, or diagonal to make a BINGO.
@@ -185,17 +225,13 @@ class AppLocalizations {
 ''',
 
       'guide_points_content': '''
-* **VP (Victory Points)**: 
-  - Earned by winning games.
-  - Used for Global Rankings.
+* **GP (Game Points)**: 
+  - Earned through gameplay (winning, bingo lines, cell acquisition).
+  - Used for cumulative stats on your profile.
 
-* **AP (Action Points)**: 
-  - Earned by talking and locking cells.
-  - Used to use Items or Challenge opponents.
-
-* **EP (Engagement Points)**: 
-  - Earned by receiving 'Likes' or 'Manner Scores' from partners.
-  - High EP unlocks special avatars.
+* **VP (Value Points)**: 
+  - Purchased with real money or earned via rewarded ads.
+  - Used for ad removal (200 VP per game) and future premium features.
 ''',
       'guide_terms_content': '''
 # Terms of Service
@@ -253,9 +289,8 @@ TalkBingo is a **relationship-based real-time conversational bingo game platform
 
 TalkBingo uses a virtual currency system:
 
-- **VP (Victory Points)**: Earned through gameplay. Can be used to remove ads (200 VP per game) or exchanged for items.
-- **AP (Action Points)**: Consumed when performing in-game actions such as challenges or item usage.
-- **EP (Engagement Points)**: Earned by receiving positive ratings from other players.
+- **GP (Game Points)**: Earned through gameplay. Used for cumulative stats and profile tracking.
+- **VP (Value Points)**: Purchased with real money or earned via rewarded ads. Can be used to remove ads (200 VP per game).
 
 **In-App Purchases:**
 
@@ -671,9 +706,49 @@ You may also manage your privacy settings directly within the App under Settings
       'ad_free_title': '광고 없는 게임',
       'ad_free_desc': '200 VP를 사용하여 이 게임의 광고를 제거하시겠습니까?',
       'ad_free_current_vp': '현재 VP: ',
+      'ad_free_current_cp': '현재 VP: ',
       'ad_free_use': '200 VP 사용',
       'ad_free_skip': '광고 있는 게임',
       'ad_free_not_enough': 'VP가 부족합니다 (200 필요)',
+      'rewarded_ad_title': '광고 시청 → +5 VP',
+      'rewarded_ad_remaining': '/10 오늘 남은 횟수',
+      'rewarded_ad_watch': '시청',
+      'rewarded_ad_done': '완료',
+      'rewarded_ad_earned': '+5 VP 획득!',
+      'rewarded_ad_limit': '일일 한도 도달 (10/10)',
+      'permanent_ad_removal': '영구 광고 제거',
+      'permanent_ad_removal_desc': '광고 없이 영원히!',
+      'permanent_ad_removal_cost': '8,000 VP',
+      'permanent_ad_removal_confirm': '8,000 VP를 사용하여 TalkBingo의 모든 광고를 영구적으로 제거합니다.',
+      'permanent_ad_removal_success': '광고가 영구적으로 제거되었습니다!\n광고 없는 TalkBingo를 즐기세요!',
+
+      // Purchase Screen
+      'purchase_title': '포인트 & 광고제거',
+      'purchase_points_title': '포인트 구매',
+      'purchase_best_value': '최고 가성비',
+      'purchase_bonus': '보너스',
+      'purchase_how_to_use': 'VP 사용법',
+      'purchase_ad_remove_1game': '광고 제거 (1게임): 200 VP',
+      'purchase_ad_remove_permanent': '광고 제거 (영구): 8,000 VP',
+      'purchase_watch_ad_earn': '광고 시청: +5 VP (하루 최대 10회)',
+      'purchase_add_payment': '결제 수단 등록',
+      'purchase_history': '거래 내역',
+      'purchase_free_tip': '💡 매일 광고를 보고 무료 VP를 모으세요!',
+      'purchase_view': '보기',
+      'purchase_remaining_today': '오늘 남은 횟수',
+      'ad_catalog_title': '무료 VP 받기',
+      'ad_catalog_subtitle': '광고를 보고 5 VP씩 획득하세요',
+      'ad_cat_gaming': '게임',
+      'ad_cat_shopping': '쇼핑',
+      'ad_cat_food': '음식',
+      'ad_cat_apps': '앱',
+      'ad_cat_travel': '여행',
+      'tier_bronze': '브론즈',
+      'tier_silver': '실버',
+      'tier_gold': '골드',
+      'tier_platinum': '플래티넘',
+      'tier_king_royal': '킹 로열',
+      'tier_queen_royal': '퀸 로열',
 
       // Guides
       'guide_read_confirm': '위 내용을 모두 확인했습니다.',
@@ -689,17 +764,13 @@ You may also manage your privacy settings directly within the App under Settings
 ''',
 
       'guide_points_content': '''
-* **VP (승리 포인트)**: 
-  - 빙고 게임 승리 시 획득합니다.
-  - 글로벌 랭킹 산정에 사용됩니다.
+* **GP (게임 포인트)**: 
+  - 게임 플레이(승리, 빙고 라인, 셀 획득)를 통해 획득합니다.
+  - 프로필의 누적 통계에 사용됩니다.
 
-* **AP (액션 포인트)**: 
-  - 대화를 하거나 셀을 잠글 때 획득합니다.
-  - 아이템 사용이나 '스틸(챌린지)'을 할 때 소모됩니다.
-
-* **EP (참여/매너 포인트)**: 
-  - 상대방에게 '좋아요'나 '매너 점수'를 받으면 획득합니다.
-  - 높은 EP를 모으면 특별한 아바타를 해금할 수 있습니다.
+* **VP (밸류 포인트)**: 
+  - 실제 결제 또는 보상형 광고로 획득.
+  - 광고 제거(게임당 200 VP) 및 향후 프리미엄 기능에 사용됩니다.
 ''',
       'guide_terms_content': '''
 # 서비스 이용약관
@@ -757,9 +828,8 @@ TalkBingo는 **관계 기반 실시간 대화형 빙고 게임 플랫폼**입니
 
 TalkBingo는 가상 화폐 시스템을 사용합니다:
 
-- **VP (Victory Points)**: 게임 플레이를 통해 획득. 광고 제거(게임당 200 VP) 또는 아이템 교환에 사용 가능.
-- **AP (Action Points)**: 챌린지나 아이템 사용 등 게임 내 행동 수행 시 소모.
-- **EP (Engagement Points)**: 다른 플레이어로부터 긍정적인 평가를 받으면 획득.
+- **GP (Game Points)**: 게임 플레이를 통해 획득. 누적 통계 및 프로필 추적에 사용.
+- **VP (Value Points)**: 실제 결제 또는 보상형 광고로 획득. 광고 제거(게임당 200 VP)에 사용 가능.
 
 **인앱 구매:**
 

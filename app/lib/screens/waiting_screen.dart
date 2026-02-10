@@ -126,7 +126,7 @@ class _WaitingScreenState extends State<WaitingScreen> {
           children: [
              // Logo with Rotation Animation (White)
             SvgPicture.asset(
-              'assets/images/Logo Vector.svg',
+              'assets/images/logo_vector.svg',
               width: 72,
               height: 72,
               colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),

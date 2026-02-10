@@ -143,7 +143,6 @@
 
 ---
 
-## 3. CodeName 규칙 (Targeting Logic)
 
 ## 3. CodeName 규칙 (Targeting Logic)
 

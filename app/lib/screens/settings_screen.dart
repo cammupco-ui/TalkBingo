@@ -508,11 +508,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildScoreItem("VP", _session.vp, isVP: true),
+              _buildScoreItem("GP", _session.gp),
               Container(width: 1, height: 40, color: Colors.white30),
-              _buildScoreItem("AP", _session.ap), 
-              Container(width: 1, height: 40, color: Colors.white30),
-              _buildScoreItem("EP", _session.ep), 
+              _buildScoreItem("VP", _session.vp), 
             ],
           ),
           const SizedBox(height: 24),
@@ -549,13 +547,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildScoreItem(String label, int score, {bool isVP = false, VoidCallback? onExchange, String? tooltip}) {
+  Widget _buildScoreItem(String label, int score) {
     return Column(
       children: [
         // Score with Animation
         TweenAnimationBuilder<int>(
           tween: IntTween(begin: 0, end: score),
-          duration: const Duration(seconds: 2), // Slower animation (2s)
+          duration: const Duration(seconds: 2),
           builder: (context, value, child) {
              final isAnimating = value != score;
              return Text(
@@ -563,12 +561,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                style: GoogleFonts.alexandria(
                  fontSize: 24, 
                  fontWeight: FontWeight.bold, 
-                 color: isAnimating ? Colors.greenAccent : Colors.white // Highlight change
+                 color: isAnimating ? Colors.greenAccent : Colors.white
                )
              );
           },
         ),
-        const SizedBox(height: 4),
         const SizedBox(height: 4),
         Text(label, style: GoogleFonts.alexandria(fontSize: 12, color: Colors.white70)),
       ],

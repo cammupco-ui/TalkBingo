@@ -71,7 +71,7 @@ class _GameHistoryItemState extends State<GameHistoryItem> {
                 radius: 14,
                 backgroundColor: Colors.blueGrey[800],
                 child: SvgPicture.asset(
-                  'assets/images/Logo Vector.svg', // Placeholder
+                  'assets/images/logo_vector.svg', // Placeholder
                   height: 14,
                   color: Colors.white,
                 ),

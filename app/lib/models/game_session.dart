@@ -122,16 +122,18 @@ class GameSession with ChangeNotifier {
   // Interaction
   Map<String, dynamic>? interactionState;
   
-  // Points & Rewards
-  int vp = 0;
-  int ap = 0;
-  int ep = 0; // Experience Points
+  // Points & Rewards (GP/VP Dual Currency)
+  int gp = 0; // Game Points — earned through gameplay, never spent
+  int vp = 0; // Value Points — purchased via IAP or rewarded ads
   
   // Trust Score
   double hostTrustScore = 5.0; // Average
   int hostTrustCount = 0; // Number of ratings
   double ts = 0.0;
   bool adFree = false;
+  bool permanentAdFree = false; // Permanent ad removal (8,000 VP)
+  int dailyRewardedAdCount = 0; // Daily rewarded ad views (max 10)
+  String lastRewardedAdDate = ''; // YYYY-MM-DD for daily reset
   List<Map<String, dynamic>> pointHistory = [];
 
   // Chat
@@ -263,32 +265,63 @@ class GameSession with ChangeNotifier {
     debugPrint('Fetching questions for Intersection Candidates (Priority+Fallback): $candidateCodes');
 
     try {
-      final response = await _supabase
+      // --- 2-PHASE FETCH FOR DIVERSITY ---
+      // Phase 1: Relationship-specific questions (exclude universal wildcard)
+      final specificCodes = candidateCodes.where((c) => c != '*-*-*-*-*').toList();
+      
+      List<dynamic> specificQuestions = [];
+      if (specificCodes.isNotEmpty) {
+        specificQuestions = await _supabase
+            .from('questions')
+            .select()
+            .overlaps('code_names', specificCodes)
+            .eq('is_published', true)
+            .limit(80);
+      }
+      
+      // Phase 2: Universal/wildcard questions (separate fetch)
+      final wildcardQuestions = await _supabase
           .from('questions')
           .select()
-          .overlaps('code_names', candidateCodes) // ANY match
-          .limit(120); 
-          
-      List<dynamic> loadedQuestions = response;
+          .contains('code_names', ['*-*-*-*-*'])
+          .eq('is_published', true)
+          .limit(80);
 
-      // --- PRIORITY SORTING ---
-      // Sort questions so that those matching 'Primary Set' come first.
-      // Those only matching 'Safe Net' come last.
-      loadedQuestions.sort((a, b) {
-          final List<dynamic> tagsA = a['code_names'] ?? [];
-          final List<dynamic> tagsB = b['code_names'] ?? [];
-          
-          bool aIsPrimary = tagsA.any((tag) => primarySet.contains(tag));
-          bool bIsPrimary = tagsB.any((tag) => primarySet.contains(tag));
-          
-          if (aIsPrimary && !bIsPrimary) return -1; // A comes first
-          if (!aIsPrimary && bIsPrimary) return 1;  // B comes first
-          return 0;
-      });
-
-      // After sorting, we proceed. The subsequent selection logic (first 50) 
-      // will naturally pick the top-ranked (Primary) questions first.
+      // --- COMBINE WITH DIVERSITY ENFORCEMENT ---
+      // 1. Deduplicate (specific questions may also have wildcard tags)
+      final seenIds = <String>{};
+      List<dynamic> combined = [];
       
+      // Shuffle each pool independently for variety across games
+      specificQuestions.shuffle();
+      wildcardQuestions.shuffle();
+      
+      // Priority: specific relationship questions first
+      for (var q in specificQuestions) {
+        final qId = q['id'].toString();
+        if (seenIds.add(qId)) combined.add(q);
+      }
+      
+      final specificCount = combined.length;
+      
+      // Fill remaining with wildcard questions (cap at ~40% of total)
+      final maxWildcard = (120 * 0.4).round(); // ~48
+      int wildcardAdded = 0;
+      for (var q in wildcardQuestions) {
+        final qId = q['id'].toString();
+        if (seenIds.add(qId) && wildcardAdded < maxWildcard) {
+          combined.add(q);
+          wildcardAdded++;
+        }
+      }
+      
+      debugPrint('📊 Question diversity: ${specificCount} specific + $wildcardAdded wildcard = ${combined.length} total');
+      
+      // Final shuffle for random board layout
+      combined.shuffle();
+      
+      List<dynamic> loadedQuestions = combined;
+
       // Ensure we have enough questions for a 5x5 Grid (25)
       if (loadedQuestions.length >= 25) {
           await _parseAndSetQuestions(loadedQuestions);
@@ -658,9 +691,11 @@ class GameSession with ChangeNotifier {
     hostRegionConsent ??= prefs.getBool('hostRegionConsent');
     
     // Also load points if persisted
-    vp = prefs.getInt('vp') ?? 0;
-    ap = prefs.getInt('ap') ?? 0;
-    ep = prefs.getInt('ep') ?? 0;
+    gp = prefs.getInt('gp') ?? prefs.getInt('vp') ?? 0; // Migration fallback: read old 'vp' key
+    vp = prefs.getInt('vp_paid') ?? prefs.getInt('cp') ?? 0; // 'vp_paid' avoids collision with old 'vp' key
+    permanentAdFree = prefs.getBool('permanentAdFree') ?? false;
+    dailyRewardedAdCount = prefs.getInt('dailyRewardedAdCount') ?? 0;
+    lastRewardedAdDate = prefs.getString('lastRewardedAdDate') ?? '';
     
     // Trust Score
     hostTrustScore = prefs.getDouble('hostTrustScore') ?? 5.0; 
@@ -726,9 +761,11 @@ class GameSession with ChangeNotifier {
     if (hostPhone != null) await prefs.setString('hostPhone', hostPhone!);
     if (hostRegionConsent != null) await prefs.setBool('hostRegionConsent', hostRegionConsent!);
     
-    await prefs.setInt('vp', vp);
-    await prefs.setInt('ap', ap);
-    await prefs.setInt('ep', ep);
+    await prefs.setInt('gp', gp);
+    await prefs.setInt('vp_paid', vp);
+    await prefs.setBool('permanentAdFree', permanentAdFree);
+    await prefs.setInt('dailyRewardedAdCount', dailyRewardedAdCount);
+    await prefs.setString('lastRewardedAdDate', lastRewardedAdDate);
     
     await prefs.setDouble('hostTrustScore', hostTrustScore);
     await prefs.setInt('hostTrustCount', hostTrustCount);
@@ -1183,7 +1220,7 @@ class GameSession with ChangeNotifier {
        
        // Reward Aggressor (Attack Bonus)
        if (myRole == aggressor) {
-          addPoints(a: 10);
+          addPoints(g: 10);
           addHistory("earn", 10, "Successful Challenge", price: "Challenge");
        }
        
@@ -1197,7 +1234,7 @@ class GameSession with ChangeNotifier {
        // "Winner takes/keeps tile".
        
        if (myRole == defender) {
-          addPoints(a: 5);
+          addPoints(g: 5);
           addHistory("earn", 5, "Successful Defense", price: "Challenge");
        }
 
@@ -1206,6 +1243,7 @@ class GameSession with ChangeNotifier {
     
     // Turn Consumption: Turn ALWAYS passes to the other player
     currentTurn = (currentTurn == 'A') ? 'B' : 'A'; // Simple switch
+    turnCount++; // ✅ Increment so locked-cell cooldown can expire
 
     interactionState = null;
     notifyListeners();
@@ -1291,9 +1329,9 @@ class GameSession with ChangeNotifier {
 
     if (approved) {
        _tileOwnership[index] = winner;
-       // Award EP (+1) 
+       // Award GP (+1) 
        if (winner == myRole) {
-          addPoints(e: 1);
+          addPoints(g: 1);
        }
        
        // Log "Mini [Nickname] WIN!" message
@@ -1313,6 +1351,7 @@ class GameSession with ChangeNotifier {
        // If A attacked and Won -> Turn stays A? Or passes?
        // Standard Rule: Turn Passes after Action.
        currentTurn = aggressor == 'A' ? 'B' : 'A';
+       turnCount++; // ✅ Increment so locked-cell cooldown can expire
     } else {
        // Failed/Rejected
        // Lock the tile for the AGGRESSOR (or whoever was answering)
@@ -1322,6 +1361,7 @@ class GameSession with ChangeNotifier {
        lockedTurns[index.toString()] = turnCount;
        
        currentTurn = aggressor == 'A' ? 'B' : 'A';
+       turnCount++; // ✅ Increment so locked-cell cooldown can expire
     }
     interactionState = null;
     notifyListeners();
@@ -1392,11 +1432,11 @@ class GameSession with ChangeNotifier {
   }
   
   Future<void> updateGameQuestions(List<String> qs) async {}
-  Future<void> updatePoints({int v = 0, int a = 0, int e = 0}) async {
-     addPoints(v: v, a: a, e: e);
+  Future<void> updatePoints({int g = 0}) async {
+     addPoints(g: g);
   }
   
-  Future<void> chargePointsSecurely(int amount) async {
+  Future<void> chargeVpSecurely(int amount) async {
     try {
       // Securely increment on server
       final res = await _supabase.rpc('charge_vp', params: {'amount': amount});
@@ -1417,10 +1457,30 @@ class GameSession with ChangeNotifier {
     }
   }
 
-  void addPoints({int v = 0, int a = 0, int e = 0}) {
-    vp += v;
-    ap += a;
-    ep += e;
+  /// Refresh VP balance from Supabase profiles table.
+  /// Used after Edge Function grants VP server-side.
+  Future<void> refreshVp() async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) return;
+      final data = await _supabase
+          .from('profiles')
+          .select('vp')
+          .eq('id', user.id)
+          .single();
+      if (data != null && data['vp'] != null) {
+        vp = data['vp'] as int;
+        saveHostInfoToPrefs();
+        notifyListeners();
+        debugPrint('VP refreshed from server: $vp');
+      }
+    } catch (e) {
+      debugPrint('Error refreshing VP: $e');
+    }
+  }
+
+  void addPoints({int g = 0}) {
+    gp += g;
     saveHostInfoToPrefs(); // Persist changes
     notifyListeners();
   }
@@ -1638,85 +1698,72 @@ class GameSession with ChangeNotifier {
        if (lines >= 3) score += 60;
        return score;
      }
-     int apA = calcAp(linesA);
-     int apB = calcAp(linesB);
+     int lineGpA = calcAp(linesA);
+     int lineGpB = calcAp(linesB);
 
-     // 4. Determine Winner & VP Logic
+     // 4. Determine Winner & GP Logic (Victory GP)
      // Rules: 
-     // - Scenario 1 (1 Line): 50 VP
-     // - Scenario 2 (2 Lines): Double (100 VP)
-     // - Scenario 3 (Draw/Split): 50% (25 VP each)
-     // - Scenario 5 (Board Full/No Win): 0 VP
+     // - Scenario 1 (1 Line): 50 GP
+     // - Scenario 2 (2 Lines): Double (100 GP)
+     // - Scenario 3 (Draw/Split): 50% (25 GP each)
+     // - Scenario 5 (Board Full/No Win): 0 GP
      
      String winner = 'DRAW';
-     int vpA = 0;
-     int vpB = 0;
+     int winGpA = 0;
+     int winGpB = 0;
 
-     // Board Full check (25 cells filled) logic? Assuming 'finished' means someone claimed win or board full.
-     // For now, determining relative winner:
      if (linesA > linesB) {
         winner = 'A';
-        // VP Multiplier
         int base = 50;
         if (linesA >= 2) base *= 2; // Double
-        if (linesA >= 3) base = 150; // Triple (Rules say x3?) Rules say "Triple VP". Assuming 50*3 = 150.
-        vpA = base;
-        vpB = 0; // Loser gets 0 VP in standard scenarios?
-        // Wait, Scenario 4 (Comeback) says Loser gets "No VP".
+        if (linesA >= 3) base = 150; // Triple (50*3)
+        winGpA = base;
+        winGpB = 0;
      } else if (linesB > linesA) {
         winner = 'B';
         int base = 50;
         if (linesB >= 2) base *= 2;
         if (linesB >= 3) base = 150;
-        vpB = base;
-        vpA = 0;
+        winGpB = base;
+        winGpA = 0;
      } else {
         // Draw (linesA == linesB)
         if (linesA > 0) {
-           // Scenario 3: Split 50%
-           // Rule Table: Win +50. Scenario 3 says "VP 50% split".
-           // Assuming 50 / 2 = 25 VP.
-           vpA = 25;
-           vpB = 25;
+           winGpA = 25;
+           winGpB = 25;
         } else {
-           // Scenario 5: No lines (0 VP)
-           vpA = 0;
-           vpB = 0;
+           winGpA = 0;
+           winGpB = 0;
         }
      }
 
-     // 5. EP Rule: +1 per cell
-     int epA = cellsA;
-     int epB = cellsB;
+     // 5. Cell GP: +1 per cell
+     int cellGpA = cellsA;
+     int cellGpB = cellsB;
 
-     // 6. Return Results (Pure Calculation)
+     // 6. Total GP = cell GP + line GP + win GP
+     int totalGpA = cellGpA + lineGpA + winGpA;
+     int totalGpB = cellGpB + lineGpB + winGpB;
+
+     // 7. Return Results (Pure Calculation)
      return {
         'linesA': linesA,
         'linesB': linesB,
-        'vpA': vpA,
-        'vpB': vpB,
-        'apA': apA,
-        'apB': apB,
-        'epA': epA,
-        'epB': epB,
+        'gpA': totalGpA,
+        'gpB': totalGpB,
         'winner': winner
      };
   }
 
   void applyEndGameRewards() {
      final results = calculateEndGameResults();
-     final vpA = results['vpA'] as int;
-     final apA = results['apA'] as int;
-     final epA = results['epA'] as int;
-     
-     final vpB = results['vpB'] as int;
-     final apB = results['apB'] as int;
-     final epB = results['epB'] as int;
+     final gpA = results['gpA'] as int;
+     final gpB = results['gpB'] as int;
 
      if (myRole == 'A') {
-         addPoints(v: vpA, a: apA, e: epA);
+         addPoints(g: gpA);
      } else if (myRole == 'B') {
-         addPoints(v: vpB, a: apB, e: epB); 
+         addPoints(g: gpB); 
      }
   }
 
@@ -1736,6 +1783,7 @@ class GameSession with ChangeNotifier {
   }
 
   bool useVpForAdRemoval() {
+    if (permanentAdFree) return true; // Already permanent
     if (vp >= 200) {
       vp -= 200;
       adFree = true;
@@ -1746,31 +1794,50 @@ class GameSession with ChangeNotifier {
     }
     return false;
   }
-  
-  bool convertApToVp() {
-     if (ap >= 100) {
-        ap -= 100;
-        vp += 50;
-        addHistory("exchange", 100, "Exchange AP -> VP", price: "100 AP");
-        addHistory("earn", 50, "Exchanged VP", price: "From AP");
-        saveHostInfoToPrefs();
-        notifyListeners();
-        return true;
-     }
-     return false;
+
+  /// Use 8,000 VP for permanent ad removal
+  bool useVpForPermanentAdRemoval() {
+    if (permanentAdFree) return true; // Already permanent
+    if (vp >= 8000) {
+      vp -= 8000;
+      permanentAdFree = true;
+      adFree = true;
+      saveHostInfoToPrefs();
+      addHistory("use", 8000, "Permanent Ad Removal", price: "8,000 VP");
+      notifyListeners();
+      return true;
+    }
+    return false;
   }
 
-  bool convertEpToVp() {
-     if (ep >= 100) {
-        ep -= 100;
-        vp += 50;
-        addHistory("exchange", 100, "Exchange EP -> VP", price: "100 EP");
-        addHistory("earn", 50, "Exchanged VP", price: "From EP");
-        saveHostInfoToPrefs();
-        notifyListeners();
-        return true;
-     }
-     return false;
+  /// Award 5 VP from watching a rewarded ad. Returns true if successful.
+  bool rewardVpFromAd() {
+    // Reset daily counter if date changed
+    final today = DateTime.now().toIso8601String().substring(0, 10); // YYYY-MM-DD
+    if (lastRewardedAdDate != today) {
+      dailyRewardedAdCount = 0;
+      lastRewardedAdDate = today;
+    }
+    
+    // Check daily limit (max 10)
+    if (dailyRewardedAdCount >= 10) {
+      return false;
+    }
+    
+    // Award 5 VP
+    vp += 5;
+    dailyRewardedAdCount++;
+    saveHostInfoToPrefs();
+    addHistory("earn", 5, "Rewarded Ad", price: "Ad Watch");
+    notifyListeners();
+    return true;
+  }
+
+  /// Get remaining rewarded ad views today
+  int get remainingRewardedAds {
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    if (lastRewardedAdDate != today) return 10;
+    return (10 - dailyRewardedAdCount).clamp(0, 10);
   }
 
 
@@ -1809,6 +1876,7 @@ class GameSession with ChangeNotifier {
     return {
       'hostNickname': hostNickname,
       'guestNickname': guestNickname,
+      'gp': gp,
       'vp': vp,
       // Add simplified serialization if needed by UI
     };

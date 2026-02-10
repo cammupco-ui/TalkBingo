@@ -217,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
-                                      "${AppLocalizations.get('ad_free_current_vp')}${session.vp}",
+                                      "${AppLocalizations.get('ad_free_current_cp')}${session.vp}",
                                       style: AppLocalizations.getTextStyle(baseStyle: TextStyle(
                                         fontWeight: FontWeight.bold, 
                                         fontSize: 16,

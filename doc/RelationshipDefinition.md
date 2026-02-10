@@ -47,8 +47,8 @@ Defender (D): 응답자 (질문을 받는 사람 / 수비)
 ```dart
 // GameSetupScreen.dart
 session.relationMain = 'Friend';
-session.relationSub = 'B-Ar';  // 고향친구
-session.intimacyLevel = 3;     // L3
+session.relationSub = '고향친구 (Area)';  // 앱 UI 표시 형식
+session.intimacyLevel = 3;               // L3
 ```
 
 #### 2. 질문 매칭 로직 (Supabase Query: Wildcard Strategy)
@@ -135,9 +135,10 @@ WHERE
 권장 친밀도 범위: L1 ~ L4
 ```
 
-#### 🏘️ 동네친구 (Dc: Daily-life Circle Friend)
+#### 🏘️ 동네친구 (Dc: Distance Friend)
 ```
 코드: B-Dc
+앱 표시: 동네친구 (Distance)
 선택 가이드: 현재 사는 곳이 가깝거나, 모임/취미 활동으로 자주 보는 사이
 특징:
   - 물리적 거리가 가까움
@@ -176,13 +177,15 @@ WHERE
 권장 친밀도 범위: L2 ~ L5
 ```
 
-#### 👬👭 남매 (Sb: Sister-Brother / Bs: Brother-Sister)
+#### 👬👭 남매 (Sb: Siblings)
 ```
-코드: Fa-Sb (누나-남동생), Fa-Bs (오빠-여동생)
+코드: Fa-Sb
+앱 표시: 남매 (Siblings)
 선택 가이드: 부모님이 같은 이성 형제자매 (누나, 남동생, 오빠, 여동생)
 특징:
   - 성별이 다른 형제 관계
   - 서로의 이성관에 영향을 줌
+  - 앱에서는 성별 구분 없이 하나의 코드(Sb)로 통합
   
 예시 관계:
   - 오빠와 여동생
@@ -247,13 +250,15 @@ WHERE
 
 연인은 로맨틱한 감정을 바탕으로 형성된 친밀한 관계입니다.
 
-#### 💑 애인 (Sw: Sweet / Gw: Girl/Guy We're dating)
+#### 💑 애인 (Sw: Sweet)
 ```
-코드: Lo-Sw (남자친구/약혼자), Lo-Gw (여자친구/약혼녀)
+코드: Lo-Sw
+앱 표시: 애인 (Sweet)
 선택 가이드: 결혼하지 않았지만 교제 중인 사이 (썸, 연애, 약혼 포함)
 특징:
   - 법적 구속력이 없는 자유로운 관계
   - 설렘과 로맨스 중심
+  - 성별 구분 없이 하나의 코드(Sw)로 통합
   
 예시 관계:
   - 사귄 지 100일 된 커플
@@ -263,9 +268,10 @@ WHERE
 권장 친밀도 범위: L3 ~ L5
 ```
 
-#### 💍 부부 (Hw: Husband-Wife / Pw: Partner-Wife)
+#### 💍 부부 (Hw: Spouse)
 ```
-코드: Lo-Hw (부부), Lo-Pw (배우자)
+코드: Lo-Hw
+앱 표시: 부부 (Spouse)
 선택 가이드: 결혼식을 올렸거나 법적으로 혼인한 부부
 특징:
   - 법적/경제적 공동체
@@ -435,9 +441,11 @@ WHERE
 | B-Or (직장동료) | 20% | 40% | 30% | 8% | 2% | **L2** |
 | B-Dc (동네친구) | 15% | 35% | 35% | 12% | 3% | **L2~L3** |
 | **가족 관계** |
-| Fa-Br/Si (형제자매) | 0% | 10% | 30% | 40% | 20% | **L3~L4** |
-| Fa-Sb/Bs (남매) | 0% | 15% | 35% | 35% | 15% | **L3~L4** |
+| Fa-Br (형제) | 0% | 10% | 30% | 40% | 20% | **L3~L4** |
+| Fa-Si (자매) | 0% | 10% | 30% | 40% | 20% | **L3~L4** |
+| Fa-Sb (남매) | 0% | 15% | 35% | 35% | 15% | **L3~L4** |
 | Fa-Co (사촌) | 5% | 40% | 35% | 15% | 5% | **L2~L3** |
+| Fa-Gp (조부모) | 0% | 10% | 25% | 40% | 25% | **L3~L4** |
 | Fa-Fs/Md/Ms/Fd (부모-자녀) | 0% | 5% | 20% | 45% | 30% | **L4** |
 | **연인 관계** |
 | Lo-Sw (애인) | 0% | 5% | 35% | 40% | 20% | **L3~L4** |
@@ -937,7 +945,34 @@ VALUES (
 
 ---
 
-## 📚 참고사항
+## � 앱 코드 매핑 요약 (Quick Reference)
+
+> 아래 표는 `game_setup_screen.dart`의 `_rawRelationData`와 `game_session.dart`의 codeName 생성 로직을 기반으로 합니다.
+
+| 대분류 | 앱 UI (한국어) | 앱 UI (English) | 내부 코드 | codeName 예시 |
+|--------|---------------|-----------------|----------|--------------|
+| Friend | 고향친구 | Area | B-Ar | M-F-B-Ar-L3 |
+| Friend | 학교친구 | School | B-Sc | M-M-B-Sc-L2 |
+| Friend | 직장동료 | Organization | B-Or | F-F-B-Or-L1 |
+| Friend | 동네친구 | Distance | B-Dc | F-M-B-Dc-L4 |
+| Family | 형제 | Brother | Fa-Br | M-M-Fa-Br-L4 |
+| Family | 자매 | Sister | Fa-Si | F-F-Fa-Si-L3 |
+| Family | 남매 | Siblings | Fa-Sb | M-F-Fa-Sb-L5 |
+| Family | 사촌 | Cousin | Fa-Co | M-M-Fa-Co-L2 |
+| Family | 조부모 | Grandparent | Fa-Gp | M-F-Fa-Gp-L4 |
+| Family | 부모/자녀 | Parent/Child | Fa-Fs* | M-M-Fa-Fs-L5 |
+| Lover | 애인 | Sweet | Lo-Sw | M-F-Lo-Sw-L3 |
+| Lover | 부부 | Spouse | Lo-Hw | F-M-Lo-Hw-L5 |
+
+> **\* 부모/자녀 동적 코드 변환**: `Fa-Fs`는 성별 조합에 따라 자동 변환됩니다.
+> - M-M → `Fs` (아버지-아들)
+> - F-F → `Md` (어머니-딸)
+> - F-M → `Ms` (어머니-아들)
+> - M-F → `Fd` (아버지-딸)
+
+---
+
+## �📚 참고사항
 
 ### 용어 설명
 - **MP (Main Player)**: 주 사용자, 게임의 중심이 되는 사람

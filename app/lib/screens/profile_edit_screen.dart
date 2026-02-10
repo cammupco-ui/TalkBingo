@@ -127,7 +127,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          title: SvgPicture.asset('assets/images/Logo Vector.svg', height: 32),
+          title: SvgPicture.asset('assets/images/logo_vector.svg', height: 32),
           centerTitle: true,
           elevation: 0,
           backgroundColor: Colors.white,

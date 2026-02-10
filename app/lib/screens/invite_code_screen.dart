@@ -147,7 +147,7 @@ class _InviteCodeScreenState extends State<InviteCodeScreen> {
             }
           },
           child: SvgPicture.asset(
-            'assets/images/Logo Vector.svg',
+            'assets/images/logo_vector.svg',
             height: 36,
           ),
         ),

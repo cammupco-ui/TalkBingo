@@ -322,7 +322,7 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
             );
           },
           child: SvgPicture.asset(
-            'assets/images/Logo Vector.svg',
+            'assets/images/logo_vector.svg',
             height: 36,
           ),
         ),

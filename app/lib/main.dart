@@ -101,6 +101,11 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
           titleTextStyle: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
           contentTextStyle: TextStyle(color: Colors.black87, fontSize: 16),
         ),
+        // Ensure SnackBars float above the banner ad (64px)
+        snackBarTheme: const SnackBarThemeData(
+          behavior: SnackBarBehavior.floating,
+          insetPadding: EdgeInsets.only(bottom: 72, left: 16, right: 16),
+        ),
       ),
       initialRoute: '/',
       routes: {

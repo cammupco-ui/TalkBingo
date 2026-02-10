@@ -169,7 +169,7 @@ class _NoticeScreenState extends State<NoticeScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: SvgPicture.asset(
-          'assets/images/Logo Vector.svg',
+          'assets/images/logo_vector.svg',
           height: 30,
         ),
         centerTitle: true,
