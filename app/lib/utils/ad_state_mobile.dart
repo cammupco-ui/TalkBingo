@@ -9,7 +9,7 @@ class AdState {
   static String get interstitialAdUnitId {
     if (kIsWeb) return ''; // Not used on web mock
     if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'ca-app-pub-3940256099942544/1033173712';
+      return 'ca-app-pub-3822860765109000/8956630639';
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       return 'ca-app-pub-3940256099942544/4411468910';
     } else {
@@ -20,7 +20,7 @@ class AdState {
   static String get rewardedAdUnitId {
     if (kIsWeb) return '';
     if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'ca-app-pub-3940256099942544/5224354917'; // Test Rewarded Ad ID
+      return 'ca-app-pub-3822860765109000/2312067329';
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       return 'ca-app-pub-3940256099942544/1712485313'; // Test Rewarded Ad ID
     } else {
