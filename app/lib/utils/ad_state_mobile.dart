@@ -13,7 +13,7 @@ class AdState {
   static String get bannerAdUnitId {
     if (kIsWeb) return '';
     if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'ca-app-pub-3940256099942544/6300978111'; // Test - replace with real ID
+      return 'ca-app-pub-3822860765109000/9140473201'; // Production Banner ID
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       return 'ca-app-pub-3940256099942544/2934735716'; // Test - replace with real ID
     } else {
