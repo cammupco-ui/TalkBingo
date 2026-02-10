@@ -21,6 +21,7 @@ Future<void> main() async {
   
   // Fire and forget - don't block app startup
   AdState.initialize(); 
+  AdState.loadBannerAd(); // Load banner ad on startup
   SoundService().init(); 
   DeepLinkService().init(); // Initialize Deep Link Listener Globally
   
@@ -181,7 +182,7 @@ class _TalkBingoAppState extends State<TalkBingoApp> {
                                   color: Colors.transparent,
                                   alignment: Alignment.center,
                                   padding: const EdgeInsets.only(top: 4),
-                                  child: Column(
+                                  child: AdState.getBannerAdWidget() ?? Column(
                                     children: [
                                       Container(
                                         width: 320,

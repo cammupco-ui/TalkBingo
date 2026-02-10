@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 class AdState {
   static final ValueNotifier<bool> showAd = ValueNotifier<bool>(true);
@@ -35,4 +36,9 @@ class AdState {
     onRewarded();
     onDismissed();
   }
+
+  static String get bannerAdUnitId => '';
+  static void loadBannerAd() {}
+  static Widget? getBannerAdWidget() => null;
+  static void disposeBannerAd() {}
 }

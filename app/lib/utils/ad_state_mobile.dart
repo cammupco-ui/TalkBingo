@@ -1,11 +1,27 @@
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/foundation.dart'; // For kIsWeb, defaultTargetPlatform
+import 'package:flutter/widgets.dart'; // For Widget type
 
 class AdState {
   static final ValueNotifier<bool> showAd = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> isGameActive = ValueNotifier<bool>(false);
   
-  // Test Ad Unit IDs
+  // Banner Ad
+  static BannerAd? _bannerAd;
+  static bool _isBannerAdLoaded = false;
+
+  static String get bannerAdUnitId {
+    if (kIsWeb) return '';
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return 'ca-app-pub-3940256099942544/6300978111'; // Test - replace with real ID
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return 'ca-app-pub-3940256099942544/2934735716'; // Test - replace with real ID
+    } else {
+      throw UnsupportedError('Unsupported platform');
+    }
+  }
+
+  // Ad Unit IDs
   static String get interstitialAdUnitId {
     if (kIsWeb) return ''; // Not used on web mock
     if (defaultTargetPlatform == TargetPlatform.android) {
@@ -37,6 +53,44 @@ class AdState {
   static Future<void> initialize() async {
     if (kIsWeb) return; // Skip checking plugin on web
     await MobileAds.instance.initialize();
+  }
+
+  // ── Banner Ad ──
+
+  static void loadBannerAd() {
+    if (kIsWeb) return;
+    _bannerAd = BannerAd(
+      adUnitId: bannerAdUnitId,
+      size: AdSize.banner, // 320x50
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (Ad ad) {
+          print('BannerAd loaded');
+          _isBannerAdLoaded = true;
+        },
+        onAdFailedToLoad: (Ad ad, LoadAdError error) {
+          print('BannerAd failed to load: $error');
+          ad.dispose();
+          _bannerAd = null;
+          _isBannerAdLoaded = false;
+        },
+      ),
+    )..load();
+  }
+
+  static Widget? getBannerAdWidget() {
+    if (kIsWeb || _bannerAd == null || !_isBannerAdLoaded) return null;
+    return SizedBox(
+      width: 320,
+      height: 50,
+      child: AdWidget(ad: _bannerAd!),
+    );
+  }
+
+  static void disposeBannerAd() {
+    _bannerAd?.dispose();
+    _bannerAd = null;
+    _isBannerAdLoaded = false;
   }
 
   // ── Interstitial Ad ──
