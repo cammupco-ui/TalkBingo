@@ -180,40 +180,7 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
         return;
       }
 
-      // Check for Ad Removal possibility
-      if (GameSession().vp >= 200) {
-        final bool? result = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: Colors.white, // Force White Background
-            surfaceTintColor: Colors.transparent, // Remove M3 tint
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), // Consistent shape
-            title: Text(
-              "Remove Ads?", 
-              style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, color: Colors.black),
-            ),
-            content: Text(
-              "Do you want to use 200 VP to play this game without ads?\n\nCurrent VP: ${GameSession().vp}",
-              style: const TextStyle(color: Colors.black87),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false), 
-                child: const Text("No (Play with Ads)", style: TextStyle(color: Colors.grey)),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.hostPrimary, foregroundColor: Colors.white),
-                child: const Text("Yes (-200 VP)"),
-              ),
-            ],
-          ),
-        );
-        
-        if (result == true) {
-          GameSession().useVpForAdRemoval();
-        }
-      }
+      // Ad removal is handled in home_screen.dart before navigation
 
       // Show Loading Dialog
       _showLoadingDialog();

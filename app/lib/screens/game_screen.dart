@@ -2494,7 +2494,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                   _isBingoDialogVisible = false;
                   Navigator.pop(context);
                   
-                  if (_session.adFree || _session.vp >= 200) {
+                  if (_session.adFree) {
                       _session.setGameStatus('playing');
                   } else {
                       await _session.startAdBreak();

@@ -6,7 +6,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 import 'package:talkbingo_app/utils/localization.dart';
-import 'package:talkbingo_app/utils/ad_state.dart';
 
 class GameSession with ChangeNotifier {
   static final GameSession _instance = GameSession._internal();
@@ -1648,7 +1647,6 @@ class GameSession with ChangeNotifier {
       // Sync Ad-Free State (Host → Guest)
       if (state['adFree'] == true && myRole == 'B') {
         adFree = true;
-        AdState.showAd.value = false;
       }
 
       // Sync Targeting Info (for Rematch/Review)
@@ -1795,7 +1793,6 @@ class GameSession with ChangeNotifier {
     if (vp >= 200) {
       vp -= 200;
       adFree = true;
-      AdState.showAd.value = false;
       saveHostInfoToPrefs();
       addHistory("use", 200, "Ad Removal", price: "200 VP");
       notifyListeners();
@@ -1812,7 +1809,6 @@ class GameSession with ChangeNotifier {
       vp -= 8000;
       permanentAdFree = true;
       adFree = true;
-      AdState.showAd.value = false;
       saveHostInfoToPrefs();
       addHistory("use", 8000, "Permanent Ad Removal", price: "8,000 VP");
       notifyListeners();
