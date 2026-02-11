@@ -657,6 +657,8 @@ You may also manage your privacy settings directly within the App under Settings
       'game_recording_fail': 'Recording failed: ',
       'game_lang_switched_ko': 'Switched to Korean. (STT: Korean)',
       'game_lang_switched_en': 'Switched to English. (STT: English)',
+      'guest_joined': '{name} has joined! 🎉',
+      'bingo_ad_hint_prefix': 'After watching an ad, round ',
 
       // ── Quiz Overlay ──
       'quiz_opponent_choosing': 'Opponent is choosing...',
@@ -1385,6 +1387,8 @@ TalkBingo는 14세 미만의 어린이를 대상으로 하지 않습니다. 당�
       'game_recording_fail': '녹음 시작 실패: ',
       'game_lang_switched_ko': '한국어로 변경되었습니다. (STT: 한국어)',
       'game_lang_switched_en': 'Switched to English. (STT: English)',
+      'guest_joined': '{name} 님이 입장했습니다 🎉',
+      'bingo_ad_hint_prefix': '광고 시청 후 ',
 
       // ── Quiz Overlay ──
       'quiz_opponent_choosing': '상대방이 선택 중입니다...',

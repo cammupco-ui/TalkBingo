@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import '../models/game_session.dart';
+import '../utils/localization.dart';
 
 class QuizOverlay extends StatefulWidget {
   final String question;
@@ -168,13 +169,13 @@ class _QuizOverlayState extends State<QuizOverlay> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text("질문 신고하기"),
+        title: Text(AppLocalizations.get('report_title')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: const Icon(Icons.text_format),
-              title: const Text("맞춤법 오류 (Typo)"),
+              title: Text(AppLocalizations.get('report_typo')),
               onTap: () {
                 Navigator.pop(dialogContext);
                 _submitReport("Typo");
@@ -182,7 +183,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
             ),
             ListTile(
               leading: const Icon(Icons.help_outline),
-              title: const Text("내용 이상함 (Weird)"),
+              title: Text(AppLocalizations.get('report_weird')),
               onTap: () {
                 Navigator.pop(dialogContext);
                 _submitReport("Weird Content");
@@ -190,7 +191,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
             ),
             ListTile(
               leading: const Icon(Icons.bug_report),
-              title: const Text("기타 (Other)"),
+              title: Text(AppLocalizations.get('report_other')),
               onTap: () {
                 Navigator.pop(dialogContext);
                 _submitReport("Other");
@@ -220,7 +221,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
     session.reportContent(qId, reason);
     
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("신고가 접수되었습니다. (Report Sent)")),
+      SnackBar(content: Text("${AppLocalizations.get('report_sent')} (Report Sent)")),
     );
   }
 
@@ -307,7 +308,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              "상대방이 선택 중입니다...",
+              AppLocalizations.get('quiz_opponent_choosing'),
               style: TextStyle(fontSize: 12, color: Colors.grey[700], fontWeight: FontWeight.bold),
             ),
           ),
@@ -339,7 +340,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
         // Bottom Actions based on Mode
         if (mode == 'waiting_approval')
           Text(
-            "공감 할수 있게 대화 해 보세요",
+            AppLocalizations.get('quiz_talk_empathy'),
             style: GoogleFonts.alexandria(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.hostPrimary),
             textAlign: TextAlign.center,
           ),
@@ -359,7 +360,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
                         foregroundColor: Colors.grey,
                         backgroundColor: Colors.transparent, // No fill
                       ),
-                      child: const Text('비공감', style: TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.bold)),
+                      child: Text(AppLocalizations.get('quiz_disagree'), style: const TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ),
@@ -376,7 +377,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
                         foregroundColor: AppColors.hostPrimary,
                         backgroundColor: Colors.transparent, // No fill - appears unselected
                       ),
-                      child: Text('공감', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.hostPrimary)),
+                      child: Text(AppLocalizations.get('quiz_agree'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.hostPrimary)),
                     ),
                   ),
                 ),
@@ -469,7 +470,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
           textAlign: TextAlign.center, 
           decoration: InputDecoration(
             isDense: true, 
-            hintText: readOnly ? '상대방이 답변 중입니다...' : '답변을 입력하거나 선택하세요', 
+            hintText: readOnly ? AppLocalizations.get('quiz_opponent_answering') : AppLocalizations.get('quiz_enter_answer'), 
             hintStyle: const TextStyle(fontSize: 12),
             filled: true,
             fillColor: Colors.grey[100],
@@ -542,7 +543,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
                 ),
                 elevation: 0,
               ),
-              child: const Text('확인', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)), 
+              child: Text(AppLocalizations.get('quiz_submit'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)), 
             ),
           ),
       ],

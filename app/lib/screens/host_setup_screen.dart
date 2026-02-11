@@ -11,6 +11,7 @@ import 'package:talkbingo_app/screens/home_screen.dart';
 
 import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/styles/app_spacing.dart';
+import 'package:talkbingo_app/utils/localization.dart';
 
 
 class HostSetupScreen extends StatefulWidget {
@@ -83,10 +84,11 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
       }
       
       final String message = 
-          '초대장이 도착했습니다! 💌\n'
-          '[TalkBingo] 게임에 초대합니다.\n\n'
-          '참여 코드: $_inviteCode\n'
-          '바로 입장하기: $link';
+          'TalkBingo Invite Code\n'
+          'An invitation has arrived! 💌\n'
+          '초대장이 도착했습니다! 💌\n\n'
+          'Code : $_inviteCode\n'
+          'Join : $link';
 
       // 1. Try to open System Share Sheet
       // We attempt this on ALL platforms (including Web).

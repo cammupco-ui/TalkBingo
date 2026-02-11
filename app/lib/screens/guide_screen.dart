@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:talkbingo_app/utils/localization.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/styles/app_spacing.dart';
@@ -32,13 +33,9 @@ class _GuideScreenState extends State<GuideScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(
-          widget.title,
-          style: const TextStyle(
-            color: Colors.black, 
-            fontWeight: FontWeight.bold,
-            fontFamily: 'NURA'
-          ),
+        title: SvgPicture.asset(
+          'assets/images/logo_vector.svg',
+          height: 30,
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -50,6 +47,21 @@ class _GuideScreenState extends State<GuideScreen> {
       ),
       body: Column(
         children: [
+          // Page Title
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            child: Text(
+              widget.title,
+              style: const TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                fontFamily: 'NURA',
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const Divider(height: 1),
           // Scrollable Content
           Expanded(
             child: Scrollbar(
@@ -61,11 +73,22 @@ class _GuideScreenState extends State<GuideScreen> {
                 child: MarkdownBody(
                   data: content,
                   styleSheet: MarkdownStyleSheet(
-                    p: GoogleFonts.alexandria(fontSize: 14, height: 1.5, color: Colors.black87),
+                    p: GoogleFonts.alexandria(fontSize: 14, height: 1.6, color: Colors.black87),
                     strong: GoogleFonts.alexandria(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
                     h1: GoogleFonts.alexandria(fontSize: 20, fontWeight: FontWeight.bold),
-                    h2: GoogleFonts.alexandria(fontSize: 18, fontWeight: FontWeight.bold),
+                    h2: GoogleFonts.alexandria(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                    h2Padding: const EdgeInsets.only(top: 8, bottom: 4),
                     listBullet: GoogleFonts.alexandria(fontSize: 14),
+                    listIndent: 16,
+                    horizontalRuleDecoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(
+                          color: const Color(0xFFCDBFC1),
+                          width: 0.5,
+                          style: BorderStyle.solid,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),

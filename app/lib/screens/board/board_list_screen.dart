@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/models/inquiry_model.dart';
 import 'package:talkbingo_app/screens/board/inquiry_write_screen.dart';
@@ -15,17 +16,15 @@ class BoardListScreen extends StatefulWidget {
   State<BoardListScreen> createState() => _BoardListScreenState();
 }
 
-class _BoardListScreenState extends State<BoardListScreen> with SingleTickerProviderStateMixin {
+class _BoardListScreenState extends State<BoardListScreen> {
   final SupabaseClient _supabase = Supabase.instance.client;
   
-  late TabController _tabController;
   List<Inquiry> _myInquiries = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _fetchInquiries();
   }
 
@@ -63,33 +62,18 @@ class _BoardListScreenState extends State<BoardListScreen> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50], // Light background
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: Text(
-          AppLocalizations.get('board_title'), // Localized
-          style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, color: Colors.black),
+        title: SvgPicture.asset(
+          'assets/images/logo_vector.svg',
+          height: 30,
         ),
+        centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppColors.hostPrimary,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: AppColors.hostPrimary,
-          tabs: [
-            Tab(text: AppLocalizations.get('my_inquiries')), // Localized
-            Tab(text: AppLocalizations.get('public_board')), // Localized
-          ],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildMyInquiriesList(),
-          _buildPublicList(), 
-        ],
-      ),
+      body: _buildMyInquiriesList(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final result = await Navigator.push(
@@ -102,7 +86,7 @@ class _BoardListScreenState extends State<BoardListScreen> with SingleTickerProv
         },
         backgroundColor: AppColors.hostPrimary,
         icon: const Icon(Icons.edit),
-        label: Text(AppLocalizations.get('write_btn')), // Localized
+        label: Text(AppLocalizations.get('write_btn')),
       ),
     );
   }
@@ -120,7 +104,7 @@ class _BoardListScreenState extends State<BoardListScreen> with SingleTickerProv
             Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey[300]),
             const SizedBox(height: 16),
             Text(
-              AppLocalizations.get('no_inquiries'), // Localized
+              AppLocalizations.get('no_inquiries'),
               textAlign: TextAlign.center,
               style: GoogleFonts.alexandria(color: Colors.grey[500]),
             ),
@@ -129,21 +113,16 @@ class _BoardListScreenState extends State<BoardListScreen> with SingleTickerProv
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _myInquiries.length,
-      itemBuilder: (context, index) {
-        final item = _myInquiries[index];
-        return _buildInquiryCard(item);
-      },
-    );
-  }
-
-  Widget _buildPublicList() {
-    return Center(
-      child: Text(
-        AppLocalizations.get('public_coming_soon'), // Localized
-        style: GoogleFonts.alexandria(color: Colors.grey),
+    return RefreshIndicator(
+      onRefresh: _fetchInquiries,
+      color: AppColors.hostPrimary,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _myInquiries.length,
+        itemBuilder: (context, index) {
+          final item = _myInquiries[index];
+          return _buildInquiryCard(item);
+        },
       ),
     );
   }
@@ -164,7 +143,7 @@ class _BoardListScreenState extends State<BoardListScreen> with SingleTickerProv
        statusColor = Colors.green;
     }
     
-    // Localize Category Display (Map if needed, or simple mapping)
+    // Localize Category Display
     String displayCategory = item.category;
     if (item.category == 'General') displayCategory = AppLocalizations.get('cat_general');
     if (item.category == 'Bug') displayCategory = AppLocalizations.get('cat_bug');
@@ -173,17 +152,20 @@ class _BoardListScreenState extends State<BoardListScreen> with SingleTickerProv
     if (item.category == 'Account') displayCategory = AppLocalizations.get('cat_account');
     if (item.category == 'Etc') displayCategory = AppLocalizations.get('cat_etc');
 
+    // Admin check status
+    final bool isChecked = item.adminChecked || item.status == 'resolved';
 
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: () {
-           Navigator.push(
+        onTap: () async {
+          await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => InquiryDetailScreen(inquiry: item)),
           );
+          _fetchInquiries(); // Refresh on return
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -191,6 +173,7 @@ class _BoardListScreenState extends State<BoardListScreen> with SingleTickerProv
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Top row: category + date + admin check
               Row(
                 children: [
                   Container(
@@ -205,9 +188,24 @@ class _BoardListScreenState extends State<BoardListScreen> with SingleTickerProv
                     ),
                   ),
                   const Spacer(),
-                  if (item.isPrivate)
-                    const Icon(Icons.lock, size: 14, color: Colors.grey),
-                  const SizedBox(width: 8),
+                  // Admin check indicator
+                  if (isChecked)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check_circle, size: 12, color: Colors.green),
+                          SizedBox(width: 2),
+                          Text('Checked', style: TextStyle(fontSize: 9, color: Colors.green, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                    ),
+                  if (isChecked) const SizedBox(width: 8),
                   Text(
                     dateFormat.format(item.createdAt),
                     style: TextStyle(fontSize: 10, color: Colors.grey[400]),
@@ -215,6 +213,7 @@ class _BoardListScreenState extends State<BoardListScreen> with SingleTickerProv
                 ],
               ),
               const SizedBox(height: 12),
+              // Title
               Text(
                 item.title,
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -222,16 +221,43 @@ class _BoardListScreenState extends State<BoardListScreen> with SingleTickerProv
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  border: Border.all(color: statusColor),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  statusText,
-                  style: TextStyle(fontSize: 10, color: statusColor, fontWeight: FontWeight.bold),
-                ),
+              // Bottom row: status + reply count
+              Row(
+                children: [
+                  // Status badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: statusColor),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      statusText,
+                      style: TextStyle(fontSize: 10, color: statusColor, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const Spacer(),
+                  // Reply count badge
+                  if (item.replyCount > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.hostPrimary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.reply, size: 12, color: AppColors.hostPrimary),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${item.replyCount}',
+                            style: const TextStyle(fontSize: 10, color: AppColors.hostPrimary, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
             ],
           ),

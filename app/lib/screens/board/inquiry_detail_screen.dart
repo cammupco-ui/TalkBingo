@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/models/inquiry_model.dart';
 import 'package:talkbingo_app/utils/localization.dart';
@@ -63,10 +64,11 @@ class _InquiryDetailScreenState extends State<InquiryDetailScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(
-          AppLocalizations.get('inquiry_details'), // Localized
-          style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, color: Colors.black),
+        title: SvgPicture.asset(
+          'assets/images/logo_vector.svg',
+          height: 30,
         ),
+        centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),

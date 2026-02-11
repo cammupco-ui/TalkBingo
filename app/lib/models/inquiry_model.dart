@@ -10,6 +10,8 @@ class Inquiry {
   final String status; // 'submitted', 'in_progress', 'resolved'
   final DateTime createdAt;
   final String? answer; // For simple display of reply, though mostly in separate table
+  final bool adminChecked; // Whether admin has reviewed
+  final int replyCount; // Number of admin replies
 
   Inquiry({
     required this.id,
@@ -21,6 +23,8 @@ class Inquiry {
     required this.status,
     required this.createdAt,
     this.answer,
+    this.adminChecked = false,
+    this.replyCount = 0,
   });
 
   factory Inquiry.fromJson(Map<String, dynamic> json) {
@@ -33,7 +37,8 @@ class Inquiry {
       isPrivate: json['is_private'] ?? true,
       status: json['status'] ?? 'submitted',
       createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
-      // We might join replies later, or fetch separately.
+      adminChecked: json['admin_checked'] ?? false,
+      replyCount: json['reply_count'] ?? 0,
     );
   }
 
@@ -49,3 +54,4 @@ class Inquiry {
     };
   }
 }
+

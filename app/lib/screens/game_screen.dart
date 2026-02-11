@@ -325,7 +325,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
             children: [
               const Icon(Icons.person_add, color: Colors.white, size: 20),
               const SizedBox(width: 8),
-              Text('$guestName 님이 입장했습니다 🎉',
+              Text(AppLocalizations.get('guest_joined').replaceAll('{name}', guestName),
                 style: const TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
@@ -781,7 +781,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         if (!status.isGranted) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('마이크 권한이 필요합니다.')),
+              SnackBar(content: Text(AppLocalizations.get('game_mic_permission'))),
             );
           }
           return;
@@ -809,7 +809,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       debugPrint("Start Recording Error: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('녹음 시작 실패: $e')),
+          SnackBar(content: Text('${AppLocalizations.get('game_recording_fail')}$e')),
         );
       }
     }
@@ -899,8 +899,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                   child: PopupMenuButton<String>(
                     offset: const Offset(0, 40),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    tooltip: '포인트 보기',
-                    child: _buildFloatingText("빙고 ${_session.gp}"),
+                    tooltip: AppLocalizations.get('game_points_tooltip'),
+                    child: _buildFloatingText("${AppLocalizations.get('game_points_label')} ${_session.gp}"),
                      itemBuilder: (context) {
                          // Calculate Real-time Stats
                          int filledCells = _session.tileOwnership.where((o) => o == _session.myRole).length;
@@ -914,9 +914,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text("빙고줄: ${_session.bingoLines}", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                                    Text("${AppLocalizations.get('game_bingo_lines')}: ${_session.bingoLines}", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
                                     const SizedBox(height: 4),
-                                    Text("빙고셀: $filledCells", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                                    Text("${AppLocalizations.get('game_bingo_cells')}: $filledCells", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
                                   ],
                                 ),
                               ),
@@ -946,7 +946,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                   child: PopupMenuButton<String>(
                     offset: const Offset(0, 40),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: _buildFloatingText("메뉴"),
+                    child: _buildFloatingText(AppLocalizations.get('game_menu')),
                     onSelected: (value) async {
                        SoundService().playButtonSound();
                        if (value == 'Language') {
@@ -955,7 +955,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                           setState(() {}); // Trigger rebuild for Localized Strings & STT Locale
                           ScaffoldMessenger.of(context).showSnackBar(
                              SnackBar(
-                               content: Text(newLang == 'ko' ? "한국어로 변경되었습니다. (STT: 한국어)" : "Switched to English. (STT: English)"),
+                               content: Text(newLang == 'ko' ? AppLocalizations.get('game_lang_switched_ko') : AppLocalizations.get('game_lang_switched_en')),
                                duration: const Duration(milliseconds: 1500),
                              )
                           );
@@ -966,7 +966,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                           setState(() {});
                        } else if (value == 'Save') {
                           // Implement Save Logic
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("저장되었습니다.")));
+                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.get('game_saved'))));
                        } else if (value == 'End') {
                           _endGame(); 
                        }
@@ -1004,7 +1004,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                  child: Row(children: [
                                    const Icon(Icons.settings, size: 18, color: Colors.black54),
                                    const SizedBox(width: 8),
-                                   Text("설정", style: GoogleFonts.alexandria(color: Colors.black87))
+                                    Text(AppLocalizations.get('game_settings_label'), style: GoogleFonts.alexandria(color: Colors.black87))
                                  ])
                                ),
                              ),
@@ -1016,7 +1016,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                 child: Row(children: [
                                   Icon(isPaused ? Icons.play_arrow : Icons.pause, size: 18, color: Colors.black54),
                                   const SizedBox(width: 8),
-                                  Text(isPaused ? "다시 시작" : "잠시 멈춤", style: GoogleFonts.alexandria(color: Colors.black87))
+                                   Text(isPaused ? AppLocalizations.get('game_resume') : AppLocalizations.get('game_pause'), style: GoogleFonts.alexandria(color: Colors.black87))
                                 ])
                               ),
                             ),
@@ -1029,7 +1029,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                 child: Row(children: [
                                   const Icon(Icons.save, size: 18, color: Colors.black54),
                                   const SizedBox(width: 8),
-                                  Text("저장하기", style: GoogleFonts.alexandria(color: Colors.black87))
+                                   Text(AppLocalizations.get('game_save'), style: GoogleFonts.alexandria(color: Colors.black87))
                                 ])
                               ),
                             ),
@@ -1041,7 +1041,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                 child: Row(children: [
                                    const Icon(Icons.exit_to_app, size: 18, color: Colors.black54),
                                    const SizedBox(width: 8),
-                                   Text("종료하기", style: GoogleFonts.alexandria(color: Colors.black87))
+                                    Text(AppLocalizations.get('game_end'), style: GoogleFonts.alexandria(color: Colors.black87))
                                 ])
                               ),
                             ),
@@ -2356,7 +2356,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
           builder: (context, setDialogState) {
             final soundService = SoundService();
             return AlertDialog(
-              title: Text("게임 설정", style: GoogleFonts.alexandria(fontWeight: FontWeight.bold)),
+              title: Text(AppLocalizations.get('game_settings_title'), style: GoogleFonts.alexandria(fontWeight: FontWeight.bold)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -2365,7 +2365,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("배경음악 (BGM)", style: GoogleFonts.alexandria(fontSize: 14)),
+                      Text(AppLocalizations.get('game_bgm'), style: GoogleFonts.alexandria(fontSize: 14)),
                       Switch(
                         value: soundService.isBgmEnabled,
                         onChanged: (val) {
@@ -2390,7 +2390,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("효과음 (SFX)", style: GoogleFonts.alexandria(fontSize: 14)),
+                      Text(AppLocalizations.get('game_sfx'), style: GoogleFonts.alexandria(fontSize: 14)),
                       Switch(
                         value: soundService.isSfxEnabled,
                         onChanged: (val) {
@@ -2413,7 +2413,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("닫기"),
+                  child: Text(AppLocalizations.get('close')),
                 )
               ],
             );
@@ -2451,7 +2451,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
        // Ad hint
        final adHint = isGameOver
            ? AppLocalizations.get('bingo_ad_hint_final')
-           : "${_session.language == 'ko' ? '광고 시청 후 ${lines + 1}' : 'After watching an ad, round ${lines + 1} '}${AppLocalizations.get('bingo_ad_hint_round')}";
+            : "${AppLocalizations.get('bingo_ad_hint_prefix')}${lines + 1} ${AppLocalizations.get('bingo_ad_hint_round')}";
 
        return Column(
           mainAxisSize: MainAxisSize.min,

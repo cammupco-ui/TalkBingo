@@ -5,6 +5,7 @@ import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 // import 'dart:io' removed for Web compatibility
 import 'package:flutter/foundation.dart'; // For kIsWeb, defaultTargetPlatform
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:talkbingo_app/utils/localization.dart';
 
 class InquiryWriteScreen extends StatefulWidget {
@@ -99,10 +100,11 @@ class _InquiryWriteScreenState extends State<InquiryWriteScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(
-          AppLocalizations.get('write_title'), // Localized
-          style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, color: Colors.black),
+        title: SvgPicture.asset(
+          'assets/images/logo_vector.svg',
+          height: 30,
         ),
+        centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),

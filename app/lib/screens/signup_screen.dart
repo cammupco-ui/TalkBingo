@@ -115,7 +115,7 @@ class _SignupScreenState extends State<SignupScreen> {
           );
         } else if (e.message.contains('Failed to decode error response')) {
            // Handle generic Supabase Web error (likely network or 500)
-           _showSnack("서버 연결 상태가 불안정합니다. (Network Error)\n새로고침 후 다시 시도해주세요.");
+           _showSnack(AppLocalizations.get('signup_network_error'));
         } else {
            _showSnack(e.message);
         }

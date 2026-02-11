@@ -6,6 +6,7 @@ import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/screens/splash_screen.dart';
 import 'package:talkbingo_app/utils/dev_config.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:talkbingo_app/utils/localization.dart';
 
 class SignOutLandingScreen extends StatelessWidget {
   const SignOutLandingScreen({super.key});
@@ -27,9 +28,7 @@ class SignOutLandingScreen extends StatelessWidget {
               
               // Title
               Text(
-                Localizations.localeOf(context).languageCode == 'ko' 
-                    ? '우리 다시 만나요!' 
-                    : 'Hope we meet again soon',
+                AppLocalizations.get('signout_title'),
                 style: GoogleFonts.alexandria(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -41,9 +40,7 @@ class SignOutLandingScreen extends StatelessWidget {
               
               // Subtitle
               Text(
-                Localizations.localeOf(context).languageCode == 'ko'
-                    ? '당신의 이야기가 멈추지 않도록 곁에 있을게요'
-                    : 'We’ll be right here, so your story never has to stop.',
+                AppLocalizations.get('signout_subtitle'),
                 style: GoogleFonts.alexandria(
                   fontSize: 14,
                   color: Colors.grey[600],

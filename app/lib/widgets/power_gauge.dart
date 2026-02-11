@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
+import 'package:talkbingo_app/utils/localization.dart';
 
 class PowerGauge extends StatelessWidget {
   final double power; // 0.0 ~ 1.2+
@@ -203,7 +204,7 @@ class PowerGauge extends StatelessWidget {
                   const SizedBox(width: 4),
                   Flexible(
                     child: Text(
-                      "초록 구간이 최적 파워",
+                      AppLocalizations.get('power_gauge_tip'),
                       style: GoogleFonts.doHyeon(
                         fontSize: 10,
                         color: Colors.white70,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../utils/localization.dart';
 
 class QuizModal extends StatelessWidget {
   final String question;
@@ -61,7 +62,7 @@ class QuizModal extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              '둘이 같은 선택이면 칸을 차지합니다.',
+              AppLocalizations.get('quiz_balance_hint'),
               style: GoogleFonts.alexandria(
                 fontSize: 12,
                 color: Colors.grey[500],

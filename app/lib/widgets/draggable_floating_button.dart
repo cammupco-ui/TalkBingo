@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:talkbingo_app/utils/localization.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -226,9 +227,9 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
                                child: isChat 
                                ? Column(
                                    mainAxisSize: MainAxisSize.min,
-                                   children: const [
-                                     Icon(Icons.sports_esports, color: Colors.white, size: 28),
-                                     Text("보드", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold))
+                                   children: [
+                                     const Icon(Icons.sports_esports, color: Colors.white, size: 28),
+                                     Text(AppLocalizations.get('floating_board'), style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold))
                                    ],
                                  )
                                 : ((_showPreview || widget.unreadCount > 0) 
