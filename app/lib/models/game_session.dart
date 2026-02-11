@@ -548,10 +548,17 @@ class GameSession with ChangeNotifier {
         if (opt['B_en'] != null && (opt['B_en'] as String).isNotEmpty) b = opt['B_en'];
      }
      
+     // 3. Truth Answer Hints
+     String answer = opt['answer']?.toString() ?? '';
+     if (isEn && opt['answer_en'] != null && (opt['answer_en'] as String).isNotEmpty) {
+        answer = opt['answer_en'];
+     }
+     
      return {
        'q': q,
        'A': a, 
-       'B': b
+       'B': b,
+       'answer': answer,
      };
   }
 

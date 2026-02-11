@@ -314,6 +314,29 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     if (!mounted) return;
     setState(() {}); // Trigger rebuild to reflect session changes (e.g. Language)
 
+    // 0. Guest Join Notification (Toast)
+    if (_isHost && !_hasShownEntranceToast && 
+        _session.guestNickname != null && _session.guestNickname!.isNotEmpty) {
+      _hasShownEntranceToast = true;
+      final guestName = _session.guestNickname!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.person_add, color: Colors.white, size: 20),
+              const SizedBox(width: 8),
+              Text('$guestName 님이 입장했습니다 🎉',
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            ],
+          ),
+          backgroundColor: Colors.green.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+
     // 1. Check for Game Over (Global Sync)
     // FORCE DEBUG:
     debugPrint("[GameScreen] Update: Status=${_session.gameStatus}, Nav=$_navigating"); 
@@ -1905,7 +1928,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
      if (opts['answer'] is List) {
        suggestions = List<String>.from(opts['answer']);
      } else if (opts['answer'] is String && (opts['answer'] as String).isNotEmpty) {
-       suggestions = (opts['answer'] as String).split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+       // Use English answers when language is English and answer_en exists
+       String answerSource = opts['answer'] as String;
+       if (_session.language == 'en' && opts['answer_en'] != null && (opts['answer_en'] as String).isNotEmpty) {
+         answerSource = opts['answer_en'] as String;
+       }
+       suggestions = answerSource.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
      }
 
   await _session.startInteraction(

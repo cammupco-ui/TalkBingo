@@ -275,6 +275,8 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                 ],
               ),
+              // Extra spacing to clear ad banner at bottom
+              const SizedBox(height: 80),
             ],
           ),
         ),
