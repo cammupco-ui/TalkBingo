@@ -265,57 +265,100 @@ class GameSession with ChangeNotifier {
     debugPrint('Fetching questions for Intersection Candidates (Priority+Fallback): $candidateCodes');
 
     try {
-      // --- 2-PHASE FETCH FOR DIVERSITY ---
-      // Phase 1: Relationship-specific questions (exclude universal wildcard)
+      // --- TYPE-SPLIT RANDOM FETCH (via Supabase RPC) ---
+      // Each query uses ORDER BY random() on the server to avoid
+      // always fetching the same questions in insertion order.
+
       final specificCodes = candidateCodes.where((c) => c != '*-*-*-*-*').toList();
       
-      List<dynamic> specificQuestions = [];
+      // Phase 1: Relationship-specific questions (Balance + Truth separately)
+      List<dynamic> specificBalance = [];
+      List<dynamic> specificTruth = [];
+      
       if (specificCodes.isNotEmpty) {
-        specificQuestions = await _supabase
-            .from('questions')
-            .select()
-            .overlaps('code_names', specificCodes)
-            .eq('is_published', true)
-            .limit(80);
-      }
-      
-      // Phase 2: Universal/wildcard questions (separate fetch)
-      final wildcardQuestions = await _supabase
-          .from('questions')
-          .select()
-          .contains('code_names', ['*-*-*-*-*'])
-          .eq('is_published', true)
-          .limit(80);
-
-      // --- COMBINE WITH DIVERSITY ENFORCEMENT ---
-      // 1. Deduplicate (specific questions may also have wildcard tags)
-      final seenIds = <String>{};
-      List<dynamic> combined = [];
-      
-      // Shuffle each pool independently for variety across games
-      specificQuestions.shuffle();
-      wildcardQuestions.shuffle();
-      
-      // Priority: specific relationship questions first
-      for (var q in specificQuestions) {
-        final qId = q['id'].toString();
-        if (seenIds.add(qId)) combined.add(q);
-      }
-      
-      final specificCount = combined.length;
-      
-      // Fill remaining with wildcard questions (cap at ~40% of total)
-      final maxWildcard = (120 * 0.4).round(); // ~48
-      int wildcardAdded = 0;
-      for (var q in wildcardQuestions) {
-        final qId = q['id'].toString();
-        if (seenIds.add(qId) && wildcardAdded < maxWildcard) {
-          combined.add(q);
-          wildcardAdded++;
+        // Fetch Balance questions (random)
+        try {
+          specificBalance = await _supabase.rpc('get_random_questions', params: {
+            'p_codes': specificCodes,
+            'p_type_prefix': 'B',
+            'p_limit': 40,
+          });
+        } catch (e) {
+          debugPrint('⚠️ RPC balance fetch failed, using fallback: $e');
+        }
+        
+        // Fetch Truth questions (random)
+        try {
+          specificTruth = await _supabase.rpc('get_random_questions', params: {
+            'p_codes': specificCodes,
+            'p_type_prefix': 'T',
+            'p_limit': 40,
+          });
+        } catch (e) {
+          debugPrint('⚠️ RPC truth fetch failed, using fallback: $e');
         }
       }
       
-      debugPrint('📊 Question diversity: ${specificCount} specific + $wildcardAdded wildcard = ${combined.length} total');
+      debugPrint('📊 Specific: ${specificBalance.length} balance + ${specificTruth.length} truth');
+
+      // Phase 2: Wildcard questions (Balance + Truth separately)
+      List<dynamic> wildcardBalance = [];
+      List<dynamic> wildcardTruth = [];
+      
+      try {
+        wildcardBalance = await _supabase.rpc('get_random_wildcard_questions', params: {
+          'p_type_prefix': 'B',
+          'p_limit': 20,
+        });
+      } catch (e) {
+        debugPrint('⚠️ RPC wildcard balance failed: $e');
+      }
+      
+      try {
+        wildcardTruth = await _supabase.rpc('get_random_wildcard_questions', params: {
+          'p_type_prefix': 'T',
+          'p_limit': 20,
+        });
+      } catch (e) {
+        debugPrint('⚠️ RPC wildcard truth failed: $e');
+      }
+      
+      debugPrint('📊 Wildcard: ${wildcardBalance.length} balance + ${wildcardTruth.length} truth');
+
+      // --- COMBINE WITH DEDUPLICATION ---
+      final seenIds = <String>{};
+      List<dynamic> combined = [];
+      
+      // Helper: add unique questions
+      void addUnique(List<dynamic> source) {
+        for (var q in source) {
+          final qId = q['id'].toString();
+          if (seenIds.add(qId)) combined.add(q);
+        }
+      }
+      
+      // Priority: specific relationship questions first, then wildcards
+      addUnique(specificBalance);
+      addUnique(specificTruth);
+      addUnique(wildcardBalance);
+      addUnique(wildcardTruth);
+      
+      debugPrint('📊 Total unique questions: ${combined.length}');
+      
+      // --- FALLBACK: Direct query if RPC functions not yet deployed ---
+      if (combined.length < 25) {
+        debugPrint('⚠️ RPC returned too few (${combined.length}). Falling back to direct query...');
+        final fallbackQuestions = await _supabase
+            .from('questions')
+            .select()
+            .overlaps('code_names', candidateCodes)
+            .eq('is_published', true)
+            .limit(120);
+        
+        fallbackQuestions.shuffle();
+        addUnique(fallbackQuestions);
+        debugPrint('📊 After fallback: ${combined.length} total');
+      }
       
       // Final shuffle for random board layout
       combined.shuffle();

@@ -627,7 +627,8 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
             // 1. GAME HEADER
              GameHeader(
                gameTitle: "ARROW SHOT",
-               score: isShooter ? _score : (scores[_session.myRole] ?? 0),
+               score: isShooter ? _score : _remoteScore,
+               opponentScore: isShooter ? _remoteScore : (scores[_session.myRole] ?? 0),
                timeLeft: _timeLeft,
                isMyTurn: isShooter,
                onMenuTap: widget.onClose,

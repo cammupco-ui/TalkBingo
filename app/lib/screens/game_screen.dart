@@ -317,9 +317,22 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     // 1. Check for Game Over (Global Sync)
     // FORCE DEBUG:
     debugPrint("[GameScreen] Update: Status=${_session.gameStatus}, Nav=$_navigating"); 
-    // 0. Check for Mid-Game Ad Break (Synced)
-    // 0. Check for Mid-Game Ad Break (Synced)
-    // 0. Check for Mid-Game Ad Break (Synced Handshake)
+
+    // 0. BINGO CHECK FIRST — must run before paused_ad handler
+    // so that opponent can see the bingo modal even when winner already started ad break
+    if (_session.gameStatus == 'playing' || _session.gameStatus == 'waiting' || _session.gameStatus == 'paused_ad') {
+       _checkBingoState();
+       
+       // Trigger Bingo Line Animation
+       int currentLineCount = _countAllBingoLines();
+       if (currentLineCount > _previousLineCount) {
+          _bingoLineController.forward(from: 0.0);
+          HapticFeedback.heavyImpact(); // Add tactile feedback
+       }
+       _previousLineCount = currentLineCount;
+    }
+
+    // 1. Check for Mid-Game Ad Break (Synced Handshake)
     if (_session.gameStatus == 'paused_ad') {
        // Close the "Waiting for Decision" or "Action" dialog if active so Ad can proceed
        if (_isBingoDialogVisible) {
@@ -371,38 +384,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
        }
     }
 
-    // 1. Check for Bingo State (Triggers Dialogs)
-    if (_session.gameStatus == 'playing' || _session.gameStatus == 'waiting') {
-       _checkBingoState();
-       
-       // Trigger Bingo Line Animation
-       int currentLineCount = _countAllBingoLines();
-       if (currentLineCount > _previousLineCount) {
-          _bingoLineController.forward(from: 0.0);
-          HapticFeedback.heavyImpact(); // Add tactile feedback
-       }
-       _previousLineCount = currentLineCount;
-       
-    // Entrance Notification Logic REMOVED as per user request
-    /*
-       if (!_hasShownEntranceToast) {
-         if (_isHost) {
-            // Host: Wait for Guest Nickname
-            if (_session.guestNickname != null && _session.guestNickname!.isNotEmpty) {
-               _hasShownEntranceToast = true;
-               // _showEntranceNotification("${_session.guestNickname} has entered!"); 
-            }
-         } else {
-            // Guest: Host is always present (owner)
-            // Just show immediately if we are connected
-            if (_session.hostNickname != null) {
-               _hasShownEntranceToast = true;
-               // _showEntranceNotification("Host has entered!");
-            }
-         }
-       }
-    */
-    }
+    // (Bingo state check already done above, before paused_ad handler)
 
     // 2. Check for Game Over (Synced)
 
@@ -2706,9 +2688,53 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   // And probably add logic to _onSessionUpdate to handle the "Pop Guest Dialog" logic.
 
   void _showBoardFullDialog() {
-      // This was the old name for Game Over. 
-      // Now replaced by _showBingoDialog(lines: 3) effectively.
-      _showBingoDialog(lines: 3, isWinner: true);
+      if (_isGameEndedDialogShown) return;
+      _isGameEndedDialogShown = true;
+      
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: Colors.white,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.grid_off, color: Colors.grey, size: 40),
+              const SizedBox(height: 10),
+              Text(
+                AppLocalizations.get('board_full_title') ?? '게임 종료',
+                style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF1A1A1A))),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                AppLocalizations.get('board_full_desc') ?? '더 이상 선택할 빙고셀이 없습니다.\n게임을 종료합니다.',
+                textAlign: TextAlign.center,
+                style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontSize: 14, color: Color(0xFF333333))),
+              ),
+            ],
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _navigating = true;
+                _session.endGame();
+                _proceedToReward();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE91E63),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text(
+                AppLocalizations.get('board_full_end') ?? '결과 보기',
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      );
   }
 
   void _restartGame() {

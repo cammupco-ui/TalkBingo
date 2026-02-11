@@ -215,8 +215,24 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
            // On Rotated Screen: Moving Down (+Y visually relative to screen top).
            // Goalie sees ball coming AT them (Downwards). Correct.
         }
-     }
-  }
+      } else if (payload['eventType'] == 'score_update') {
+         // Real-time Score Sync
+         if (payload.containsKey('score')) {
+            setState(() {
+               if (!isKicker) {
+                  _remoteScore = (payload['score'] as num).toInt();
+               }
+            });
+         }
+      } else if (payload['eventType'] == 'time_sync') {
+         if (!isKicker && payload.containsKey('time')) {
+            double serverTime = (payload['time'] as num).toDouble();
+            if ((_timeLeft - serverTime).abs() > 2.0) {
+               _timeLeft = serverTime;
+            }
+         }
+      }
+   }
 
 
 
@@ -604,7 +620,8 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                  // 1. GAME HEADER
                  GameHeader(
                    gameTitle: "PENALTY KICK",
-                   score: isKicker ? _score : (scores[_session.myRole] ?? 0),
+                   score: isKicker ? _score : _remoteScore,
+                   opponentScore: isKicker ? _remoteScore : (scores[_session.myRole] ?? 0),
                    timeLeft: _timeLeft,
                    isMyTurn: isKicker,
                    onMenuTap: widget.onClose,

@@ -7,14 +7,16 @@ import 'package:talkbingo_app/styles/app_colors.dart';
 class GameHeader extends StatelessWidget {
   final String gameTitle;
   final int score;
+  final int? opponentScore; // Real-time opponent score (for spectator mode)
   final double timeLeft;
-  final bool isMyTurn; // Just for API compatibility if needed, though colors derive from Session
-  final VoidCallback? onMenuTap; // Optional
+  final bool isMyTurn;
+  final VoidCallback? onMenuTap;
   
   const GameHeader({
     super.key,
     required this.gameTitle,
     required this.score,
+    this.opponentScore,
     required this.timeLeft,
     this.isMyTurn = true,
     this.onMenuTap,
@@ -50,11 +52,11 @@ class GameHeader extends StatelessWidget {
         ],
       ),
       child: SafeArea(
-        bottom: false, // Don't add padding at bottom of header
+        bottom: false,
         child: Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: 16, // lg
-            vertical: 8,    // sm
+            horizontal: 16,
+            vertical: 8,
           ),
           child: Row(
             children: [
@@ -72,8 +74,8 @@ class GameHeader extends StatelessWidget {
               Expanded(
                 child: Text(
                   gameTitle,
-                  style: GoogleFonts.alexandria( // Fallback if NURA not available or use custom
-                    fontSize: 18, // H2
+                  style: GoogleFonts.alexandria(
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                     letterSpacing: 1.5,
@@ -84,13 +86,16 @@ class GameHeader extends StatelessWidget {
                 ),
               ),
               
-              const SizedBox(width: 12), // md
+              const SizedBox(width: 12),
               
-              // Score Badge
-              _buildScoreBadge(config, score),
-
-
-              ],
+              // Score Badges — show both when opponent score available
+              if (opponentScore != null) ...[
+                _buildScoreBadge(config, isMyTurn ? score : opponentScore!, label: isMyTurn ? 'ME' : 'OPP'),
+                const SizedBox(width: 4),
+                _buildScoreBadge(config, isMyTurn ? opponentScore! : score, label: isMyTurn ? 'OPP' : 'ME', isSecondary: true),
+              ] else
+                _buildScoreBadge(config, score),
+            ],
           ),
         ),
       ),
@@ -100,8 +105,8 @@ class GameHeader extends StatelessWidget {
   Widget _buildTimerBadge(ResponsiveGameConfig config, double time) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: 12, // md
-        vertical: 6,    // xs + sm
+        horizontal: 12,
+        vertical: 6,
       ),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.2),
@@ -115,11 +120,11 @@ class GameHeader extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(Icons.timer, color: Colors.white, size: 16),
-          const SizedBox(width: 4), // xs
+          const SizedBox(width: 4),
           Text(
             '${time.toStringAsFixed(0)}s',
             style: GoogleFonts.alexandria(
-              fontSize: 14, // Body 1
+              fontSize: 14,
               fontWeight: FontWeight.w600,
               color: Colors.white,
             ),
@@ -129,42 +134,60 @@ class GameHeader extends StatelessWidget {
     );
   }
   
-  Widget _buildScoreBadge(ResponsiveGameConfig config, int score) {
+  Widget _buildScoreBadge(ResponsiveGameConfig config, int score, {String? label, bool isSecondary = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 12,
         vertical: 6,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
+        color: isSecondary 
+            ? Colors.white.withOpacity(0.15) 
+            : Colors.white.withOpacity(0.3),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.4),
+          color: Colors.white.withOpacity(isSecondary ? 0.2 : 0.4),
           width: 1,
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.star, color: Colors.amber, size: 16),
+          Icon(
+            Icons.star, 
+            color: isSecondary ? Colors.grey[400] : Colors.amber, 
+            size: 16,
+          ),
           const SizedBox(width: 4),
+          if (label != null) ...[
+            Text(
+              label,
+              style: GoogleFonts.alexandria(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: isSecondary ? Colors.grey[300] : Colors.white70,
+              ),
+            ),
+            const SizedBox(width: 2),
+          ],
           Text(
             '$score',
             style: GoogleFonts.alexandria(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: isSecondary ? Colors.grey[300] : Colors.white,
             ),
           ),
         ],
       ),
     );
   }
+
   Widget _buildTurnBadge(bool isMyTurn) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: isMyTurn ? const Color(0xFFBD0558) : Colors.grey[700], // Pink for My Turn
+        color: isMyTurn ? const Color(0xFFBD0558) : Colors.grey[700],
         borderRadius: BorderRadius.circular(12),
         boxShadow: isMyTurn 
           ? [BoxShadow(color: const Color(0xFFBD0558).withOpacity(0.4), blurRadius: 6)] 
