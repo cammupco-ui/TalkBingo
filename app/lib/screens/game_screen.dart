@@ -1816,14 +1816,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     // FIRST TAP: Set preview + broadcast
     if (_previewIndex != index) {
       setState(() { _previewIndex = index; });
-      _session.broadcastPreview(index, _getPreviewLabel(index));
+      await _session.broadcastPreview(index, _getPreviewLabel(index));
       return;
     }
 
     // SECOND TAP (same cell): Execute action
     // Clear preview first
     setState(() { _previewIndex = null; });
-    _session.clearPreview();
+    await _session.clearPreview();
 
     // --- Handle by cell type ---
 

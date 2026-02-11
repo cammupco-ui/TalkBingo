@@ -2079,40 +2079,53 @@ class GameSession with ChangeNotifier {
   void broadcastHover(int? index) {}
 
   /// Broadcast cell preview selection (1st tap)
-  void broadcastPreview(int? index, String? label) {
+  Future<void> broadcastPreview(int? index, String? label) async {
+    debugPrint('[Preview] Broadcasting: index=$index, label=$label, role=$myRole');
     previewCellIndex.value = index;
     previewLabel = label;
-    sendGameEvent({
-      'type': 'preview',
-      'index': index,
-      'label': label,
-      'role': myRole,
-    });
+    try {
+      await sendGameEvent({
+        'type': 'preview',
+        'index': index,
+        'label': label,
+        'role': myRole,
+      });
+      debugPrint('[Preview] Broadcast sent OK');
+    } catch (e) {
+      debugPrint('[Preview] Broadcast FAILED: $e');
+    }
     notifyListeners();
   }
 
   /// Handle incoming preview events from opponent
   void handlePreviewEvent(Map<String, dynamic> payload) {
     final role = payload['role'];
+    debugPrint('[Preview] Received event: role=$role, myRole=$myRole, index=${payload['index']}, label=${payload['label']}');
     if (role == myRole) return; // ignore own events
     
     final index = payload['index'] as int?;
     final label = payload['label'] as String?;
     remotePreviewCellIndex.value = index;
     remotePreviewLabel = label;
+    debugPrint('[Preview] Remote preview set: index=$index, label=$label');
     notifyListeners();
   }
 
   /// Clear preview state (e.g. on turn change or interaction start)
-  void clearPreview() {
+  Future<void> clearPreview() async {
+    debugPrint('[Preview] Clearing preview');
     previewCellIndex.value = null;
     previewLabel = null;
-    sendGameEvent({
-      'type': 'preview',
-      'index': null,
-      'label': null,
-      'role': myRole,
-    });
+    try {
+      await sendGameEvent({
+        'type': 'preview',
+        'index': null,
+        'label': null,
+        'role': myRole,
+      });
+    } catch (e) {
+      debugPrint('[Preview] Clear broadcast FAILED: $e');
+    }
     notifyListeners();
   }
   Future<void> reportContent(String qId, String reason, {String? details}) async {
