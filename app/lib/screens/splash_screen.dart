@@ -9,6 +9,7 @@ import 'package:talkbingo_app/screens/login_screen.dart';
 import 'package:talkbingo_app/screens/invite_code_screen.dart';
 import 'package:talkbingo_app/screens/host_info_screen.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
+import 'package:talkbingo_app/screens/update_password_screen.dart';
 
 import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/utils/migration_manager.dart';
@@ -164,6 +165,16 @@ class _SplashScreenState extends State<SplashScreen> {
   void _setupAuthListener() {
     _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
       if (!mounted) return;
+      
+      // Handle PASSWORD_RECOVERY event from email reset link
+      if (data.event == AuthChangeEvent.passwordRecovery) {
+        _addLog("🔑 Password Recovery event received. Navigating to Update Password.");
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const UpdatePasswordScreen()),
+        );
+        return;
+      }
+      
       if (data.session != null) {
           _addLog("✅ Session Found in Listener.");
           // We MUST wait for deep link check before handling user
