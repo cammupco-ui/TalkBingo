@@ -1591,6 +1591,10 @@ class GameSession with ChangeNotifier {
       'turnCount': turnCount,
       'lockedTurns': lockedTurns,
       'adFree': adFree || permanentAdFree,
+      // Preview state for opponent sync
+      'previewCellIndex': previewCellIndex.value,
+      'previewLabel': previewLabel,
+      'previewRole': myRole,
     };
 
     try {
@@ -1710,6 +1714,13 @@ class GameSession with ChangeNotifier {
       if (state['relationSub'] != null) relationSub = state['relationSub'];
       if (state['intimacyLevel'] != null) intimacyLevel = state['intimacyLevel'];
       if (state['guestGender'] != null) guestGender = state['guestGender'];
+
+    // Sync Preview State from opponent
+    if (state['previewRole'] != null && state['previewRole'] != myRole) {
+      final pIdx = state['previewCellIndex'];
+      remotePreviewCellIndex.value = (pIdx is int) ? pIdx : null;
+      remotePreviewLabel = state['previewLabel'] as String?;
+    }
       
       // Check for Trust Score Update (Host Side)
       if (state['guestRating'] != null && !hostRatingProcessed) {
@@ -2083,6 +2094,10 @@ class GameSession with ChangeNotifier {
     debugPrint('[Preview] Broadcasting: index=$index, label=$label, role=$myRole');
     previewCellIndex.value = index;
     previewLabel = label;
+    // Primary: DB sync (reliable via Postgres Realtime)
+    notifyListeners();
+    await _syncGameState();
+    // Secondary: also send broadcast for faster delivery
     try {
       await sendGameEvent({
         'type': 'preview',
@@ -2090,11 +2105,9 @@ class GameSession with ChangeNotifier {
         'label': label,
         'role': myRole,
       });
-      debugPrint('[Preview] Broadcast sent OK');
     } catch (e) {
-      debugPrint('[Preview] Broadcast FAILED: $e');
+      debugPrint('[Preview] Broadcast send error (non-critical): $e');
     }
-    notifyListeners();
   }
 
   /// Handle incoming preview events from opponent
@@ -2116,6 +2129,10 @@ class GameSession with ChangeNotifier {
     debugPrint('[Preview] Clearing preview');
     previewCellIndex.value = null;
     previewLabel = null;
+    // Primary: DB sync
+    notifyListeners();
+    await _syncGameState();
+    // Secondary: broadcast for faster delivery
     try {
       await sendGameEvent({
         'type': 'preview',
@@ -2124,9 +2141,8 @@ class GameSession with ChangeNotifier {
         'role': myRole,
       });
     } catch (e) {
-      debugPrint('[Preview] Clear broadcast FAILED: $e');
+      debugPrint('[Preview] Clear broadcast error (non-critical): $e');
     }
-    notifyListeners();
   }
   Future<void> reportContent(String qId, String reason, {String? details}) async {
     try {
