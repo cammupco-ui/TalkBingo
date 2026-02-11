@@ -258,6 +258,14 @@ Convince your partner and succeed!
 🎮 **Mini Game**
 Simple games like target shooting or penalty kicks to claim cells.
 
+🔒 **Locked Cell**
+If your partner disagrees, your cell gets locked!
+When your turn comes around again, you get a chance to unlock it via a mini game. The winner claims the cell.
+
+⚔️ **Challenge (Steal)**
+You can challenge your opponent's cells (up to 2 times per game)!
+The winner of the mini game takes the cell.
+
 ---
 
 ## 4️⃣ How to Win
@@ -271,6 +279,7 @@ Complete a row, column, or diagonal for BINGO!
 
 ✨ Conversations are automatically saved as memories.
 ✨ Questions match your relationship and intimacy level.
+✨ Your opponent's disagreement can lock your cell — so try to earn their empathy when you answer!
 ✨ Challenge your partner's cells for exciting steals!
 
 Start playing now 💬
@@ -976,6 +985,14 @@ TalkBingo는 게임을 통해 자연스럽게 대화를 이어가는 1:1 커뮤�
 🎮 **미니게임**
 화살, 승부차기 등 간단한 게임으로 셀을 획득하세요.
 
+🔒 **잠김 셀**
+상대방의 비공감으로 셀이 잠길 수 있습니다!
+잠김 셀은 해당 유저의 다음 턴에 미니게임으로 풀 수 있는 기회가 주어지며, 미니게임 승자가 셀을 획득합니다.
+
+⚔️ **도전 (빼앗기)**
+상대가 가진 셀에 도전할 수 있습니다 (게임당 최대 2회)!
+미니게임의 승리로 셀을 획득합니다.
+
 ---
 
 ## 4️⃣ 이기는 법
@@ -989,6 +1006,7 @@ TalkBingo는 게임을 통해 자연스럽게 대화를 이어가는 1:1 커뮤�
 
 ✨ 대화가 자동으로 추억 콘텐츠로 저장됩니다.
 ✨ 관계에 맞춰 질문 난이도가 달라집니다.
+✨ 상대방의 비공감에 의해 셀이 잠길 수 있어요 — 답변할 때 상대의 공감을 이끌어내세요!
 ✨ 상대 셀에 도전하는 스릴 넘치는 빼앗기!
 
 지금 시작해보세요 💬
