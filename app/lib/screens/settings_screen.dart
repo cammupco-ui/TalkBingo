@@ -155,21 +155,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildActionButton({required String title, required Color color, required VoidCallback onTap}) {
-    return SizedBox(
-      width: double.infinity,
-      child: AnimatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-        child: Text(
-          title, 
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
-        ),
-      ),
+    return _DisabledHoverButton(
+      title: title,
+      hoverColor: const Color(0xFFBD0558), // Pink hover
+      onTap: onTap,
     );
   }
 
@@ -359,50 +348,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
              
             const SizedBox(height: 32),
 
-            // Sign Up / Sign Out Buttons
-            // Account Actions
+            // Account Actions — 3 buttons (disabled style + pink hover)
             Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (!isGuest) ...[
-                  // Log Out
-                  _buildActionButton(
-                    title: AppLocalizations.get('sign_out') ?? 'Log Out',
-                    color: const Color(0xFFBD0558), // Pink
-                    onTap: () => _performSignOut(),
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  // Sign In Another Account
-                  _buildActionButton(
-                    title: AppLocalizations.get('sign_in_another') ?? 'Sign In Another Account',
-                    color: const Color(0xFFBD0558), // Pink
-                    onTap: () => _performSignOut(redirectToLogin: true),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-
-                // Exit TalkBingo
+                // Log Out
                 _buildActionButton(
-                  title: AppLocalizations.get('exit_talkbingo') ?? 'Exit TalkBingo',
-                  color: const Color(0xFFBD0558), // Pink
-                  onTap: () {
-                     if (isGuest) {
-                       _deleteAccount(); // Clean up guest data
-                     } else {
-                       SystemNavigator.pop(); // Close app for members
-                     }
-                  },
+                  title: AppLocalizations.get('sign_out'),
+                  color: const Color(0xFFBD0558),
+                  onTap: () => _performSignOut(),
+                ),
+                const SizedBox(height: 12),
+                
+                // Sign In Another Account
+                _buildActionButton(
+                  title: AppLocalizations.get('sign_in_another'),
+                  color: const Color(0xFFBD0558),
+                  onTap: () => _performSignOut(redirectToLogin: true),
                 ),
                 const SizedBox(height: 12),
 
                 // Delete Account
-                 if (!isGuest)
-                  _buildActionButton(
-                    title: AppLocalizations.get('delete_account') ?? 'Delete Account',
-                    color: const Color(0xFFFF0000), // Red
-                    onTap: () => _deleteAccount(),
-                  ),
+                _buildActionButton(
+                  title: AppLocalizations.get('delete_account'),
+                  color: const Color(0xFFBD0558),
+                  onTap: () => _deleteAccount(),
+                ),
               ],
             ),
 
@@ -430,11 +401,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black, // Dark text for header
-            fontFamily: 'NURA', 
+          style: AppLocalizations.getTextStyle(
+            baseStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
           ),
         ),
       ],
@@ -481,7 +453,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ) : null,
       tileColor: backgroundColor, // Use background color
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      title: Text(title, style: TextStyle(color: textColor ?? Colors.black87, fontWeight: FontWeight.w600, fontSize: 14)),
+      title: Text(title, style: AppLocalizations.getTextStyle(baseStyle: TextStyle(color: textColor ?? Colors.black87, fontWeight: FontWeight.w600, fontSize: 14))),
       trailing: trailing ?? const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
       onTap: onTap,
       contentPadding: EdgeInsets.zero,
@@ -494,7 +466,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // Actually, I need to include them in the replacement content to ensure the class is complete if I am replacing the whole class.
   // I'll grab them from the original file content provided in Step 858.
 
+  // ── GP Tier Definitions ──
+  Map<String, dynamic> _getGpTier(int gp) {
+    if (gp >= 8000) {
+      return {'key': 'tier_queen_royal', 'icon': Icons.auto_awesome, 'color': const Color(0xFFE040FB)};
+    } else if (gp >= 4000) {
+      return {'key': 'tier_king_royal', 'icon': Icons.auto_awesome, 'color': const Color(0xFFFF6F00)};
+    } else if (gp >= 1500) {
+      return {'key': 'tier_platinum', 'icon': Icons.diamond_outlined, 'color': const Color(0xFF00BCD4)};
+    } else if (gp >= 500) {
+      return {'key': 'tier_gold', 'icon': Icons.workspace_premium, 'color': const Color(0xFFFFB300)};
+    } else if (gp >= 100) {
+      return {'key': 'tier_silver', 'icon': Icons.workspace_premium, 'color': const Color(0xFF90A4AE)};
+    } else {
+      return {'key': 'tier_bronze', 'icon': Icons.workspace_premium, 'color': const Color(0xFF8D6E63)};
+    }
+  }
+
   Widget _buildPointsOverview() {
+    final tier = _getGpTier(_session.gp);
+    final tierColor = tier['color'] as Color;
+
     return Container(
       padding: const EdgeInsets.all(20),
       // Dark Background #0C0219
@@ -508,9 +500,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildScoreItem("GP", _session.gp),
-              Container(width: 1, height: 40, color: Colors.white30),
-              _buildScoreItem("VP", _session.vp), 
+              // GP Tier Badge (icon + tier name only, no number)
+              Column(
+                children: [
+                  Icon(
+                    tier['icon'] as IconData,
+                    color: tierColor,
+                    size: 36,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    AppLocalizations.get(tier['key'] as String),
+                    style: GoogleFonts.alexandria(fontSize: 13, fontWeight: FontWeight.w600, color: tierColor),
+                  ),
+                ],
+              ),
+              Container(width: 1, height: 50, color: Colors.white30),
+              // VP with number
+              Column(
+                children: [
+                  TweenAnimationBuilder<int>(
+                    tween: IntTween(begin: 0, end: _session.vp),
+                    duration: const Duration(seconds: 2),
+                    builder: (context, value, child) {
+                      final isAnimating = value != _session.vp;
+                      return Text(
+                        value.toString(),
+                        style: GoogleFonts.alexandria(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: isAnimating ? Colors.greenAccent : Colors.white
+                        )
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 4),
+                  Text("VP", style: GoogleFonts.alexandria(fontSize: 12, color: Colors.white70)),
+                ],
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -544,31 +571,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildScoreItem(String label, int score) {
-    return Column(
-      children: [
-        // Score with Animation
-        TweenAnimationBuilder<int>(
-          tween: IntTween(begin: 0, end: score),
-          duration: const Duration(seconds: 2),
-          builder: (context, value, child) {
-             final isAnimating = value != score;
-             return Text(
-               value.toString(), 
-               style: GoogleFonts.alexandria(
-                 fontSize: 24, 
-                 fontWeight: FontWeight.bold, 
-                 color: isAnimating ? Colors.greenAccent : Colors.white
-               )
-             );
-          },
-        ),
-        const SizedBox(height: 4),
-        Text(label, style: GoogleFonts.alexandria(fontSize: 12, color: Colors.white70)),
-      ],
     );
   }
 
@@ -609,6 +611,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     fontWeight: FontWeight.bold,
                     color: isSelected ? Colors.white : Colors.black87,
                   ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A button that starts in a disabled (ghost) style and
+/// transitions to a filled pink style on hover.
+class _DisabledHoverButton extends StatefulWidget {
+  final String title;
+  final Color hoverColor;
+  final VoidCallback onTap;
+
+  const _DisabledHoverButton({
+    required this.title,
+    required this.hoverColor,
+    required this.onTap,
+  });
+
+  @override
+  State<_DisabledHoverButton> createState() => _DisabledHoverButtonState();
+}
+
+class _DisabledHoverButtonState extends State<_DisabledHoverButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: _isHovered ? widget.hoverColor : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: _isHovered ? widget.hoverColor : const Color(0xFFD0D0D0),
+              width: 1.5,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            widget.title,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: _isHovered ? Colors.white : const Color(0xFF999999),
+            ),
           ),
         ),
       ),

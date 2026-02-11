@@ -111,11 +111,18 @@ class AppLocalizations {
       'or_divider': 'OR',
       'account_exists': 'Account already exists.\nRedirecting to Login...',
       'board': 'Board',
+      'customer_support': 'Customer Support',
+      'bingo_guide': 'TalkBingo Guide',
+      'points_guide': 'Point Guide',
+      'terms': 'Terms of Service',
+      'privacy': 'Privacy & Security',
+      'version': 'Version',
       'guide_bingo': 'How to Play',
       'guide_points': 'Points Guide',
-      'board_title': 'TalkBingo Board',
+      'board_title': 'My Inquiries',
       'my_inquiries': 'My Inquiries',
       'public_board': 'Public / Notices',
+      'notice_inquiry_btn': 'Contact us',
       'write_btn': 'Write',
       'no_inquiries': 'No inquiries yet.\nFeel free to ask or suggest anything!',
       'public_coming_soon': 'Public board & Notices coming soon!',
@@ -164,13 +171,17 @@ class AppLocalizations {
       'bingo_end': 'End Game',
       'bingo_confirm': 'OK',
       // Ad-Free VP Modal
-      'ad_free_title': 'Ad-Free Game',
-      'ad_free_desc': 'Use 200 VP to remove ads for this game?',
+      'ad_free_title': 'Ad-Free Bingo',
+      'ad_free_desc': 'Would you like to play ad-free bingo\nusing your points?',
+      'ad_free_deduct': 'VP 25 will be deducted',
       'ad_free_current_vp': 'Current VP: ',
       'ad_free_current_cp': 'Current VP: ',
-      'ad_free_use': 'Use 200 VP',
+      'ad_free_use': 'Use 25 VP',
       'ad_free_skip': 'Play with Ads',
-      'ad_free_not_enough': 'Not enough VP (need 200)',
+      'ad_free_not_enough': 'Not enough VP',
+      'ad_free_not_enough_desc': 'Would you like to go to the\nPoint Management page?',
+      'yes': 'Yes',
+      'no': 'No',
       'rewarded_ad_title': 'Watch Ad → +5 VP',
       'rewarded_ad_remaining': '/10 remaining today',
       'rewarded_ad_watch': 'Watch',
@@ -189,7 +200,7 @@ class AppLocalizations {
       'purchase_best_value': 'Best Value',
       'purchase_bonus': 'Bonus',
       'purchase_how_to_use': 'How to use VP?',
-      'purchase_ad_remove_1game': 'Remove Ads (1 game): 200 VP',
+      'purchase_ad_remove_1game': 'Remove Ads (1 game): 25 VP',
       'purchase_ad_remove_permanent': 'Remove Ads (Permanent): 8,000 VP',
       'purchase_watch_ad_earn': 'Watch Ad: +5 VP (max 10/day)',
       'purchase_add_payment': 'Add Payment Method',
@@ -216,22 +227,96 @@ class AppLocalizations {
       'guide_confirm_btn': 'Confirm',
 
       'guide_bingo_content': '''
-1. **Talk & Lock**: Talk about the topic on the cell to lock it.
-2. **5x5 Grid**: Complete 5 cells in a row, column, or diagonal to make a BINGO.
-3. **Steal (Challenge)**: You can challenge an opponent's locked cell to steal it! (Max 2 attempts per game).
-   - *Line Immunity*: Cells that are part of a completed Bingo line cannot be stolen.
-   - *Cooldown*: A newly locked cell is protected for 3 turns.
-4. **Win**: The player with the most Bingo lines wins!
+
+## 1️⃣ What is TalkBingo?
+
+TalkBingo is a 1:1 communication game where you deepen your connection through natural conversation.
+Get to know each other better through questions and mini games.
+
+---
+
+## 2️⃣ How to Play
+
+1. Start a new game
+2. Share the invite code
+3. Take turns selecting cells
+
+A conversation event begins on the selected cell.
+
+---
+
+## 3️⃣ Event Types
+
+🃏 **Truth Game**
+Answer honestly about yourself.
+Your partner judges if it's sincere!
+
+⚖️ **Balance Quiz**
+Pick one option, then explain your reason.
+Convince your partner and succeed!
+
+🎮 **Mini Game**
+Simple games like target shooting or penalty kicks to claim cells.
+
+---
+
+## 4️⃣ How to Win
+
+If you succeed an event, you lock the cell.
+Complete a row, column, or diagonal for BINGO!
+
+---
+
+## 5️⃣ What Makes It Special
+
+✨ Conversations are automatically saved as memories.
+✨ Questions match your relationship and intimacy level.
+✨ Challenge your partner's cells for exciting steals!
+
+Start playing now 💬
 ''',
 
       'guide_points_content': '''
-* **GP (Game Points)**: 
-  - Earned through gameplay (winning, bingo lines, cell acquisition).
-  - Used for cumulative stats on your profile.
+## 1️⃣ What Are Points?
 
-* **VP (Value Points)**: 
-  - Purchased with real money or earned via rewarded ads.
-  - Used for ad removal (200 VP per game) and future premium features.
+TalkBingo has two types of points:
+**GP** tracks your gameplay achievements, and **VP** unlocks premium features.
+
+---
+
+## 2️⃣ GP (Game Points)
+
+Earned through gameplay. Accumulates permanently on your profile.
+
+- Lock a cell: **+1 GP**
+- Bingo line: **+20 GP** (2nd +40, 3rd +60)
+- Win a game: **+20 GP**
+- Steal a cell: **+10 GP**
+- Defend a cell: **+5 GP**
+
+GP is **never spent** — it's your lifetime game record.
+
+---
+
+## 3️⃣ VP (Value Points)
+
+Premium currency for special features.
+
+**Earn VP:**
+- 💳 In-App Purchase
+- 📺 Rewarded Ads: **+5 VP** per ad (max 10/day)
+
+**Spend VP:**
+- Ad-free game session: **25 VP**
+- Permanent ad removal: **8,000 VP**
+- More features coming soon!
+
+---
+
+## 4️⃣ Trust Score (TS)
+
+⭐ Rated **1–5 stars** by your partner after each game.
+Displayed on your profile to show your reliability.
 ''',
       'guide_terms_content': '''
 # Terms of Service
@@ -290,7 +375,7 @@ TalkBingo is a **relationship-based real-time conversational bingo game platform
 TalkBingo uses a virtual currency system:
 
 - **GP (Game Points)**: Earned through gameplay. Used for cumulative stats and profile tracking.
-- **VP (Value Points)**: Purchased with real money or earned via rewarded ads. Can be used to remove ads (200 VP per game).
+- **VP (Value Points)**: Purchased with real money or earned via rewarded ads. Can be used to remove ads (25 VP per game).
 
 **In-App Purchases:**
 
@@ -339,7 +424,7 @@ TalkBingo may display advertisements, including:
 - **Interstitial Ads**: Displayed between game rounds.
 - **Rewarded Ads**: Optional ads you can watch to earn points or unlock features.
 
-You may remove ads for individual games by spending 200 VP. Ad preferences can be managed in your device settings.
+You may remove ads for individual games by spending 25 VP. Ad preferences can be managed in your device settings.
 
 ---
 
@@ -542,6 +627,100 @@ You may also manage your privacy settings directly within the App under Settings
       'disagree_unlock_hint_other': '{owner} can unlock it on their next turn.',
       'cell_won': '{name} captured the cell!',
       'close_btn': 'Close',
+
+      // ── Game Screen: Menu & Points ──
+      'game_menu': 'Menu',
+      'game_points_label': 'GP',
+      'game_points_tooltip': 'View Points',
+      'game_bingo_lines': 'Bingo Lines',
+      'game_bingo_cells': 'Bingo Cells',
+      'game_settings_title': 'Game Settings',
+      'game_bgm': 'Background Music (BGM)',
+      'game_sfx': 'Sound Effects (SFX)',
+      'game_settings_label': 'Settings',
+      'game_pause': 'Pause',
+      'game_resume': 'Resume',
+      'game_save': 'Save',
+      'game_end': 'End Game',
+      'game_saved': 'Saved!',
+      'game_mic_permission': 'Microphone permission is required.',
+      'game_recording_fail': 'Recording failed: ',
+      'game_lang_switched_ko': 'Switched to Korean. (STT: Korean)',
+      'game_lang_switched_en': 'Switched to English. (STT: English)',
+
+      // ── Quiz Overlay ──
+      'quiz_opponent_choosing': 'Opponent is choosing...',
+      'quiz_talk_empathy': 'Try to empathize through conversation',
+      'quiz_disagree': 'Disagree',
+      'quiz_agree': 'Agree',
+      'quiz_submit': 'Submit',
+      'quiz_opponent_answering': 'Opponent is answering...',
+      'quiz_enter_answer': 'Enter or select an answer',
+      'quiz_balance_hint': 'If both choose the same, you claim the cell.',
+
+      // ── Report Dialog ──
+      'report_title': 'Report Question',
+      'report_typo': 'Typo',
+      'report_weird': 'Weird Content',
+      'report_other': 'Other',
+      'report_sent': 'Report has been submitted.',
+
+      // ── Power Gauge ──
+      'power_gauge_tip': 'Green zone is optimal power',
+
+      // ── Floating Button ──
+      'floating_board': 'Board',
+
+      // ── Home Screen ──
+      'home_points_benefit': 'Earn points & keep records!',
+      'home_register_prompt': 'Register to get benefits.',
+      'home_register_btn': 'Register',
+      'home_guest_confirm': 'Join as Guest Mode?',
+      'home_guest_code': 'Code',
+
+      // ── Sign Out Landing ──
+      'signout_title': 'See you again!',
+      'signout_subtitle': "We'll be here so your story never stops.",
+
+      // ── Notice Screen ──
+      'notice_category': 'Category',
+      'notice_content': 'Content',
+      'notice_content_hint': 'Please describe your inquiry in detail.',
+      'notice_contact': 'Contact (Email/Phone)',
+      'notice_contact_hint': 'Enter only if you want a reply.',
+      'notice_cancel': 'Cancel',
+      'notice_send': 'Send',
+      'notice_ask': 'Ask',
+      'notice_content_required': 'Please enter content.',
+      'notice_submitted': 'Inquiry submitted successfully.\nThank you for your feedback!',
+      'notice_confirm': 'OK',
+      'notice_server_error': 'Server configuration error: contact admin (Table Missing).',
+      'notice_send_fail': 'Send failed: ',
+      'notice_loading_error': 'Error loading notices.',
+      'notice_cat_bug': 'Bug Report',
+      'notice_cat_feature': 'Feature Suggestion',
+      'notice_cat_other': 'Other Inquiry',
+
+      // ── Host Setup Screen ──
+      'host_invite_msg': 'An invitation has arrived! 💌\n',
+      'host_invite_code': 'Participation Code: ',
+      'host_invite_link': 'Join now: ',
+
+      // ── Signup Screen ──
+      'signup_network_error': 'Server connection is unstable. (Network Error)\nPlease refresh and try again.',
+
+      // ── Splash Screen ──
+      'splash_1': 'Love yourself',
+      'splash_2': 'Here, just being you is enough',
+      'splash_3': 'Start as who you are now',
+      'splash_4': 'There\'s no right answer, just your story',
+      'splash_5': 'Even if you go slow, you\'re on the right path',
+      'splash_6': 'It\'s okay not to try too hard',
+      'splash_7': 'This moment is your time',
+      'splash_8': 'You shine without comparison',
+      'splash_9': 'Just be ready to be honest',
+      'splash_10': 'Respect your own pace',
+      'splash_11': 'You\'re already enough to begin',
     },
     'ko': {
       'new_game': '새 게임',
@@ -650,11 +829,18 @@ You may also manage your privacy settings directly within the App under Settings
       'or_divider': '또는',
       'account_exists': '이미 가입된 계정입니다.\n로그인 페이지로 이동합니다.',
       'board': '게시판',
+      'customer_support': '고객 지원',
+      'bingo_guide': '톡빙고 게임 하는법',
+      'points_guide': '포인트 가이드',
+      'terms': '서비스 약관 및 라이센스',
+      'privacy': '개인정보 보호정책',
+      'version': '버전',
       'guide_bingo': '빙고 플레이 방법',
       'guide_points': '포인트 사용 방법',
-      'board_title': '톡빙고 게시판',
+      'board_title': '내 문의 내역',
       'my_inquiries': '내 문의 내역',
       'public_board': '공지사항 / 전체글',
+      'notice_inquiry_btn': '고객문의',
       'write_btn': '글쓰기',
       'no_inquiries': '아직 문의 내역이 없습니다.\n궁금한 점이나 건의사항을 남겨주세요!',
       'public_coming_soon': '공지사항 및 전체 게시판은 준비 중입니다!',
@@ -703,13 +889,17 @@ You may also manage your privacy settings directly within the App under Settings
       'bingo_end': '게임 종료',
       'bingo_confirm': '확인',
       // Ad-Free VP Modal
-      'ad_free_title': '광고 없는 게임',
-      'ad_free_desc': '200 VP를 사용하여 이 게임의 광고를 제거하시겠습니까?',
+      'ad_free_title': '광고 없는 빙고',
+      'ad_free_desc': '포인트를 사용하여\n전면광고 없는 빙고를 하시겠습니까?',
+      'ad_free_deduct': 'VP 25 차감',
       'ad_free_current_vp': '현재 VP: ',
       'ad_free_current_cp': '현재 VP: ',
-      'ad_free_use': '200 VP 사용',
+      'ad_free_use': '25 VP 사용',
       'ad_free_skip': '광고 있는 게임',
-      'ad_free_not_enough': 'VP가 부족합니다 (200 필요)',
+      'ad_free_not_enough': 'VP가 부족합니다',
+      'ad_free_not_enough_desc': '포인트 관리 페이지로\n이동하시겠습니까?',
+      'yes': '예',
+      'no': '아니오',
       'rewarded_ad_title': '광고 시청 → +5 VP',
       'rewarded_ad_remaining': '/10 오늘 남은 횟수',
       'rewarded_ad_watch': '시청',
@@ -728,7 +918,7 @@ You may also manage your privacy settings directly within the App under Settings
       'purchase_best_value': '최고 가성비',
       'purchase_bonus': '보너스',
       'purchase_how_to_use': 'VP 사용법',
-      'purchase_ad_remove_1game': '광고 제거 (1게임): 200 VP',
+      'purchase_ad_remove_1game': '광고 제거 (1게임): 25 VP',
       'purchase_ad_remove_permanent': '광고 제거 (영구): 8,000 VP',
       'purchase_watch_ad_earn': '광고 시청: +5 VP (하루 최대 10회)',
       'purchase_add_payment': '결제 수단 등록',
@@ -755,22 +945,96 @@ You may also manage your privacy settings directly within the App under Settings
       'guide_confirm_btn': '확인',
       
       'guide_bingo_content': '''
-1. **대화 후 잠금 (Talk & Lock)**: 셀의 주제에 대해 대화하고 셀을 터치해 잠그세요.
-2. **빙고 완성**: 가로, 세로, 대각선으로 5개의 셀을 잠그면 빙고!
-3. **스틸 (챌린지)**: 상대방이 잠근 셀을 뺏어올 수 있습니다! (게임당 최대 2회)
-   - *라인 면역*: 이미 완성된 빙고 라인에 속한 셀은 뺏을 수 없습니다.
-   - *쿨타임*: 방금 잠긴 셀은 3턴 동안 보호됩니다.
-4. **승리**: 더 많은 빙고 라인을 완성한 사람이 승리합니다!
+
+## 1️⃣ TalkBingo란?
+
+TalkBingo는 게임을 통해 자연스럽게 대화를 이어가는 1:1 커뮤니케이션 게임입니다.
+질문과 미니게임을 통해 서로를 더 깊이 알아가세요.
+
+---
+
+## 2️⃣ 게임 방법
+
+1. 새 게임을 시작하세요
+2. 초대코드를 공유하세요
+3. 번갈아 가며 셀을 선택하세요
+
+선택한 셀에서 이벤트가 시작됩니다.
+
+---
+
+## 3️⃣ 이벤트 종류
+
+🃏 **진실 게임**
+나에 대한 질문에 솔직하게 답변하세요.
+상대가 진심인지 판단합니다!
+
+⚖️ **밸런스 퀴즈**
+선택 후, 이유를 설명하세요.
+상대가 납득하면 성공!
+
+🎮 **미니게임**
+화살, 승부차기 등 간단한 게임으로 셀을 획득하세요.
+
+---
+
+## 4️⃣ 이기는 법
+
+이벤트에 성공하면 셀을 차지합니다.
+가로·세로·대각선으로 빙고를 완성하세요!
+
+---
+
+## 5️⃣ 특별한 점
+
+✨ 대화가 자동으로 추억 콘텐츠로 저장됩니다.
+✨ 관계에 맞춰 질문 난이도가 달라집니다.
+✨ 상대 셀에 도전하는 스릴 넘치는 빼앗기!
+
+지금 시작해보세요 💬
 ''',
 
       'guide_points_content': '''
-* **GP (게임 포인트)**: 
-  - 게임 플레이(승리, 빙고 라인, 셀 획득)를 통해 획득합니다.
-  - 프로필의 누적 통계에 사용됩니다.
+## 1️⃣ 포인트란?
 
-* **VP (밸류 포인트)**: 
-  - 실제 결제 또는 보상형 광고로 획득.
-  - 광고 제거(게임당 200 VP) 및 향후 프리미엄 기능에 사용됩니다.
+TalkBingo에는 두 가지 포인트가 있습니다.
+**GP**는 게임 활동을 기록하고, **VP**는 프리미엄 기능을 잠금 해제합니다.
+
+---
+
+## 2️⃣ GP (게임 포인트)
+
+게임 플레이로 획득. 프로필에 영구 누적됩니다.
+
+- 셀 잠금: **+1 GP**
+- 빙고 라인: **+20 GP** (2줄째 +40, 3줄째 +60)
+- 게임 승리: **+20 GP**
+- 셀 빼앗기: **+10 GP**
+- 셀 방어: **+5 GP**
+
+GP는 **소비되지 않습니다** — 평생 게임 기록입니다.
+
+---
+
+## 3️⃣ VP (밸류 포인트)
+
+특별 기능을 위한 프리미엄 화폐입니다.
+
+**획득 방법:**
+- 💳 인앱 결제
+- 📺 보상형 광고: **+5 VP** (하루 최대 10회)
+
+**사용처:**
+- 광고 없는 게임: **25 VP**
+- 영구 광고 제거: **8,000 VP**
+- 더 많은 기능이 곧 추가됩니다!
+
+---
+
+## 4️⃣ 신뢰도 점수 (TS)
+
+⭐ 게임 종료 후 상대방이 **1~5점**으로 평가합니다.
+프로필에 표시되어 나의 신뢰도를 보여줍니다.
 ''',
       'guide_terms_content': '''
 # 서비스 이용약관
@@ -829,7 +1093,7 @@ TalkBingo는 **관계 기반 실시간 대화형 빙고 게임 플랫폼**입니
 TalkBingo는 가상 화폐 시스템을 사용합니다:
 
 - **GP (Game Points)**: 게임 플레이를 통해 획득. 누적 통계 및 프로필 추적에 사용.
-- **VP (Value Points)**: 실제 결제 또는 보상형 광고로 획득. 광고 제거(게임당 200 VP)에 사용 가능.
+- **VP (Value Points)**: 실제 결제 또는 보상형 광고로 획득. 광고 제거(게임당 25 VP)에 사용 가능.
 
 **인앱 구매:**
 
@@ -878,7 +1142,7 @@ TalkBingo는 다음과 같은 광고를 표시할 수 있습니다:
 - **전면 광고**: 게임 라운드 사이에 표시.
 - **보상형 광고**: 포인트를 얻거나 기능을 잠금 해제하기 위해 선택적으로 시청하는 광고.
 
-200 VP를 사용하여 개별 게임의 광고를 제거할 수 있습니다. 광고 환경 설정은 기기 설정에서 관리할 수 있습니다.
+25 VP를 사용하여 개별 게임의 광고를 제거할 수 있습니다. 광고 환경 설정은 기기 설정에서 관리할 수 있습니다.
 
 ---
 
@@ -1081,6 +1345,100 @@ TalkBingo는 14세 미만의 어린이를 대상으로 하지 않습니다. 당�
       'disagree_unlock_hint_other': '다음 {owner}님의 차례에 잠금을 풀 수 있어요.',
       'cell_won': '{name}님이 셀을 획득하셨습니다!',
       'close_btn': '닫기',
+
+      // ── Game Screen: Menu & Points ──
+      'game_menu': '메뉴',
+      'game_points_label': 'GP',
+      'game_points_tooltip': '포인트 보기',
+      'game_bingo_lines': '빙고줄',
+      'game_bingo_cells': '빙고셀',
+      'game_settings_title': '게임 설정',
+      'game_bgm': '배경음악 (BGM)',
+      'game_sfx': '효과음 (SFX)',
+      'game_settings_label': '설정',
+      'game_pause': '잠시 멈춤',
+      'game_resume': '다시 시작',
+      'game_save': '저장하기',
+      'game_end': '종료하기',
+      'game_saved': '저장되었습니다.',
+      'game_mic_permission': '마이크 권한이 필요합니다.',
+      'game_recording_fail': '녹음 시작 실패: ',
+      'game_lang_switched_ko': '한국어로 변경되었습니다. (STT: 한국어)',
+      'game_lang_switched_en': 'Switched to English. (STT: English)',
+
+      // ── Quiz Overlay ──
+      'quiz_opponent_choosing': '상대방이 선택 중입니다...',
+      'quiz_talk_empathy': '공감 할수 있게 대화 해 보세요',
+      'quiz_disagree': '비공감',
+      'quiz_agree': '공감',
+      'quiz_submit': '확인',
+      'quiz_opponent_answering': '상대방이 답변 중입니다...',
+      'quiz_enter_answer': '답변을 입력하거나 선택하세요',
+      'quiz_balance_hint': '둘이 같은 선택이면 칸을 차지합니다.',
+
+      // ── Report Dialog ──
+      'report_title': '질문 신고하기',
+      'report_typo': '맞춤법 오류 (Typo)',
+      'report_weird': '내용 이상함 (Weird)',
+      'report_other': '기타 (Other)',
+      'report_sent': '신고가 접수되었습니다.',
+
+      // ── Power Gauge ──
+      'power_gauge_tip': '초록 구간이 최적 파워',
+
+      // ── Floating Button ──
+      'floating_board': '보드',
+
+      // ── Home Screen ──
+      'home_points_benefit': '포인트 적립과 기록 보존!',
+      'home_register_prompt': '계정을 등록하고 혜택을 받으세요.',
+      'home_register_btn': '등록',
+      'home_guest_confirm': 'Guest Mode로 참여하시겠습니까?',
+      'home_guest_code': '코드',
+
+      // ── Sign Out Landing ──
+      'signout_title': '우리 다시 만나요!',
+      'signout_subtitle': '당신의 이야기가 멈추지 않도록 곁에 있을게요',
+
+      // ── Notice Screen ──
+      'notice_category': '카테고리',
+      'notice_content': '내용',
+      'notice_content_hint': '문의하실 내용을 자세히 적어주세요.',
+      'notice_contact': '연락처 (이메일/전화번호)',
+      'notice_contact_hint': '답변을 받으실 분만 입력해주세요.',
+      'notice_cancel': '취소',
+      'notice_send': '보내기',
+      'notice_ask': '문의하기',
+      'notice_content_required': '내용을 입력해주세요.',
+      'notice_submitted': '문의가 성공적으로 접수되었습니다.\n소중한 의견 감사합니다!',
+      'notice_confirm': '확인',
+      'notice_server_error': '서버 설정 오류: 관리자에게 문의하세요 (Table Missing).',
+      'notice_send_fail': '전송 실패: ',
+      'notice_loading_error': '공지사항을 불러오는 중 오류가 발생했습니다.',
+      'notice_cat_bug': '버그 신고',
+      'notice_cat_feature': '기능 제안',
+      'notice_cat_other': '기타 문의',
+
+      // ── Host Setup Screen ──
+      'host_invite_msg': '초대장이 도착했습니다! 💌\n',
+      'host_invite_code': '참여 코드: ',
+      'host_invite_link': '바로 입장하기: ',
+
+      // ── Signup Screen ──
+      'signup_network_error': '서버 연결 상태가 불안정합니다. (Network Error)\n새로고침 후 다시 시도해주세요.',
+
+      // ── Splash Screen ──
+      'splash_1': '스스로를 사랑하세요',
+      'splash_2': '여기서는 너 그대로면 충분해',
+      'splash_3': '지금의 너로 시작하면 돼',
+      'splash_4': '정답은 없어 네 이야기면 돼',
+      'splash_5': '천천히 가도 방향은 맞아',
+      'splash_6': '잘하려 하지 않아도 괜찮아',
+      'splash_7': '이 순간은 너를 위한 시간이야',
+      'splash_8': '비교하지 않아도 빛나',
+      'splash_9': '솔직해질 준비만 있으면 돼',
+      'splash_10': '너의 속도를 존중해',
+      'splash_11': '시작하기에 이미 충분해',
     },
   };
   static String get(String key) {

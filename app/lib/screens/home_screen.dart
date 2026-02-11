@@ -13,6 +13,7 @@ import 'package:talkbingo_app/screens/settings_screen.dart';
 import 'package:talkbingo_app/widgets/game_history_item.dart';
 import 'package:talkbingo_app/screens/bingo_history_screen.dart';
 import 'package:talkbingo_app/screens/invite_code_screen.dart'; // Still useful if we want to reuse logic, but here we inline
+import 'package:talkbingo_app/utils/localization.dart';
 import 'package:talkbingo_app/screens/point_purchase_screen.dart';
 import 'package:talkbingo_app/screens/notice_screen.dart';
 import 'package:talkbingo_app/models/notice.dart';
@@ -87,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Text(AppLocalizations.get('join_game'), style: const TextStyle(fontWeight: FontWeight.bold)),
-          content: Text("Guest Mode로 참여하시겠습니까?\n(코드: $code)"), // TODO: Localize
+          content: Text("${AppLocalizations.get('home_guest_confirm')}\n(${AppLocalizations.get('home_guest_code')}: $code)"),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -186,57 +187,118 @@ class _HomeScreenState extends State<HomeScreen> {
                            return;
                         }
                         
-                        // Show Ad-Free VP Modal
+                        // Show Ad-Free VP Modal — Step 1
                         showDialog(
                           context: context,
                           builder: (ctx) {
-                            final hasEnoughVp = session.vp >= 200;
                             return AlertDialog(
                               backgroundColor: Colors.white,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                              title: Text(
-                                AppLocalizations.get('ad_free_title'),
-                                style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
-                                textAlign: TextAlign.center,
-                              ),
                               content: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.block, color: Color(0xFFE91E63), size: 40),
-                                  const SizedBox(height: 12),
+                                  const SizedBox(height: 8),
                                   Text(
                                     AppLocalizations.get('ad_free_desc'),
                                     textAlign: TextAlign.center,
-                                    style: AppLocalizations.getTextStyle(baseStyle: TextStyle(color: Colors.grey[700], fontSize: 14)),
+                                    style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontSize: 15, color: Colors.black87, height: 1.5)),
                                   ),
-                                  const SizedBox(height: 12),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[100],
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      "${AppLocalizations.get('ad_free_current_cp')}${session.vp}",
-                                      style: AppLocalizations.getTextStyle(baseStyle: TextStyle(
-                                        fontWeight: FontWeight.bold, 
-                                        fontSize: 16,
-                                        color: hasEnoughVp ? const Color(0xFFE91E63) : Colors.grey,
-                                      )),
-                                    ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    AppLocalizations.get('ad_free_deduct'),
+                                    textAlign: TextAlign.center,
+                                    style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFFE91E63),
+                                    )),
                                   ),
-                                  if (!hasEnoughVp) ...[
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      AppLocalizations.get('ad_free_not_enough'),
-                                      style: AppLocalizations.getTextStyle(baseStyle: TextStyle(color: Colors.red[300], fontSize: 11)),
-                                    ),
-                                  ],
                                 ],
                               ),
                               actionsAlignment: MainAxisAlignment.spaceEvenly,
                               actions: [
-                                // Play with Ads
+                                // 예 (Yes)
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pop(ctx);
+                                    if (session.vp >= 25) {
+                                      // Enough VP — deduct and start game
+                                      session.useVpForAdRemoval();
+                                      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HostSetupScreen()));
+                                    } else {
+                                      // Not enough VP — show second dialog
+                                      showDialog(
+                                        context: context,
+                                        builder: (ctx2) {
+                                          return AlertDialog(
+                                            backgroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                            content: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const SizedBox(height: 8),
+                                                Text(
+                                                  AppLocalizations.get('ad_free_not_enough'),
+                                                  textAlign: TextAlign.center,
+                                                  style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black87,
+                                                  )),
+                                                ),
+                                                const SizedBox(height: 12),
+                                                Text(
+                                                  AppLocalizations.get('ad_free_not_enough_desc'),
+                                                  textAlign: TextAlign.center,
+                                                  style: AppLocalizations.getTextStyle(baseStyle: TextStyle(fontSize: 14, color: Colors.grey[700], height: 1.5)),
+                                                ),
+                                              ],
+                                            ),
+                                            actionsAlignment: MainAxisAlignment.spaceEvenly,
+                                            actions: [
+                                              // 예 → Point Management
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  Navigator.pop(ctx2);
+                                                  Navigator.of(context).push(
+                                                    MaterialPageRoute(builder: (_) => const PointPurchaseScreen()),
+                                                  );
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: const Color(0xFFE91E63),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+                                                ),
+                                                child: Text(
+                                                  AppLocalizations.get('yes'),
+                                                  style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                                                ),
+                                              ),
+                                              // 아니오 → close, stay on Home
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(ctx2),
+                                                child: Text(
+                                                  AppLocalizations.get('no'),
+                                                  style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(color: Colors.grey, fontSize: 14)),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFE91E63),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+                                  ),
+                                  child: Text(
+                                    AppLocalizations.get('yes'),
+                                    style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                                  ),
+                                ),
+                                // 아니오 → Play with Ads
                                 TextButton(
                                   onPressed: () {
                                     Navigator.pop(ctx);
@@ -244,25 +306,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HostSetupScreen()));
                                   },
                                   child: Text(
-                                    AppLocalizations.get('ad_free_skip'),
-                                    style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(color: Colors.grey, fontSize: 13)),
-                                  ),
-                                ),
-                                // Use 200 VP
-                                ElevatedButton(
-                                  onPressed: hasEnoughVp ? () {
-                                    session.useVpForAdRemoval();
-                                    Navigator.pop(ctx);
-                                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HostSetupScreen()));
-                                  } : null,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFE91E63),
-                                    disabledBackgroundColor: Colors.grey[300],
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                  child: Text(
-                                    AppLocalizations.get('ad_free_use'),
-                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                    AppLocalizations.get('no'),
+                                    style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(color: Colors.grey, fontSize: 14)),
                                   ),
                                 ),
                               ],
@@ -435,7 +480,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                crossAxisAlignment: CrossAxisAlignment.start,
                                children: [
                                  Text(
-                                   "포인트 적립과 기록 보존!",
+                                   AppLocalizations.get('home_points_benefit'),
                                    style: GoogleFonts.alexandria(
                                      color: Colors.white,
                                      fontWeight: FontWeight.bold,
@@ -443,7 +488,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                    ),
                                  ),
                                  Text(
-                                   "계정을 등록하고 혜택을 받으세요.",
+                                   AppLocalizations.get('home_register_prompt'),
                                    style: GoogleFonts.alexandria(
                                      color: Colors.white.withOpacity(0.9),
                                      fontSize: 12,
@@ -465,7 +510,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                minimumSize: Size.zero,
                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                              ),
-                             child: const Text("등록", style: TextStyle(fontWeight: FontWeight.bold)),
+                             child: Text(AppLocalizations.get('home_register_btn'), style: const TextStyle(fontWeight: FontWeight.bold)),
                            ),
                            const SizedBox(width: 8),
                            InkWell(

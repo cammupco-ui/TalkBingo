@@ -1759,9 +1759,9 @@ class GameSession with ChangeNotifier {
 
      // 4. Determine Winner & GP Logic (Victory GP)
      // Rules: 
-     // - Scenario 1 (1 Line): 50 GP
-     // - Scenario 2 (2 Lines): Double (100 GP)
-     // - Scenario 3 (Draw/Split): 50% (25 GP each)
+     // - Scenario 1 (1 Line): 20 GP
+     // - Scenario 2 (2 Lines): Double (40 GP)
+     // - Scenario 3 (Draw/Split): 50% (10 GP each)
      // - Scenario 5 (Board Full/No Win): 0 GP
      
      String winner = 'DRAW';
@@ -1770,23 +1770,23 @@ class GameSession with ChangeNotifier {
 
      if (linesA > linesB) {
         winner = 'A';
-        int base = 50;
+        int base = 20;
         if (linesA >= 2) base *= 2; // Double
-        if (linesA >= 3) base = 150; // Triple (50*3)
+        if (linesA >= 3) base = 60; // Triple (20*3)
         winGpA = base;
         winGpB = 0;
      } else if (linesB > linesA) {
         winner = 'B';
-        int base = 50;
+        int base = 20;
         if (linesB >= 2) base *= 2;
-        if (linesB >= 3) base = 150;
+        if (linesB >= 3) base = 60;
         winGpB = base;
         winGpA = 0;
      } else {
         // Draw (linesA == linesB)
         if (linesA > 0) {
-           winGpA = 25;
-           winGpB = 25;
+           winGpA = 10;
+           winGpB = 10;
         } else {
            winGpA = 0;
            winGpB = 0;
@@ -1840,11 +1840,11 @@ class GameSession with ChangeNotifier {
 
   bool useVpForAdRemoval() {
     if (permanentAdFree) return true; // Already permanent
-    if (vp >= 200) {
-      vp -= 200;
+    if (vp >= 25) {
+      vp -= 25;
       adFree = true;
       saveHostInfoToPrefs();
-      addHistory("use", 200, "Ad Removal", price: "200 VP");
+      addHistory("use", 25, "Ad Removal", price: "25 VP");
       notifyListeners();
       _syncGameState(); // Sync to guest
       return true;
