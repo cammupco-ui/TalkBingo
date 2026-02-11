@@ -149,6 +149,12 @@ class GameSession with ChangeNotifier {
   ValueNotifier<int?> remoteHoverIndex = ValueNotifier(null);
   Timer? _hoverDebounce;
 
+  // Two-Tap Preview System
+  ValueNotifier<int?> previewCellIndex = ValueNotifier(null);
+  ValueNotifier<int?> remotePreviewCellIndex = ValueNotifier(null);
+  String? previewLabel;       // B, T, ⚔️, 🔒
+  String? remotePreviewLabel; // opponent's preview label
+
   // Bingo Line Calculation (Live)
   int get bingoLines {
     int lines = 0;
@@ -2009,6 +2015,8 @@ class GameSession with ChangeNotifier {
   void dispose() {
     _gameChannel?.unsubscribe();
     remoteHoverIndex.dispose();
+    previewCellIndex.dispose();
+    remotePreviewCellIndex.dispose();
     super.dispose();
   }
 
@@ -2069,6 +2077,44 @@ class GameSession with ChangeNotifier {
   }
 
   void broadcastHover(int? index) {}
+
+  /// Broadcast cell preview selection (1st tap)
+  void broadcastPreview(int? index, String? label) {
+    previewCellIndex.value = index;
+    previewLabel = label;
+    sendGameEvent({
+      'type': 'preview',
+      'index': index,
+      'label': label,
+      'role': myRole,
+    });
+    notifyListeners();
+  }
+
+  /// Handle incoming preview events from opponent
+  void handlePreviewEvent(Map<String, dynamic> payload) {
+    final role = payload['role'];
+    if (role == myRole) return; // ignore own events
+    
+    final index = payload['index'] as int?;
+    final label = payload['label'] as String?;
+    remotePreviewCellIndex.value = index;
+    remotePreviewLabel = label;
+    notifyListeners();
+  }
+
+  /// Clear preview state (e.g. on turn change or interaction start)
+  void clearPreview() {
+    previewCellIndex.value = null;
+    previewLabel = null;
+    sendGameEvent({
+      'type': 'preview',
+      'index': null,
+      'label': null,
+      'role': myRole,
+    });
+    notifyListeners();
+  }
   Future<void> reportContent(String qId, String reason, {String? details}) async {
     try {
       final user = _supabase.auth.currentUser;

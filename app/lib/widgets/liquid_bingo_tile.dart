@@ -11,6 +11,7 @@ class LiquidBingoTile extends StatefulWidget {
   final bool isHovered;
   final VoidCallback onTap;
   final bool isWinningTile; // New: for bingo line highlighting
+  final String? previewLabel; // B, T, ⚔️, 🔒 for 2-tap preview
 
   const LiquidBingoTile({
     Key? key,
@@ -19,6 +20,7 @@ class LiquidBingoTile extends StatefulWidget {
     required this.isHost,
     this.isHovered = false,
     this.isWinningTile = false,
+    this.previewLabel,
     required this.onTap,
   }) : super(key: key);
 
@@ -133,6 +135,7 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
   // Helper getters
   bool get _isFilled => widget.owner != null && widget.owner!.isNotEmpty && widget.owner != 'X';
   bool get _isLocked => (widget.owner ?? '').startsWith('LOCKED') || widget.owner == 'X';
+  bool get _isPreview => widget.previewLabel != null;
   bool get _canSelect => !_isFilled && !_isLocked;
   
   Color get _fillColor {
@@ -383,6 +386,38 @@ class _LiquidBingoTileState extends State<LiquidBingoTile> with TickerProviderSt
                           highlightColor: _hoverColor.withOpacity(0.1),
                         ),
                       ),
+
+                      // Preview Label Overlay (B/T/⚔️/🔒)
+                      if (_isPreview)
+                        IgnorePointer(
+                          child: Center(
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.45),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.amberAccent.withOpacity(0.4),
+                                    blurRadius: 12,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  widget.previewLabel!,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.amberAccent,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),

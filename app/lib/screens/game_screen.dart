@@ -142,6 +142,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   DateTime? _recordStartTime;
   bool _isConvertingSTT = false; // specific flag for STT visual state
 
+  // Two-Tap Preview State
+  int? _previewIndex;
+
   @override
   void initState() {
     super.initState();
@@ -183,6 +186,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       final type = payload['type'];
       if (type == 'cursor' || type == 'cursor_lift') {
         _session.handleCursorEvent(payload);
+      } else if (type == 'preview') {
+        _session.handlePreviewEvent(payload);
+        if (mounted) setState(() {});
       }
     });
     
@@ -1764,6 +1770,25 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
 
   // Interaction Handlers
 
+  /// Determine the preview label for a cell based on its state
+  String _getPreviewLabel(int index) {
+    final owner = _session.tileOwnership[index];
+    // Opponent's cell → challenge
+    if (owner.isNotEmpty && owner != _session.myRole && !owner.startsWith('LOCKED')) {
+      return '⚔️';
+    }
+    // Locked cell → lock
+    if (owner.startsWith('LOCKED')) {
+      return '🔒';
+    }
+    // Empty cell → B or T based on question type
+    if (index < _session.options.length) {
+      final type = _session.options[index]['type'] ?? 'balance';
+      return type == 'truth' ? 'T' : 'B';
+    }
+    return 'B';
+  }
+
   Future<void> _onTileTapped(int index) async {
     SoundService().playButtonSound();
     // Review Mode: Block Interaction
@@ -1774,33 +1799,46 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
        return;
     }
     final owner = _session.tileOwnership[index];
-    
-    // 1. Basic Validations
-    // Check if tile is owned by OPPONENT (Challenge Logic)
+
+    // Own tile → no action
+    if (owner.isNotEmpty && owner == _session.myRole && !owner.startsWith('LOCKED')) {
+      _showSnackBar('This tile is already taken!');
+      return;
+    }
+
+    // Turn check
+    if (_session.currentTurn != _session.myRole) {
+       _showSnackBar("It's not your turn!");
+       return;
+    }
+
+    // ============ TWO-TAP SYSTEM ============
+    // FIRST TAP: Set preview + broadcast
+    if (_previewIndex != index) {
+      setState(() { _previewIndex = index; });
+      _session.broadcastPreview(index, _getPreviewLabel(index));
+      return;
+    }
+
+    // SECOND TAP (same cell): Execute action
+    // Clear preview first
+    setState(() { _previewIndex = null; });
+    _session.clearPreview();
+
+    // --- Handle by cell type ---
+
+    // 1. Opponent's cell → Challenge
     if (owner.isNotEmpty && owner != _session.myRole && !owner.startsWith('LOCKED')) {
-       // It's an Opponent's Tile!
-       
-       // 1. Check Turn
-       if (_session.currentTurn != _session.myRole) {
-          _showSnackBar("It's not your turn!");
-          return;
-       }
-       
-       // 2. Check Immunity (Completed Line)
        if (_session.isTileInCompletedLine(index)) {
           _showSnackBar("Cannot challenge a completed Bingo line!");
-          HapticFeedback.heavyImpact(); // Negative feedback
+          HapticFeedback.heavyImpact();
           return;
        }
-
-       // 3. Check Challenge Count
        final int remaining = _session.challengeCounts[_session.myRole] ?? 0;
        if (remaining <= 0) {
           _showSnackBar("No Challenge attempts remaining!");
           return;
        }
-
-       // 4. Show Challenge Dialog
        showDialog(
          context: context,
          builder: (ctx) => AlertDialog(
@@ -1833,55 +1871,21 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
        return;
     }
 
-    // Standard "Taken" check for OWN tiles or other statuses
-    if (owner.isNotEmpty && !owner.startsWith('LOCKED')) {
-      _showSnackBar('This tile is already taken!');
-      return;
-    }
-    if (_isPaused) {
-      _showSnackBar('Game is paused.');
-      return;
-    }
-    
-    // 2. Turn Validation (or Mini Game Trigger)
-    // 2. Turn Validation (or Mini Game Trigger)
+    // 2. Locked cell → Mini Game (with cooldown check)
     if (owner.startsWith('LOCKED')) {
-       // Cooldown Logic
-       // Check if locked recently
        final int lockedAt = _session.lockedTurns[index.toString()] ?? 0;
        final int turnsSinceLock = _session.turnCount - lockedAt;
-       
-       // Rule: 1 Round Cooldown (Current Turn + Next Turn = 2 Turns)
-       // e.g. Locked entirely at Turn 10.
-       // Turn 11 (Opponent): 11-10 = 1 (Cooldown)
-       // Turn 12 (Me): 12-10 = 2 (Cooldown)
-       // Turn 13 (Opponent): 13-10 = 3 (Available)
        if (turnsSinceLock <= 2) {
            _showSnackBar("🔒 Locked! Cooldown active for ${3 - turnsSinceLock} turns.");
            HapticFeedback.heavyImpact();
            return;
        }
-
-       // Mini Game Trigger (M-Type)
-       if (_session.currentTurn != _session.myRole) {
-          _showSnackBar("It's not your turn!");
-          return;
-       }
-       // Start Mini Game
-       // We pass 'mini' type. The actual game (Target/Penalty) is determined by ID? or random?
-       // For now logic is just 'mini'.
        _session.startInteraction(index, 'mini', _session.myRole);
-       return;
-    }
-
-    if (_session.currentTurn != _session.myRole) {
-       _showSnackBar("It's not your turn!");
        return;
     }
 
     // 3. Check if already interacting
     if (_session.interactionState != null) {
-      // already active
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
          SnackBar(
@@ -1908,14 +1912,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       return;
     }
 
-    // 4. Start Interaction (Optimistic + DB)
-    
-    // Prepare Data to Embed
+    // 4. Empty cell → Start Interaction (Quiz)
   String qText = '';
   String type = 'balance';
   String optA = '';
   String optB = '';
-  List<String>? suggestions; // For Truth Game
+  List<String>? suggestions;
   
   if (index < _session.questions.length) {
      qText = _session.questions[index];
@@ -1928,7 +1930,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
      if (opts['answer'] is List) {
        suggestions = List<String>.from(opts['answer']);
      } else if (opts['answer'] is String && (opts['answer'] as String).isNotEmpty) {
-       // Use English answers when language is English and answer_en exists
        String answerSource = opts['answer'] as String;
        if (_session.language == 'en' && opts['answer_en'] != null && (opts['answer_en'] as String).isNotEmpty) {
          answerSource = opts['answer_en'] as String;
@@ -1943,7 +1944,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     q: qText,
     A: optA,
     B: optB,
-    suggestions: suggestions // Pass to sync
+    suggestions: suggestions
   );
   }
   } // end _onTileTapped
@@ -2326,23 +2327,31 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   }
 
   Widget _buildBingoTile(int index) {
-    String owner = _session.tileOwnership[index];
-    
-    return MouseRegion(
-      cursor: (owner == 'X') ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
-      child: LiquidBingoTile(
-        text: "", // Removed index number as per user request
-        owner: owner,
-        isHost: _isHost, 
-        isHovered: false,
-        isWinningTile: _winningTiles.contains(index),
-        onTap: () {
-        // Delegate all validation to _onTileTapped (turn, pause, ownership, cooldown)
-        _onTileTapped(index);
-      },
-      ),
-    );
+  String owner = _session.tileOwnership[index];
+  
+  // Determine preview label for this cell
+  String? cellPreviewLabel;
+  if (_previewIndex == index) {
+    cellPreviewLabel = _getPreviewLabel(index);
+  } else if (_session.remotePreviewCellIndex.value == index) {
+    cellPreviewLabel = _session.remotePreviewLabel;
   }
+  
+  return MouseRegion(
+    cursor: (owner == 'X') ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
+    child: LiquidBingoTile(
+      text: "",
+      owner: owner,
+      isHost: _isHost, 
+      isHovered: false,
+      isWinningTile: _winningTiles.contains(index),
+      previewLabel: cellPreviewLabel,
+      onTap: () {
+      _onTileTapped(index);
+    },
+    ),
+  );
+}
 
   bool _isGameEndedDialogShown = false;
   // Duplicate _isBingoDialogVisible removed
