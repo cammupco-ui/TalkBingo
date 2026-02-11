@@ -1913,28 +1913,22 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     }
 
     // 4. Empty cell → Start Interaction (Quiz)
-  String qText = '';
+  // Use getLocalizedContent() for proper EN/KO content in game log
+  final localized = _session.getLocalizedContent(index);
+  String qText = localized['q'] ?? '';
   String type = 'balance';
-  String optA = '';
-  String optB = '';
+  String optA = localized['A'] ?? '';
+  String optB = localized['B'] ?? '';
   List<String>? suggestions;
   
-  if (index < _session.questions.length) {
-     qText = _session.questions[index];
-  }
   if (index < _session.options.length) {
      final opts = _session.options[index];
      type = opts['type'] ?? 'balance';
-     optA = opts['A'] ?? '';
-     optB = opts['B'] ?? '';
-     if (opts['answer'] is List) {
-       suggestions = List<String>.from(opts['answer']);
-     } else if (opts['answer'] is String && (opts['answer'] as String).isNotEmpty) {
-       String answerSource = opts['answer'] as String;
-       if (_session.language == 'en' && opts['answer_en'] != null && (opts['answer_en'] as String).isNotEmpty) {
-         answerSource = opts['answer_en'] as String;
-       }
-       suggestions = answerSource.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+     
+     // Answer hints — use localized version
+     final answerStr = localized['answer'] ?? '';
+     if (answerStr.isNotEmpty) {
+       suggestions = answerStr.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
      }
 
   await _session.startInteraction(
