@@ -297,13 +297,12 @@ TalkBingo has two types of points:
 
 Earned through gameplay. Accumulates permanently on your profile.
 
-- Lock a cell: **+1 GP**
+- Earn a cell: **+1 GP**
 - Bingo line: **+20 GP** (2nd +40, 3rd +60)
-- Win a game: **+20 GP**
 - Steal a cell: **+10 GP**
 - Defend a cell: **+5 GP**
 
-GP is **never spent** — it's your lifetime game record.
+Raise your badge tier by accumulating GP!
 
 ---
 
@@ -314,6 +313,7 @@ Premium currency for special features.
 **Earn VP:**
 - 💳 In-App Purchase
 - 📺 Rewarded Ads: **+5 VP** per ad (max 10/day)
+- 🏆 Win a game: **+20 VP**
 
 **Spend VP:**
 - Ad-free game session: **25 VP**
@@ -326,6 +326,7 @@ Premium currency for special features.
 
 ⭐ Rated **1–5 stars** by your partner after each game.
 Displayed on your profile to show your reliability.
+Be polite and earn high trust from your partner!
 ''',
       'guide_terms_content': '''
 # Terms of Service
@@ -1024,13 +1025,12 @@ TalkBingo에는 두 가지 포인트가 있습니다.
 
 게임 플레이로 획득. 프로필에 영구 누적됩니다.
 
-- 셀 잠금: **+1 GP**
+- 셀 획득: **+1 GP**
 - 빙고 라인: **+20 GP** (2줄째 +40, 3줄째 +60)
-- 게임 승리: **+20 GP**
 - 셀 빼앗기: **+10 GP**
 - 셀 방어: **+5 GP**
 
-GP는 **소비되지 않습니다** — 평생 게임 기록입니다.
+GP점수 누적으로 보상뱃지 등급을 높이세요.
 
 ---
 
@@ -1041,6 +1041,7 @@ GP는 **소비되지 않습니다** — 평생 게임 기록입니다.
 **획득 방법:**
 - 💳 인앱 결제
 - 📺 보상형 광고: **+5 VP** (하루 최대 10회)
+- 🏆 게임 승리: **+20 VP**
 
 **사용처:**
 - 광고 없는 게임: **25 VP**
@@ -1053,6 +1054,7 @@ GP는 **소비되지 않습니다** — 평생 게임 기록입니다.
 
 ⭐ 게임 종료 후 상대방이 **1~5점**으로 평가합니다.
 프로필에 표시되어 나의 신뢰도를 보여줍니다.
+매너있는 대화로 상대방에게 높은 신뢰를 얻어보세요!
 ''',
       'guide_terms_content': '''
 # 서비스 이용약관
