@@ -169,6 +169,7 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
         if (!isKicker) {
            _isWaitingForStart = false;
            _isRoundActive = true;
+           _timeLeft = 15.0; // Full time
            setState(() {});
         }
      } else if (payload['eventType'] == 'goalie_move') {
@@ -235,6 +236,28 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
             if ((_timeLeft - serverTime).abs() > 2.0) {
                _timeLeft = serverTime;
             }
+         }
+      } else if (payload['eventType'] == 'ball_save') {
+         if (!isKicker) {
+            setState(() {
+               _isBlocked = true;
+               _ball.x = (payload['bx'] as num).toDouble() * _gameSize.width;
+               _ball.y = (payload['by'] as num).toDouble() * _gameSize.height;
+               _ball.vx = (payload['bvx'] as num).toDouble() * _gameSize.width;
+               _ball.vy = (payload['bvy'] as num).toDouble() * _gameSize.height;
+               _goalieShakeController.forward(from: 0);
+            });
+         }
+      } else if (payload['eventType'] == 'ball_goal') {
+         if (!isKicker) {
+            setState(() {
+               _goalFlash = 1.0;
+               _resetBall();
+            });
+         }
+      } else if (payload['eventType'] == 'ball_reset') {
+         if (!isKicker) {
+            setState(() => _resetBall());
          }
       }
    }
@@ -409,6 +432,15 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                      } else {
                         // Body hit, push down
                         _ball.y = goalieRect.bottom + 2;
+                      
+                      // Broadcast save to opponent
+                      _session.sendGameEvent({
+                        'eventType': 'ball_save',
+                        'bx': _ball.x / _gameSize.width,
+                        'by': _ball.y / _gameSize.height,
+                        'bvx': _ball.vx / _gameSize.width,
+                        'bvy': _ball.vy / _gameSize.height,
+                      });
                      }
                  }
               }
@@ -418,7 +450,8 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
               // User said: "If hits goalie and bounces 10pt -> Save -> Reset"
               if (_isBlocked) {
                   if (_ball.y > (_goalie.y + _goalie.height) + 10) {
-                     // Saved!
+                     // Saved! Tell opponent
+                     _session.sendGameEvent({'eventType': 'ball_reset'});
                      Future.delayed(const Duration(milliseconds: 200), _resetBall);
                   }
               }
@@ -428,9 +461,9 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
               final double goalLineY = zoneHeight * 0.1;
                             if (!_isBlocked && _ball.y < goalLineY) { 
                   _score++;
-                  // Sync Score
+                  _goalFlash = 1.0;
                   _session.sendGameEvent({'eventType': 'score_update', 'score': _score});
-                  // Force goal sound or effect here if needed
+                  _session.sendGameEvent({'eventType': 'ball_goal'});
                   _resetBall();
                }
               
@@ -445,6 +478,7 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
               
               // Fallback Reset (Out of Bounds)
               if (_ball.y > _gameSize.height) {
+                 _session.sendGameEvent({'eventType': 'ball_reset'});
                  _resetBall();
               }
           } else {
@@ -760,6 +794,70 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                                          ),
 
                                          // OVERLAYS (Centered)
+
+                                                      // PAUSE BUTTON
+                                                      Positioned(
+                                                        top: 8, right: 8,
+                                                        child: GestureDetector(
+                                                          onTap: () => setState(() => _isPaused = !_isPaused),
+                                                          child: AnimatedContainer(
+                                                            duration: const Duration(milliseconds: 200),
+                                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                                            decoration: BoxDecoration(
+                                                              color: _isPaused
+                                                                ? Colors.amber.withValues(alpha: 0.85)
+                                                                : Colors.white.withValues(alpha: 0.15),
+                                                              borderRadius: BorderRadius.circular(20),
+                                                              border: Border.all(
+                                                                color: _isPaused
+                                                                  ? Colors.amber
+                                                                  : Colors.white.withValues(alpha: 0.3),
+                                                                width: 1,
+                                                              ),
+                                                            ),
+                                                            child: Row(
+                                                              mainAxisSize: MainAxisSize.min,
+                                                              children: [
+                                                                Icon(
+                                                                  _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                                                                  color: _isPaused ? Colors.black87 : Colors.white70,
+                                                                  size: 18,
+                                                                ),
+                                                                const SizedBox(width: 4),
+                                                                Text(
+                                                                  _isPaused ? 'RESUME' : 'PAUSE',
+                                                                  style: GoogleFonts.alexandria(
+                                                                    color: _isPaused ? Colors.black87 : Colors.white70,
+                                                                    fontSize: 11,
+                                                                    fontWeight: FontWeight.w600,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      
+                                                      // PAUSE OVERLAY
+                                                      if (_isPaused)
+                                                        Positioned.fill(
+                                                          child: Container(
+                                                            color: Colors.black.withValues(alpha: 0.5),
+                                                            alignment: Alignment.center,
+                                                            child: Column(
+                                                              mainAxisSize: MainAxisSize.min,
+                                                              children: [
+                                                                Icon(Icons.pause_circle_outline, color: Colors.white70, size: 48),
+                                                                const SizedBox(height: 12),
+                                                                Text('PAUSED', style: GoogleFonts.alexandria(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                                                                const SizedBox(height: 8),
+                                                                Text('Tap RESUME to continue', style: GoogleFonts.alexandria(color: Colors.white54, fontSize: 13)),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+
+
                                          if (_isWaitingForStart && !_showRoundOverlay && state['step'] != 'finished')
                                             Center(
                                              child: Container(

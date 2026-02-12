@@ -127,6 +127,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
        if (!isShooter) {
           _isWaitingForStart = false;
           _isRoundActive = true;
+          _timeLeft = 15.0; // Full time when spectator joins
           setState(() {});
        }
      } else if (payload['eventType'] == 'score_update') {
@@ -195,7 +196,21 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
            _remoteDrawAmt = 0; // Reset remote draw
            if (mounted) setState(() {});
         }
-     }
+     } else if (payload['eventType'] == 'stuck_arrow') {
+         // Opponent hit the target — show stuck arrow on my screen too
+         if (!isShooter) {
+            final double rx = (payload['rx'] as num).toDouble();
+            final double ry = (payload['ry'] as num).toDouble();
+            final double angle = (payload['angle'] as num).toDouble();
+            setState(() {
+               _stuckArrows.add({
+                  'x': rx * _target.width,
+                  'y': ry * _target.height,
+                  'angle': angle,
+               });
+            });
+         }
+      }
   }
   
   void _repositionEntities() {
@@ -820,79 +835,6 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                            ),
                         ),
                         
-                        // PAUSE BUTTON (Top-right, semi-transparent)
-                        Positioned(
-                          top: 8, right: 8,
-                          child: GestureDetector(
-                            onTap: () => setState(() => _isPaused = !_isPaused),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: _isPaused
-                                  ? Colors.amber.withValues(alpha: 0.85)
-                                  : Colors.white.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: _isPaused
-                                    ? Colors.amber
-                                    : Colors.white.withValues(alpha: 0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
-                                    color: _isPaused ? Colors.black87 : Colors.white70,
-                                    size: 18,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    _isPaused ? 'RESUME' : 'PAUSE',
-                                    style: GoogleFonts.alexandria(
-                                      color: _isPaused ? Colors.black87 : Colors.white70,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        // PAUSE OVERLAY
-                        if (_isPaused)
-                          Positioned.fill(
-                            child: Container(
-                              color: Colors.black.withValues(alpha: 0.5),
-                              alignment: Alignment.center,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.pause_circle_outline, color: Colors.white70, size: 48),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    'PAUSED',
-                                    style: GoogleFonts.alexandria(
-                                      color: Colors.white, fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Tap RESUME to continue',
-                                    style: GoogleFonts.alexandria(
-                                      color: Colors.white54, fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
                         // HIT PARTICLES (Sparkle Burst)
                         ..._hitParticles.map((p) => Positioned(
                             left: (p['x'] as double) - 4,
@@ -1003,6 +945,81 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                               ),
                            ),
   
+
+                        // PAUSE BUTTON (Top-right, semi-transparent)
+                        Positioned(
+                          top: 8, right: 8,
+                          child: GestureDetector(
+                            onTap: () => setState(() => _isPaused = !_isPaused),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: _isPaused
+                                  ? Colors.amber.withValues(alpha: 0.85)
+                                  : Colors.white.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: _isPaused
+                                    ? Colors.amber
+                                    : Colors.white.withValues(alpha: 0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                                    color: _isPaused ? Colors.black87 : Colors.white70,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    _isPaused ? 'RESUME' : 'PAUSE',
+                                    style: GoogleFonts.alexandria(
+                                      color: _isPaused ? Colors.black87 : Colors.white70,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // PAUSE OVERLAY
+                        if (_isPaused)
+                          Positioned.fill(
+                            child: Container(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              alignment: Alignment.center,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.pause_circle_outline, color: Colors.white70, size: 48),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'PAUSED',
+                                    style: GoogleFonts.alexandria(
+                                      color: Colors.white, fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Tap RESUME to continue',
+                                    style: GoogleFonts.alexandria(
+                                      color: Colors.white54, fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                        
                       ],
                     ),
                   );

@@ -1,29 +1,20 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-  <!-- Base circle (dark backing) -->
-  <circle cx="100" cy="100" r="98" fill="#1A0828" stroke="#0C0219" stroke-width="2"/>
+<svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Half-moon target facing downward (toward arrows) -->
+  <!-- Outer shell (dark backing) -->
+  <path d="M 10,100 A 90,90 0 0,1 190,100 Z" fill="#1A0828" stroke="#0C0219" stroke-width="2"/>
   
-  <!-- Ring 5 (Outer) - White -->
-  <circle cx="100" cy="100" r="92" fill="#F5F0E8" stroke="#D4C8B8" stroke-width="1"/>
-  
-  <!-- Ring 4 - TalkBingo Pink -->
-  <circle cx="100" cy="100" r="74" fill="#BD0558" stroke="#8B0040" stroke-width="1"/>
-  
-  <!-- Ring 3 - White -->
-  <circle cx="100" cy="100" r="56" fill="#F5F0E8" stroke="#D4C8B8" stroke-width="1"/>
+  <!-- Ring 3 - White outer -->
+  <path d="M 15,100 A 85,85 0 0,1 185,100 Z" fill="#F5F0E8" stroke="#D4C8B8" stroke-width="1"/>
   
   <!-- Ring 2 - TalkBingo Pink -->
-  <circle cx="100" cy="100" r="38" fill="#BD0558" stroke="#8B0040" stroke-width="1"/>
+  <path d="M 40,100 A 60,60 0 0,1 160,100 Z" fill="#BD0558" stroke="#8B0040" stroke-width="1"/>
   
-  <!-- Bullseye outer - Gold -->
-  <circle cx="100" cy="100" r="20" fill="#FFD700" stroke="#DAA520" stroke-width="1.5"/>
+  <!-- Ring 1 - White inner -->
+  <path d="M 65,100 A 35,35 0 0,1 135,100 Z" fill="#F5F0E8" stroke="#D4C8B8" stroke-width="1"/>
   
-  <!-- Bullseye inner - Red-Orange -->
-  <circle cx="100" cy="100" r="9" fill="#FF4500" stroke="#CC3700" stroke-width="1"/>
+  <!-- Bullseye - Gold -->
+  <path d="M 85,100 A 15,15 0 0,1 115,100 Z" fill="#FFD700" stroke="#DAA520" stroke-width="1.5"/>
   
   <!-- Center dot -->
-  <circle cx="100" cy="100" r="3" fill="#FFFFFF"/>
-  
-  <!-- Cross hairs -->
-  <line x1="100" y1="6" x2="100" y2="194" stroke="#1A0828" stroke-width="0.5" opacity="0.4"/>
-  <line x1="6" y1="100" x2="194" y2="100" stroke="#1A0828" stroke-width="0.5" opacity="0.4"/>
+  <circle cx="100" cy="100" r="3" fill="#FF4500"/>
 </svg>
