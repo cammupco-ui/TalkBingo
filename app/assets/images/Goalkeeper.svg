@@ -1,18 +1,18 @@
 <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
-  <!-- Goalkeeper as a colored semi-circle -->
+  <!-- Goalkeeper semi-circle: open side faces DOWN (toward ball from below) -->
   <!-- Shadow -->
-  <ellipse cx="100" cy="100" rx="88" ry="8" fill="#000" opacity="0.2"/>
+  <ellipse cx="100" cy="0" rx="88" ry="8" fill="#000" opacity="0.2"/>
   
-  <!-- Body - semi-circle facing upward (toward ball) -->
-  <path d="M 10,100 A 90,90 0 0,1 190,100 Z" fill="#6B21A8" stroke="#4C1D95" stroke-width="2"/>
+  <!-- Body - semi-circle opening downward -->
+  <path d="M 10,0 A 90,90 0 0,0 190,0 Z" fill="#6B21A8" stroke="#4C1D95" stroke-width="2"/>
   
   <!-- Inner highlight -->
-  <path d="M 30,100 A 70,70 0 0,1 170,100 Z" fill="#7C3AED" opacity="0.6"/>
+  <path d="M 30,0 A 70,70 0 0,0 170,0 Z" fill="#7C3AED" opacity="0.6"/>
   
   <!-- Glove indicators (small colored arcs on sides) -->
-  <path d="M 10,100 A 90,90 0 0,1 30,55" stroke="#F97316" stroke-width="6" fill="none" stroke-linecap="round"/>
-  <path d="M 190,100 A 90,90 0 0,0 170,55" stroke="#F97316" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M 10,0 A 90,90 0 0,0 30,45" stroke="#F97316" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M 190,0 A 90,90 0 0,1 170,45" stroke="#F97316" stroke-width="6" fill="none" stroke-linecap="round"/>
   
   <!-- Number #1 -->
-  <text x="100" y="88" font-family="Arial" font-size="28" font-weight="bold" fill="white" text-anchor="middle" opacity="0.8">1</text>
+  <text x="100" y="30" font-family="Arial" font-size="28" font-weight="bold" fill="white" text-anchor="middle" opacity="0.8">1</text>
 </svg>

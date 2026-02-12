@@ -258,7 +258,11 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
       } else if (payload['eventType'] == 'ball_reset') {
          if (!isKicker) {
             setState(() => _resetBall());
-         }
+         } else if (payload['eventType'] == 'game_pause') {
+         setState(() => _isPaused = true);
+      } else if (payload['eventType'] == 'game_resume') {
+         setState(() => _isPaused = false);
+      }
       }
    }
 
@@ -795,131 +799,84 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
 
                                          // OVERLAYS (Centered)
 
-                                                      // PAUSE BUTTON
-                                                      Positioned(
-                                                        top: 8, right: 8,
-                                                        child: GestureDetector(
-                                                          onTap: () => setState(() => _isPaused = !_isPaused),
-                                                          child: AnimatedContainer(
-                                                            duration: const Duration(milliseconds: 200),
-                                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                                            decoration: BoxDecoration(
-                                                              color: _isPaused
-                                                                ? Colors.amber.withValues(alpha: 0.85)
-                                                                : Colors.white.withValues(alpha: 0.15),
-                                                              borderRadius: BorderRadius.circular(20),
-                                                              border: Border.all(
-                                                                color: _isPaused
-                                                                  ? Colors.amber
-                                                                  : Colors.white.withValues(alpha: 0.3),
-                                                                width: 1,
-                                                              ),
-                                                            ),
-                                                            child: Row(
-                                                              mainAxisSize: MainAxisSize.min,
-                                                              children: [
-                                                                Icon(
-                                                                  _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
-                                                                  color: _isPaused ? Colors.black87 : Colors.white70,
-                                                                  size: 18,
-                                                                ),
-                                                                const SizedBox(width: 4),
-                                                                Text(
-                                                                  _isPaused ? 'RESUME' : 'PAUSE',
-                                                                  style: GoogleFonts.alexandria(
-                                                                    color: _isPaused ? Colors.black87 : Colors.white70,
-                                                                    fontSize: 11,
-                                                                    fontWeight: FontWeight.w600,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        ),
+                                          // ── START / PAUSE BUTTONS ──
+                                          Positioned(
+                                            top: 8, right: 8,
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                if (_isPaused)
+                                                  GestureDetector(
+                                                    onTap: () {
+                                                      setState(() => _isPaused = false);
+                                                      _session.sendGameEvent({'eventType': 'game_resume'});
+                                                    },
+                                                    child: Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.green.withOpacity(0.9),
+                                                        borderRadius: BorderRadius.circular(20),
+                                                        border: Border.all(color: Colors.greenAccent, width: 1.5),
                                                       ),
-                                                      
-                                                      // PAUSE OVERLAY
-                                                      if (_isPaused)
-                                                        Positioned.fill(
-                                                          child: Container(
-                                                            color: Colors.black.withValues(alpha: 0.5),
-                                                            alignment: Alignment.center,
-                                                            child: Column(
-                                                              mainAxisSize: MainAxisSize.min,
-                                                              children: [
-                                                                Icon(Icons.pause_circle_outline, color: Colors.white70, size: 48),
-                                                                const SizedBox(height: 12),
-                                                                Text('PAUSED', style: GoogleFonts.alexandria(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                                                                const SizedBox(height: 8),
-                                                                Text('Tap RESUME to continue', style: GoogleFonts.alexandria(color: Colors.white54, fontSize: 13)),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        ),
-
-
-                                         if (_isWaitingForStart && !_showRoundOverlay && state['step'] != 'finished')
-                                            Center(
-                                             child: Container(
-                                               padding: const EdgeInsets.all(20),
-                                               decoration: BoxDecoration(
-                                                  color: Colors.black.withOpacity(0.8),
-                                                  borderRadius: BorderRadius.circular(16)
-                                               ),
-                                               child: Column(
+                                                      child: Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
+                                                          const SizedBox(width: 4),
+                                                          Text('START', style: GoogleFonts.alexandria(
+                                                            color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                if (_isPaused) const SizedBox(width: 8),
+                                                if (!_isPaused)
+                                                  GestureDetector(
+                                                    onTap: () {
+                                                      setState(() => _isPaused = true);
+                                                      _session.sendGameEvent({'eventType': 'game_pause'});
+                                                    },
+                                                    child: Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.amber.withOpacity(0.9),
+                                                        borderRadius: BorderRadius.circular(20),
+                                                        border: Border.all(color: Colors.amberAccent, width: 1.5),
+                                                      ),
+                                                      child: Row(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Icon(Icons.pause_rounded, color: Colors.black87, size: 20),
+                                                          const SizedBox(width: 4),
+                                                          Text('PAUSE', style: GoogleFonts.alexandria(
+                                                            color: Colors.black87, fontSize: 12, fontWeight: FontWeight.bold)),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+                                          // PAUSE OVERLAY
+                                          if (_isPaused)
+                                            Positioned.fill(
+                                              child: Container(
+                                                color: Colors.black.withOpacity(0.5),
+                                                alignment: Alignment.center,
+                                                child: Column(
                                                   mainAxisSize: MainAxisSize.min,
                                                   children: [
-                                                     Text(
-                                                        isKicker ? "YOU ARE KICKER" : "SPECTATOR MODE",
-                                                        style: GoogleFonts.alexandria(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold)
-                                                     ),
-                                                     const SizedBox(height: 20),
-                                                     if (isKicker)
-                                                       ElevatedButton.icon(
-                                                          onPressed: _startRoundManually,
-                                                          icon: const Icon(Icons.play_arrow, color: Colors.white),
-                                                          label: Text("START GAME", style: GoogleFonts.alexandria(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                                                          style: ElevatedButton.styleFrom(
-                                                             backgroundColor: colPrimary,
-                                                             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                                          ),
-                                                       )
-                                                     else
-                                                       Column(
-                                                         children: [
-                                                            const CircularProgressIndicator(color: Colors.white),
-                                                            const SizedBox(height: 20),
-                                                            Text("Waiting for Kicker...", style: GoogleFonts.alexandria(color: Colors.white70, fontSize: 16)),
-                                                         ],
-                                                       )
+                                                    Icon(Icons.pause_circle_outline, color: Colors.white70, size: 48),
+                                                    const SizedBox(height: 12),
+                                                    Text('PAUSED', style: GoogleFonts.alexandria(
+                                                      color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+                                                    const SizedBox(height: 8),
+                                                    Text('Tap START to resume', style: GoogleFonts.alexandria(
+                                                      color: Colors.white54, fontSize: 13)),
                                                   ],
-                                               ),
+                                                ),
+                                              ),
                                             ),
-                                            ),
-
-                                         if (_showRoundOverlay)
-                                            Container(
-                                               color: Colors.black.withOpacity(0.8),
-                                               alignment: Alignment.center,
-                                               child: Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                     Text(
-                                                        "ROUND $round", 
-                                                        style: GoogleFonts.alexandria(color: colPrimary, fontSize: 30, fontWeight: FontWeight.bold)
-                                                     ),
-                                                     const SizedBox(height: 10),
-                                                     Text(
-                                                        isKicker ? "ATTACK!" : "DEFEND!", 
-                                                        style: GoogleFonts.alexandria(color: Colors.white, fontSize: 50, fontWeight: FontWeight.bold)
-                                                     ),
-                                                  ],
-                                               ),
-                                            ),
-
-                                      ],
-                                   ) 
                                 ),
                              );
                           }
