@@ -48,10 +48,16 @@ class _RewardScreenState extends State<RewardScreen> {
     // Determine my stats based on role
     final myRole = session.myRole; // 'A' or 'B'
     final int myGp = ((myRole == 'A' ? results['gpA'] : results['gpB']) as num?)?.toInt() ?? 0;
+    final int myVp = ((myRole == 'A' ? results['vpA'] : results['vpB']) as num?)?.toInt() ?? 0;
+    final int myEp = ((myRole == 'A' ? results['epA'] : results['epB']) as num?)?.toInt() ?? 0;
+    final int myAp = ((myRole == 'A' ? results['apA'] : results['apB']) as num?)?.toInt() ?? 0;
     
     // If Draw, overwrite GP to 0 and winner to DRAW
     final finalWinner = widget.isDraw ? 'DRAW' : results['winner'];
-    final int finalGp = widget.isDraw ? 0 : myGp; // GP is 0 in Draw scenario 5
+    final int finalGp = widget.isDraw ? 0 : myGp;
+    final int finalVp = widget.isDraw ? 0 : myVp;
+    final int finalEp = myEp; // EP always earned regardless of draw
+    final int finalAp = myAp; // AP always earned regardless of draw
 
     // Determine if user is Host (MP) or Guest (CP)
     bool isHost = session.myRole == 'A';
@@ -114,7 +120,13 @@ class _RewardScreenState extends State<RewardScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      _buildPointRow("Victory Points (VP)", finalVp, AppColors.hostPrimary),
+                      const SizedBox(height: 8),
                       _buildPointRow("Game Points (GP)", finalGp, Colors.amber),
+                      const SizedBox(height: 8),
+                      _buildPointRow("Exploration Points (EP)", finalEp, Colors.teal),
+                      const SizedBox(height: 8),
+                      _buildPointRow("Achievement Points (AP)", finalAp, Colors.deepPurple),
                     ],
                   ),
                 ),

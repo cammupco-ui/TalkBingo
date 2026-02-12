@@ -1824,6 +1824,12 @@ class GameSession with ChangeNotifier {
         'linesB': linesB,
         'gpA': totalGpA,
         'gpB': totalGpB,
+        'vpA': winGpA,    // Victory Points
+        'vpB': winGpB,
+        'epA': cellGpA,   // Exploration Points (cells owned)
+        'epB': cellGpB,
+        'apA': lineGpA,   // Achievement Points (lines completed)
+        'apB': lineGpB,
         'winner': winner
      };
   }
