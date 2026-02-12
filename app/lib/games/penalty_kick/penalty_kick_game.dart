@@ -877,8 +877,10 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                                                 ),
                                               ),
                                             ),
-                                ),
-                             );
+                                       ],   // outer Stack children (line 719)
+                                    ),      // Stack (line 718)
+                                 ),         // ClipRect (line 717)
+                              );            // Container return (line 710)
                           }
                        ),
                     ),

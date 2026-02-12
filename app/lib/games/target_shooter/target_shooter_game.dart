@@ -945,6 +945,9 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                                        isShooter ? "SHOOT!" : "DODGE!", 
                                        style: GoogleFonts.alexandria(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold)
                                     ),
+                                 ],
+                              ),
+                           ),
 
                         // ── START / PAUSE BUTTONS (top-right, always visible) ──
                         Positioned(
@@ -1028,12 +1031,15 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                             ),
                           ),
 
-                                 ],
-                              ),
-                           ),
-  
-
-      ),
+                      ],  // Stack children
+                    ),   // Stack
+                  );     // GestureDetector
+                }
+              ),  // LayoutBuilder
+            ),    // Expanded
+          ],      // Column children
+        ),        // Column
+      ),          // SafeArea
       // GLOBAL OVERLAYS (Covering Header too)
       bottomSheet: (state != null && state['step'] == 'finished') ? Container(
           width: double.infinity,
