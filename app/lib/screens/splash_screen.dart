@@ -136,6 +136,15 @@ class _SplashScreenState extends State<SplashScreen> {
       if (fragment.contains('type=recovery') || fullUrl.contains('type=recovery')) {
         _isPasswordRecovery = true;
         _addLog('🔑 Password recovery token detected in URL!');
+        // Give Supabase a moment to process the token, then navigate directly
+        Future.delayed(const Duration(milliseconds: 1500), () {
+          if (!mounted) return;
+          _addLog('🔑 Navigating to UpdatePasswordScreen');
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const UpdatePasswordScreen()),
+          );
+        });
+        return; // Skip normal session check entirely
       }
     }
     
