@@ -1,37 +1,29 @@
 <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <radialGradient id="ringGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="80%" stop-color="transparent"/>
-      <stop offset="100%" stop-color="rgba(255,255,255,0.1)"/>
-    </radialGradient>
-    <filter id="targetShadow">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
-    </filter>
-  </defs>
-  
-  <!-- Base circle (back board) -->
-  <circle cx="100" cy="100" r="95" fill="#2A103E" stroke="#1A0828" stroke-width="2" filter="url(#targetShadow)"/>
+  <!-- Base circle (dark backing) -->
+  <circle cx="100" cy="100" r="98" fill="#1A0828" stroke="#0C0219" stroke-width="2"/>
   
   <!-- Ring 5 (Outer) - White -->
-  <circle cx="100" cy="100" r="90" fill="#F5F0E8" stroke="#D4C8B8" stroke-width="1"/>
+  <circle cx="100" cy="100" r="92" fill="#F5F0E8" stroke="#D4C8B8" stroke-width="1"/>
   
-  <!-- Ring 4 - Red -->
-  <circle cx="100" cy="100" r="72" fill="#BD0558" stroke="#8B0040" stroke-width="1"/>
+  <!-- Ring 4 - TalkBingo Pink -->
+  <circle cx="100" cy="100" r="74" fill="#BD0558" stroke="#8B0040" stroke-width="1"/>
   
   <!-- Ring 3 - White -->
-  <circle cx="100" cy="100" r="54" fill="#F5F0E8" stroke="#D4C8B8" stroke-width="1"/>
+  <circle cx="100" cy="100" r="56" fill="#F5F0E8" stroke="#D4C8B8" stroke-width="1"/>
   
-  <!-- Ring 2 - Red -->
-  <circle cx="100" cy="100" r="36" fill="#BD0558" stroke="#8B0040" stroke-width="1"/>
+  <!-- Ring 2 - TalkBingo Pink -->
+  <circle cx="100" cy="100" r="38" fill="#BD0558" stroke="#8B0040" stroke-width="1"/>
   
-  <!-- Bullseye - Gold -->
-  <circle cx="100" cy="100" r="18" fill="#FFD700" stroke="#DAA520" stroke-width="1.5"/>
-  <circle cx="100" cy="100" r="8" fill="#FF4500" stroke="#CC3700" stroke-width="1"/>
+  <!-- Bullseye outer - Gold -->
+  <circle cx="100" cy="100" r="20" fill="#FFD700" stroke="#DAA520" stroke-width="1.5"/>
+  
+  <!-- Bullseye inner - Red-Orange -->
+  <circle cx="100" cy="100" r="9" fill="#FF4500" stroke="#CC3700" stroke-width="1"/>
+  
+  <!-- Center dot -->
+  <circle cx="100" cy="100" r="3" fill="#FFFFFF"/>
   
   <!-- Cross hairs -->
-  <line x1="100" y1="5" x2="100" y2="195" stroke="#1A0828" stroke-width="0.5" opacity="0.3"/>
-  <line x1="5" y1="100" x2="195" y2="100" stroke="#1A0828" stroke-width="0.3" opacity="0.3"/>
-  
-  <!-- Subtle 3D highlight -->
-  <circle cx="100" cy="100" r="90" fill="url(#ringGlow)"/>
+  <line x1="100" y1="6" x2="100" y2="194" stroke="#1A0828" stroke-width="0.5" opacity="0.4"/>
+  <line x1="6" y1="100" x2="194" y2="100" stroke="#1A0828" stroke-width="0.5" opacity="0.4"/>
 </svg>

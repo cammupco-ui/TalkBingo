@@ -483,11 +483,20 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
   void _stickArrow(GameEntity b, double hitX, double hitY) {
        double relX = hitX - _target.x - (_config!.arrowWidth/2);
        double relY = hitY - _target.y;
+       double angle = (b.vx != 0 || b.vy != 0) ? atan2(b.vy, b.vx) + pi/2 : 0;
        
        _stuckArrows.add({
           'x': relX,
           'y': relY,
-          'angle': (b.vx != 0 || b.vy != 0) ? atan2(b.vy, b.vx) + pi/2 : 0,
+          'angle': angle,
+       });
+       
+       // Broadcast stuck arrow to opponent (normalized)
+       _session.sendGameEvent({
+          'eventType': 'stuck_arrow',
+          'rx': relX / _target.width,  // normalized relative X
+          'ry': relY / _target.height, // normalized relative Y
+          'angle': angle,
        });
        
        _handleHit(); // Trigger Score update
