@@ -64,6 +64,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
   StreamSubscription? _eventSub;
   int _lastKnownRound = 0;
   bool _isWaitingForStart = true;
+  bool _isPaused = false; // Mini-game pause (stops broadcast + timer)
   
   // Spectator State
   double _remoteAimAngle = 0;
@@ -273,6 +274,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
     _stuckArrows.clear();
     _hitParticles.clear();
     _scorePopups.clear();
+    _isPaused = false;
     _remoteAimAngle = 0;
     _remoteDrawAmt = 0;
     _remoteScore = 0;
@@ -297,7 +299,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
   }
 
   void _onTick(Duration elapsed) {
-    if (!_isRoundActive || _isRoundOver) return;
+    if (!_isRoundActive || _isRoundOver || _isPaused) return;
 
     final double currentTime = elapsed.inMicroseconds / 1000000.0;
     double dt = currentTime - _lastTime;
@@ -818,6 +820,79 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                            ),
                         ),
                         
+                        // PAUSE BUTTON (Top-right, semi-transparent)
+                        Positioned(
+                          top: 8, right: 8,
+                          child: GestureDetector(
+                            onTap: () => setState(() => _isPaused = !_isPaused),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: _isPaused
+                                  ? Colors.amber.withValues(alpha: 0.85)
+                                  : Colors.white.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: _isPaused
+                                    ? Colors.amber
+                                    : Colors.white.withValues(alpha: 0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                                    color: _isPaused ? Colors.black87 : Colors.white70,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    _isPaused ? 'RESUME' : 'PAUSE',
+                                    style: GoogleFonts.alexandria(
+                                      color: _isPaused ? Colors.black87 : Colors.white70,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // PAUSE OVERLAY
+                        if (_isPaused)
+                          Positioned.fill(
+                            child: Container(
+                              color: Colors.black.withValues(alpha: 0.5),
+                              alignment: Alignment.center,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.pause_circle_outline, color: Colors.white70, size: 48),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'PAUSED',
+                                    style: GoogleFonts.alexandria(
+                                      color: Colors.white, fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Tap RESUME to continue',
+                                    style: GoogleFonts.alexandria(
+                                      color: Colors.white54, fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
                         // HIT PARTICLES (Sparkle Burst)
                         ..._hitParticles.map((p) => Positioned(
                             left: (p['x'] as double) - 4,

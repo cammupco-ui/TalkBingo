@@ -120,6 +120,7 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
   }
   
   bool _isWaitingForStart = true;
+  bool _isPaused = false; // Mini-game pause
 
   void _checkRoundState() {
     final state = _session.interactionState;
@@ -268,7 +269,7 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
   }
   
   void _onTick(Duration elapsed) {
-    if (!_isRoundActive || _isRoundOver) return;
+    if (!_isRoundActive || _isRoundOver || _isPaused) return;
 
     final double currentTime = elapsed.inMicroseconds / 1000000.0;
     double dt = currentTime - _lastTime;
@@ -432,11 +433,6 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                   // Force goal sound or effect here if needed
                   _resetBall();
                }
-              
-              // Decay goal flash
-              if (_goalFlash > 0) {
-                _goalFlash = (_goalFlash - dt * 2.0).clamp(0.0, 1.0);
-              }
               
               // Wall Bounce
               if (_ball.x <= 0) {
