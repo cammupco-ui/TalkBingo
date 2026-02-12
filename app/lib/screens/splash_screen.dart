@@ -71,6 +71,7 @@ class _SplashScreenState extends State<SplashScreen> {
   ];
 
   bool _isDeepLinkCheckDone = false; // Flag to prevent race conditions
+  bool _isPasswordRecovery = false; // Flag to detect password reset link
 
   @override
   void initState() {
@@ -125,6 +126,16 @@ class _SplashScreenState extends State<SplashScreen> {
         }
       } else {
         _addLog("Code already captured by DeepLinkService: $existingCode");
+      }
+    }
+    
+    // EARLY DETECTION: Check for password recovery token in URL hash
+    if (kIsWeb) {
+      final fragment = Uri.base.fragment;
+      final fullUrl = Uri.base.toString();
+      if (fragment.contains('type=recovery') || fullUrl.contains('type=recovery')) {
+        _isPasswordRecovery = true;
+        _addLog('🔑 Password recovery token detected in URL!');
       }
     }
     
@@ -220,6 +231,17 @@ class _SplashScreenState extends State<SplashScreen> {
           } catch (e) {
              Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen()));
           }
+      } else if (_isPasswordRecovery) {
+          // Password recovery link detected — wait a bit more for Supabase to process
+          _addLog('🔑 Recovery detected. Waiting for Supabase to process token...');
+          Future.delayed(const Duration(milliseconds: 3000), () {
+            if (!mounted) return;
+            // If still no PASSWORD_RECOVERY event after extra wait, navigate directly
+            _addLog('🔑 Recovery timeout. Navigating to UpdatePasswordScreen.');
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const UpdatePasswordScreen()),
+            );
+          });
       } else {
          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen()));
       }
