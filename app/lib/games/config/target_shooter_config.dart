@@ -5,43 +5,42 @@ import 'responsive_config.dart';
 class TargetShooterConfig extends ResponsiveGameConfig {
   TargetShooterConfig(super.screenSize, {super.isGameArea});
   
-  // Arrow Size (Ratio + Min)
+  // Arrow Size (Increased for visibility)
   double get arrowWidth => max(
-    safeGameArea.width * 0.05,  // 5%
-    20.0,                        // Min 20px
+    safeGameArea.width * 0.06,  // 6% (was 5%)
+    24.0,                        // Min 24px
   );
   
   double get arrowHeight => max(
-    safeGameArea.width * 0.25,  // 25% (Relative to width for aspect)
-    100.0,                       // Min 100px
+    safeGameArea.width * 0.30,  // 30% (was 25%)
+    120.0,                       // Min 120px
   );
   
-  // Target Size (By Screen Class) - Reduced for better balance
+  // Target Size — Circular (1:1), much larger
   double get targetWidth {
     switch (sizeClass) {
-      case GameSize.small:  return safeGameArea.width * 0.28; // 28%
-      case GameSize.medium: return safeGameArea.width * 0.30; // 30%
-      case GameSize.large:  return safeGameArea.width * 0.32; // 32%
+      case GameSize.small:  return safeGameArea.width * 0.35; // 35% (was 28%)
+      case GameSize.medium: return safeGameArea.width * 0.38; // 38% (was 30%)
+      case GameSize.large:  return safeGameArea.width * 0.40; // 40% (was 32%)
     }
   }
   
-  double get targetHeight => targetWidth * 0.5; // 2:1 Ratio
+  double get targetHeight => targetWidth; // 1:1 Circular (was 2:1)
   
-  // Player (Bow) Size - Increased for better visibility and touch
+  // Player (Bow) Size — Larger for easier aiming
   double get playerSize => max(
-    safeGameArea.width * 0.35, // Increased from 30% to 35%
-    140.0, // Increased min from 120px to 140px
+    safeGameArea.width * 0.40, // 40% (was 35%)
+    160.0, // Min 160px (was 140)
   );
   
   // Positions (Ratio Based)
-  // Player positioned higher for easier touch access
-  double get playerY => safeGameArea.height * 0.70; // 70% from top (was at bottom)
-  double get targetY => safeGameArea.height * 0.08; // Top 8% (slightly lower for visibility)
+  double get playerY => safeGameArea.height * 0.68; // Slightly higher for touch
+  double get targetY => safeGameArea.height * 0.06; // Top 6%
   
-  // Target Movement Speed (Pixels per Second) - Ensure minimum speed
+  // Target Movement Speed
   double get targetSpeed => max(
-    safeGameArea.width * 0.5, // Moves 50% of width per sec
-    150.0, // Minimum 150px/sec to ensure visible movement
+    safeGameArea.width * 0.45, // Slightly slower for bigger target
+    130.0,
   );
   
   // Aim Line Length
@@ -64,7 +63,7 @@ class TargetShooterConfig extends ResponsiveGameConfig {
   
   double get powerBarHeight => 20.0;
   
-  // Touch Threshold (Drag start distance)
+  // Touch Threshold
   double get touchThreshold {
     switch (sizeClass) {
       case GameSize.small:  return 30.0;
@@ -72,4 +71,8 @@ class TargetShooterConfig extends ResponsiveGameConfig {
       case GameSize.large:  return 50.0;
     }
   }
+  
+  // Stuck Arrow Size (Slightly smaller than flying arrow)
+  double get stuckArrowWidth => arrowWidth * 0.8;
+  double get stuckArrowHeight => arrowHeight * 0.6;
 }

@@ -1,10 +1,37 @@
-<svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
-  <!-- Tier 1: Top (Back) - Widest, Darkest -->
-  <rect x="10" y="0" width="180" height="30" rx="15" fill="#2A103E" />
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="ringGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="80%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0.1)"/>
+    </radialGradient>
+    <filter id="targetShadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
   
-  <!-- Tier 2: Middle - Medium -->
-  <rect x="40" y="35" width="120" height="30" rx="15" fill="#4B0082" />
+  <!-- Base circle (back board) -->
+  <circle cx="100" cy="100" r="95" fill="#2A103E" stroke="#1A0828" stroke-width="2" filter="url(#targetShadow)"/>
   
-  <!-- Tier 3: Bottom (Front) - Smallest, Brightest -->
-  <rect x="70" y="70" width="60" height="30" rx="15" fill="#8A2BE2" />
+  <!-- Ring 5 (Outer) - White -->
+  <circle cx="100" cy="100" r="90" fill="#F5F0E8" stroke="#D4C8B8" stroke-width="1"/>
+  
+  <!-- Ring 4 - Red -->
+  <circle cx="100" cy="100" r="72" fill="#BD0558" stroke="#8B0040" stroke-width="1"/>
+  
+  <!-- Ring 3 - White -->
+  <circle cx="100" cy="100" r="54" fill="#F5F0E8" stroke="#D4C8B8" stroke-width="1"/>
+  
+  <!-- Ring 2 - Red -->
+  <circle cx="100" cy="100" r="36" fill="#BD0558" stroke="#8B0040" stroke-width="1"/>
+  
+  <!-- Bullseye - Gold -->
+  <circle cx="100" cy="100" r="18" fill="#FFD700" stroke="#DAA520" stroke-width="1.5"/>
+  <circle cx="100" cy="100" r="8" fill="#FF4500" stroke="#CC3700" stroke-width="1"/>
+  
+  <!-- Cross hairs -->
+  <line x1="100" y1="5" x2="100" y2="195" stroke="#1A0828" stroke-width="0.5" opacity="0.3"/>
+  <line x1="5" y1="100" x2="195" y2="100" stroke="#1A0828" stroke-width="0.3" opacity="0.3"/>
+  
+  <!-- Subtle 3D highlight -->
+  <circle cx="100" cy="100" r="90" fill="url(#ringGlow)"/>
 </svg>

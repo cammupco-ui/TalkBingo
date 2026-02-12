@@ -81,6 +81,10 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
   // Power Gauge State
   double _currentPower = 0.0;
   String _powerLabel = '';
+  
+  // Visual Effects
+  double _goalFlash = 0.0;
+  double _ballRotation = 0.0;
 
   @override
   void initState() {
@@ -246,6 +250,8 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
     _dragCurrent = null;
     _remoteGoalieTargetX = null;
     _remoteScore = 0;
+    _goalFlash = 0.0;
+    _ballRotation = 0.0;
     
     // Initial sizes 0, will be set in LayoutBuilder
     _ball = GameEntity(x: 0, y: 0, width: 0, height: 0, color: Colors.white);
@@ -361,8 +367,8 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
        // 2. Update Ball
        if (_shotTaken) {
           _ball.update(dt);
-          _ball.vx *= 0.99;
-          _ball.vy *= 0.99;
+          _ball.vx *= 0.995;
+          _ball.vy *= 0.995;
           
           if (isKicker) {
               // Collision logic only for Kicker (Authoritative)
@@ -426,6 +432,11 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                   // Force goal sound or effect here if needed
                   _resetBall();
                }
+              
+              // Decay goal flash
+              if (_goalFlash > 0) {
+                _goalFlash = (_goalFlash - dt * 2.0).clamp(0.0, 1.0);
+              }
               
               // Wall Bounce
               if (_ball.x <= 0) {
@@ -601,7 +612,7 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
     final scores = state['scores'] ?? {}; 
 
     // Keep Dark Theme for now but adapt shapes
-    final colBg = const Color(0xFF0C0219);
+    final colBg = const Color(0xFF0A2E14);
     final colPrimary = const Color(0xFF6B14EC);
     final colText = const Color(0xFFFDF9FF);
 
@@ -612,7 +623,7 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
     // }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0C0219), 
+      backgroundColor: const Color(0xFF0A2E14), 
       body: Stack(
          children: [
             Column(
@@ -914,6 +925,7 @@ class _SoccerPainter extends CustomPainter {
   final Color colText;
   final double zoneHeight;
   final Offset ballCenter;
+  final double goalFlash;
   
   _SoccerPainter({
     required this.dragStart, 
@@ -922,37 +934,117 @@ class _SoccerPainter extends CustomPainter {
     required this.colText,
     required this.zoneHeight,
     required this.ballCenter,
+    this.goalFlash = 0.0,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-     // Zones
-     // Top: Goal Area
-     // Middle: Field (Empty/Black)
-     // Bottom: Kick Zone
-     
      final double w = size.width;
+     final double h = size.height;
      
-     // 1. Kick Zone Background (Bottom 1/3)
-     final paintKickZone = Paint()..color = colPrimary.withOpacity(0.15)..style = PaintingStyle.fill;
-     canvas.drawRect(Rect.fromLTWH(0, zoneHeight * 2, w, zoneHeight), paintKickZone);
+     // 1. GREEN PITCH BACKGROUND
+     final pitchPaint = Paint()
+       ..shader = LinearGradient(
+         begin: Alignment.topCenter,
+         end: Alignment.bottomCenter,
+         colors: [
+           const Color(0xFF1A5C2A),  // Dark green (goal area)
+           const Color(0xFF228B3B),  // Mid green
+           const Color(0xFF2DA84A),  // Light green (kick zone)
+         ],
+       ).createShader(Rect.fromLTWH(0, 0, w, h));
+     canvas.drawRect(Rect.fromLTWH(0, 0, w, h), pitchPaint);
      
-     // 2. Goal Net Visuals (Top 1/3)
-     // Grid
-     final paintGrid = Paint()..color = Colors.white.withOpacity(0.1)..style = PaintingStyle.stroke..strokeWidth = 1;
-     double gridSize = 20.0;
-     for (double i = 0; i < w; i += gridSize) {
-        canvas.drawLine(Offset(i, 0), Offset(i, zoneHeight), paintGrid);
+     // Grass stripe pattern
+     final stripePaint = Paint()..color = const Color(0xFF1E7A34).withValues(alpha: 0.15);
+     double stripeHeight = 30.0;
+     for (double y = 0; y < h; y += stripeHeight * 2) {
+        canvas.drawRect(Rect.fromLTWH(0, y, w, stripeHeight), stripePaint);
      }
-     for (double i = 0; i < zoneHeight; i += gridSize) {
-        canvas.drawLine(Offset(0, i), Offset(w, i), paintGrid);
-     }
      
-     // Goal Frame (Thick White/Primary)
-     final paintFrame = Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 4;
-     canvas.drawRect(Rect.fromLTWH(0, 0, w, zoneHeight), paintFrame);
+     // 2. FIELD MARKINGS
+     final linePaint = Paint()
+       ..color = Colors.white.withValues(alpha: 0.5)
+       ..style = PaintingStyle.stroke
+       ..strokeWidth = 2;
+     
+     // Center line
+     canvas.drawLine(Offset(0, h / 2), Offset(w, h / 2), linePaint);
+     
+     // Center circle
+     canvas.drawCircle(Offset(w / 2, h / 2), 50, linePaint);
+     canvas.drawCircle(Offset(w / 2, h / 2), 3, Paint()..color = Colors.white.withValues(alpha: 0.5));
+     
+     // Penalty area (top)
+     final double penW = w * 0.6;
+     final double penH = zoneHeight * 0.8;
+     canvas.drawRect(
+       Rect.fromLTWH((w - penW) / 2, 0, penW, penH), 
+       linePaint
+     );
+     
+     // Penalty spot
+     canvas.drawCircle(Offset(w / 2, h * 0.75), 4, Paint()..color = Colors.white.withValues(alpha: 0.5));
+     
+     // Kick zone arc (bottom)
+     final kickPaint = Paint()
+       ..color = colPrimary.withValues(alpha: 0.1)
+       ..style = PaintingStyle.fill;
+     canvas.drawRect(Rect.fromLTWH(0, zoneHeight * 2, w, zoneHeight), kickPaint);
 
-     // 3. Drag Arrow (Only dynamic part drawn by painter)
+     // 3. GOAL NET (Perspective depth)
+     // Net grid (slightly wider at top for perspective)
+     final netPaint = Paint()
+       ..color = Colors.white.withValues(alpha: 0.12)
+       ..style = PaintingStyle.stroke
+       ..strokeWidth = 0.8;
+     double gridSize = 16.0;
+     
+     // Vertical net lines
+     for (double x = 0; x < w; x += gridSize) {
+        canvas.drawLine(Offset(x, 0), Offset(x, zoneHeight * 0.9), netPaint);
+     }
+     // Horizontal net lines
+     for (double y = 0; y < zoneHeight * 0.9; y += gridSize) {
+        canvas.drawLine(Offset(0, y), Offset(w, y), netPaint);
+     }
+     
+     // Goal Frame (3D posts)
+     final framePaint = Paint()
+       ..color = Colors.white
+       ..style = PaintingStyle.stroke
+       ..strokeWidth = 5
+       ..strokeCap = StrokeCap.round;
+     
+     // Goal posts + crossbar
+     final goalLeft = (w - w * 0.85) / 2;
+     final goalRight = w - goalLeft;
+     final goalBottom = zoneHeight * 0.9;
+     
+     // Left post
+     canvas.drawLine(Offset(goalLeft, 0), Offset(goalLeft, goalBottom), framePaint);
+     // Right post
+     canvas.drawLine(Offset(goalRight, 0), Offset(goalRight, goalBottom), framePaint);
+     // Crossbar (bottom of goal zone)
+     canvas.drawLine(Offset(goalLeft, goalBottom), Offset(goalRight, goalBottom), framePaint);
+     
+     // Post shadows (3D depth)
+     final shadowPaint = Paint()
+       ..color = Colors.black.withValues(alpha: 0.2)
+       ..style = PaintingStyle.stroke
+       ..strokeWidth = 3;
+     canvas.drawLine(Offset(goalLeft + 3, 0), Offset(goalLeft + 3, goalBottom), shadowPaint);
+     canvas.drawLine(Offset(goalRight + 3, 0), Offset(goalRight + 3, goalBottom), shadowPaint);
+
+     // 4. GOAL FLASH (on score)
+     if (goalFlash > 0) {
+        final flashPaint = Paint()
+          ..color = Colors.greenAccent.withValues(alpha: goalFlash * 0.4)
+          ..style = PaintingStyle.fill;
+        canvas.drawRect(Rect.fromLTWH(goalLeft, 0, goalRight - goalLeft, goalBottom), flashPaint);
+     }
+
+     // 5. DRAG ARROW (Shot direction indicator)
      if (dragStart != null && dragCurrent != null) {
         final Offset start = ballCenter; 
         final dx = dragCurrent!.dx - dragStart!.dx;
@@ -963,13 +1055,14 @@ class _SoccerPainter extends CustomPainter {
         if (len > maxLen) scale = maxLen / len;
         
         final end = start + Offset(dx*scale, dy*scale);
-        final paintArrow = Paint()..color = Colors.white.withOpacity(0.6)..strokeWidth = 4..strokeCap = StrokeCap.round;
-        // Draw Drag Line
+        final paintArrow = Paint()
+          ..color = Colors.white.withValues(alpha: 0.7)
+          ..strokeWidth = 3
+          ..strokeCap = StrokeCap.round;
         canvas.drawLine(start, end, paintArrow);
         
-        // Draw Arrowhead
         double angle = atan2(dy, dx);
-        double arrowHeadLen = 15.0;
+        double arrowHeadLen = 12.0;
         final p1 = end - Offset(cos(angle - pi/6)*arrowHeadLen, sin(angle - pi/6)*arrowHeadLen);
         final p2 = end - Offset(cos(angle + pi/6)*arrowHeadLen, sin(angle + pi/6)*arrowHeadLen);
         canvas.drawLine(end, p1, paintArrow);

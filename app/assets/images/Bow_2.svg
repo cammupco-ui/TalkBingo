@@ -1,6 +1,46 @@
-<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <!-- Pulled Bow State -->
-  <path d="M20,10 C60,30 60,70 20,90" fill="none" stroke="#8B4513" stroke-width="4" stroke-linecap="round"/>
-  <!-- Pulled String -->
-  <polyline points="20,10 5,50 20,90" fill="none" stroke="#DDD" stroke-width="1"/>
+<svg viewBox="0 0 120 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bowWood2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#D4A574"/>
+      <stop offset="40%" stop-color="#8B5E3C"/>
+      <stop offset="70%" stop-color="#6B3A2A"/>
+      <stop offset="100%" stop-color="#4A2518"/>
+    </linearGradient>
+    <linearGradient id="bowEdge2" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#C8956E"/>
+      <stop offset="100%" stop-color="#7A4B30"/>
+    </linearGradient>
+    <filter id="bowGlow2">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="stringGlow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Bow Limb - Upper (More curved when drawn) -->
+  <path d="M20,12 C65,25 75,55 60,95" fill="none" stroke="url(#bowWood2)" stroke-width="8" stroke-linecap="round"/>
+  <!-- Bow Limb - Lower (More curved when drawn) -->
+  <path d="M60,105 C75,145 65,175 20,188" fill="none" stroke="url(#bowWood2)" stroke-width="8" stroke-linecap="round"/>
+  
+  <!-- Outer edge highlight -->
+  <path d="M20,12 C65,25 75,55 60,95" fill="none" stroke="url(#bowEdge2)" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+  <path d="M60,105 C75,145 65,175 20,188" fill="none" stroke="url(#bowEdge2)" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+  
+  <!-- Grip (Center) -->
+  <rect x="53" y="90" width="14" height="20" rx="4" fill="#3D1F0F" stroke="#D4A574" stroke-width="1"/>
+  <rect x="55" y="92" width="10" height="16" rx="3" fill="#5C3320" opacity="0.8"/>
+  <line x1="54" y1="95" x2="66" y2="95" stroke="#8B5E3C" stroke-width="0.8"/>
+  <line x1="54" y1="98" x2="66" y2="98" stroke="#8B5E3C" stroke-width="0.8"/>
+  <line x1="54" y1="101" x2="66" y2="101" stroke="#8B5E3C" stroke-width="0.8"/>
+  <line x1="54" y1="104" x2="66" y2="104" stroke="#8B5E3C" stroke-width="0.8"/>
+  
+  <!-- Limb Tips -->
+  <circle cx="20" cy="12" r="3" fill="#D4A574" stroke="#8B5E3C" stroke-width="1"/>
+  <circle cx="20" cy="188" r="3" fill="#D4A574" stroke="#8B5E3C" stroke-width="1"/>
+  
+  <!-- String (Taut/Drawn - bent inward) -->
+  <path d="M20,12 L20,85 L20,188" stroke="#FFD700" stroke-width="2" fill="none" filter="url(#stringGlow)"/>
 </svg>

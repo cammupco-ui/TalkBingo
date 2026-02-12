@@ -73,6 +73,10 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
   // Current Draw Power (0.0 - 1.0) for Gauge
   double _currentPower = 0.0;
   
+  // Hit Effects
+  final List<Map<String, dynamic>> _hitParticles = []; // {x, y, opacity, vx, vy}
+  final List<Map<String, dynamic>> _scorePopups = []; // {x, y, text, opacity, vy}
+  
   // Size
   Size _gameSize = Size.zero;
 
@@ -267,6 +271,8 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
     _timeLeft = 15.0;
     _bullets.clear();
     _stuckArrows.clear();
+    _hitParticles.clear();
+    _scorePopups.clear();
     _remoteAimAngle = 0;
     _remoteDrawAmt = 0;
     _remoteScore = 0;
@@ -457,6 +463,21 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
         }
       }
       _bullets.removeWhere((b) => b.isDead);
+      
+      // Update Hit Particles
+      for (var p in _hitParticles) {
+        p['x'] = (p['x'] as double) + (p['vx'] as double) * dt;
+        p['y'] = (p['y'] as double) + (p['vy'] as double) * dt;
+        p['opacity'] = ((p['opacity'] as double) - dt * 2.0).clamp(0.0, 1.0);
+      }
+      _hitParticles.removeWhere((p) => (p['opacity'] as double) <= 0);
+      
+      // Update Score Popups
+      for (var s in _scorePopups) {
+        s['y'] = (s['y'] as double) + (s['vy'] as double) * dt;
+        s['opacity'] = ((s['opacity'] as double) - dt * 1.5).clamp(0.0, 1.0);
+      }
+      _scorePopups.removeWhere((s) => (s['opacity'] as double) <= 0);
   }
 
   void _stickArrow(GameEntity b, double hitX, double hitY) {
@@ -478,8 +499,29 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
     // Real-time Score Sync
     _session.sendGameEvent({'eventType': 'score_update', 'score': _score});
     
+    // Hit Particles (Sparkle Burst)
+    final hitX = _target.x + _target.width / 2;
+    final hitY = _target.y + _target.height / 2;
+    final rng = Random();
+    for (int i = 0; i < 8; i++) {
+      double angle = (i / 8) * 2 * pi + rng.nextDouble() * 0.5;
+      double speed = 80.0 + rng.nextDouble() * 120.0;
+      _hitParticles.add({
+        'x': hitX, 'y': hitY,
+        'vx': cos(angle) * speed,
+        'vy': sin(angle) * speed,
+        'opacity': 1.0,
+        'color': [Colors.amber, Colors.orangeAccent, Colors.white, Colors.redAccent][i % 4],
+      });
+    }
+    
+    // Score Popup
+    _scorePopups.add({
+      'x': hitX, 'y': hitY - 20,
+      'text': '+1', 'opacity': 1.0, 'vy': -60.0,
+    });
+    
     if (mounted) setState(() {});
-    // Feedback
   }
   
   // Aiming State
@@ -620,7 +662,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
     }
 
     return Scaffold(
-      backgroundColor: Colors.black.withOpacity(0.9),
+      backgroundColor: const Color(0xFF0A0118),
       body: SafeArea(
         child: Column(
           children: [
@@ -660,7 +702,22 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                     behavior: HitTestBehavior.opaque,
                     child: Stack(
                       children: [
-                        // Background Grid/Grass (Optional)
+                        // Background Gradient (Space Theme)
+                        Positioned.fill(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  const Color(0xFF0A0118),   
+                                  const Color(0xFF150830),   
+                                  const Color(0xFF1A0A3E),  
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                         
                         // TARGET (Top) - 3-Tier Bar
                         if (_gameSize.width > 0)
@@ -671,20 +728,30 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                           height: _target.height,
                           child: SvgPicture.asset(
                              'assets/images/Targetboard.svg',
-                             fit: BoxFit.contain, 
-                             colorFilter: const ColorFilter.mode(AppColors.hostSecondary, BlendMode.srcIn),
-                          ),
+                             fit: BoxFit.contain,
+),
                         ),
 
-                        // STUCK ARROWS (Attached to Target)
+                        // STUCK ARROWS (Attached to Target with Glow)
                         ..._stuckArrows.map((a) => Positioned(
                             left: _target.x + (a['x'] as num).toDouble(), 
                             top: _target.y + (a['y'] as num).toDouble(),
-                            width: _config!.arrowWidth,
-                            height: _config!.arrowHeight,
+                            width: _config!.stuckArrowWidth,
+                            height: _config!.stuckArrowHeight,
                             child: Transform.rotate(
                                 angle: (a['angle'] as num).toDouble(),
-                                child: SvgPicture.asset('assets/images/arrow.svg', fit: BoxFit.contain, colorFilter: const ColorFilter.mode(AppColors.hostSecondary, BlendMode.srcIn))
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.amber.withOpacity(0.6),
+                                        blurRadius: 8,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                  child: SvgPicture.asset('assets/images/arrow.svg', fit: BoxFit.contain),
+                                )
                             )
                         )),
 
@@ -702,8 +769,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                                 child: SvgPicture.asset(
                                    'assets/images/arrow.svg',
                                    fit: BoxFit.contain,
-                                   colorFilter: const ColorFilter.mode(AppColors.hostSecondary, BlendMode.srcIn),
-                                ),
+),
                               )
                            );
                         }),
@@ -726,8 +792,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                                     child: SvgPicture.asset(
                                       drawAmt > 10 ? 'assets/images/Bow_2.svg' : 'assets/images/Bow.svg',
                                       fit: BoxFit.contain,
-                                      colorFilter: const ColorFilter.mode(AppColors.hostSecondary, BlendMode.srcIn),
-                                    ),
+),
                                   ),
                                   // Arrow on Bow (if aiming)
                                   if (drawAmt > 5)
@@ -737,14 +802,56 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                                         'assets/images/arrow.svg', 
                                         height: _config!.arrowHeight, 
                                         fit: BoxFit.fitHeight,
-                                        colorFilter: const ColorFilter.mode(AppColors.hostSecondary, BlendMode.srcIn),
-                                      )
+)
                                     )
                                ]
                              )
                            ),
                         ),
                         
+                        // HIT PARTICLES (Sparkle Burst)
+                        ..._hitParticles.map((p) => Positioned(
+                            left: (p['x'] as double) - 4,
+                            top: (p['y'] as double) - 4,
+                            child: Opacity(
+                              opacity: (p['opacity'] as double),
+                              child: Container(
+                                width: 8, height: 8,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: p['color'] as Color,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: (p['color'] as Color).withOpacity(0.8),
+                                      blurRadius: 6,
+                                      spreadRadius: 1,
+                                    )
+                                  ]
+                                ),
+                              ),
+                            )
+                        )),
+
+                        // SCORE POPUPS (+1)
+                        ..._scorePopups.map((s) => Positioned(
+                            left: (s['x'] as double) - 20,
+                            top: (s['y'] as double),
+                            child: Opacity(
+                              opacity: (s['opacity'] as double),
+                              child: Text(
+                                s['text'] as String,
+                                style: GoogleFonts.alexandria(
+                                  color: Colors.amber,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  shadows: [
+                                    Shadow(color: Colors.orange, blurRadius: 8),
+                                  ],
+                                ),
+                              ),
+                            )
+                        )),
+
                         // POWER GAUGE
                         if (isShooter && _aimStart != null)
                            Positioned(

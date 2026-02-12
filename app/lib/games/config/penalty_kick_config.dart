@@ -5,18 +5,18 @@ import 'responsive_config.dart';
 class PenaltyKickConfig extends ResponsiveGameConfig {
   PenaltyKickConfig(super.screenSize, {super.isGameArea});
   
-  // Ball Size
+  // Ball Size (Increased)
   double get ballSize => max(
-    safeGameArea.width * 0.12,
-    50.0, // Min Size
+    safeGameArea.width * 0.14,  // 14% (was 12%)
+    55.0, // Min Size (was 50)
   );
   
-  // Goalie Width
+  // Goalie Width (Increased)
   double get goalieWidth {
     switch (sizeClass) {
-      case GameSize.small:  return safeGameArea.width * 0.35;
-      case GameSize.medium: return safeGameArea.width * 0.40;
-      case GameSize.large:  return safeGameArea.width * 0.45;
+      case GameSize.small:  return safeGameArea.width * 0.40; // was 35%
+      case GameSize.medium: return safeGameArea.width * 0.45; // was 40%
+      case GameSize.large:  return safeGameArea.width * 0.48; // was 45%
     }
   }
   
@@ -42,7 +42,7 @@ class PenaltyKickConfig extends ResponsiveGameConfig {
   double get goalieMinX => gameMargin;
   double get goalieMaxX => safeGameArea.width - goalieWidth - gameMargin;
   
-  // Goalie Speed (Pixels per sec)
+  // Goalie Speed
   double get goalieSpeed {
     switch (sizeClass) {
       case GameSize.small:  return 150.0;

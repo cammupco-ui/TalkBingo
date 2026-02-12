@@ -1,10 +1,48 @@
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <radialGradient id="grad1" cx="30%" cy="30%" r="70%">
-      <stop offset="0%" style="stop-color:white;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#DDDDDD;stop-opacity:1" />
+    <radialGradient id="ballGrad" cx="35%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="60%" stop-color="#F0F0F0"/>
+      <stop offset="100%" stop-color="#CCCCCC"/>
     </radialGradient>
+    <filter id="ballShadow">
+      <feDropShadow dx="1" dy="2" stdDeviation="1.5" flood-color="#000" flood-opacity="0.2"/>
+    </filter>
   </defs>
-  <!-- Simple Sphere -->
-  <circle cx="50" cy="50" r="48" fill="url(#grad1)" stroke="#999" stroke-width="1"/>
+  
+  <!-- Ball body -->
+  <circle cx="50" cy="50" r="47" fill="url(#ballGrad)" stroke="#888" stroke-width="1" filter="url(#ballShadow)"/>
+  
+  <!-- Pentagon patches (classic soccer pattern) -->
+  <!-- Center pentagon -->
+  <polygon points="50,28 61,36 58,49 42,49 39,36" fill="#1A1A2E" stroke="#333" stroke-width="0.5"/>
+  
+  <!-- Top pentagon -->
+  <polygon points="50,5 58,15 50,22 42,15" fill="#1A1A2E" stroke="#333" stroke-width="0.5"/>
+  
+  <!-- Right pentagon -->
+  <polygon points="75,30 82,42 75,52 65,48 65,36" fill="#1A1A2E" stroke="#333" stroke-width="0.5"/>
+  
+  <!-- Left pentagon -->
+  <polygon points="25,30 35,36 35,48 25,52 18,42" fill="#1A1A2E" stroke="#333" stroke-width="0.5"/>
+  
+  <!-- Bottom-right pentagon -->
+  <polygon points="68,65 72,78 62,82 54,75 58,63" fill="#1A1A2E" stroke="#333" stroke-width="0.5"/>
+  
+  <!-- Bottom-left pentagon -->
+  <polygon points="32,65 42,63 46,75 38,82 28,78" fill="#1A1A2E" stroke="#333" stroke-width="0.5"/>
+  
+  <!-- Seam lines connecting patches -->
+  <line x1="50" y1="22" x2="50" y2="28" stroke="#999" stroke-width="0.5"/>
+  <line x1="58" y1="15" x2="61" y2="36" stroke="#999" stroke-width="0.5"/>
+  <line x1="42" y1="15" x2="39" y2="36" stroke="#999" stroke-width="0.5"/>
+  <line x1="65" y1="36" x2="61" y2="36" stroke="#999" stroke-width="0.5"/>
+  <line x1="35" y1="36" x2="39" y2="36" stroke="#999" stroke-width="0.5"/>
+  <line x1="65" y1="48" x2="58" y2="49" stroke="#999" stroke-width="0.5"/>
+  <line x1="35" y1="48" x2="42" y2="49" stroke="#999" stroke-width="0.5"/>
+  <line x1="58" y1="63" x2="58" y2="49" stroke="#999" stroke-width="0.5"/>
+  <line x1="42" y1="63" x2="42" y2="49" stroke="#999" stroke-width="0.5"/>
+  
+  <!-- Shine highlight -->
+  <ellipse cx="38" cy="34" rx="10" ry="6" fill="white" opacity="0.25" transform="rotate(-20 38 34)"/>
 </svg>

@@ -1,6 +1,43 @@
-<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <!-- Bow Wood -->
-  <path d="M10,20 C40,40 40,60 10,80" fill="none" stroke="#8B4513" stroke-width="4" stroke-linecap="round"/>
-  <!-- Bow String -->
-  <line x1="10" y1="20" x2="10" y2="80" stroke="#DDD" stroke-width="1"/>
+<svg viewBox="0 0 120 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bowWood" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#D4A574"/>
+      <stop offset="40%" stop-color="#8B5E3C"/>
+      <stop offset="70%" stop-color="#6B3A2A"/>
+      <stop offset="100%" stop-color="#4A2518"/>
+    </linearGradient>
+    <linearGradient id="bowEdge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#C8956E"/>
+      <stop offset="100%" stop-color="#7A4B30"/>
+    </linearGradient>
+    <filter id="bowGlow">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Bow Limb - Upper -->
+  <path d="M25,15 C55,30 65,60 55,95" fill="none" stroke="url(#bowWood)" stroke-width="8" stroke-linecap="round"/>
+  <!-- Bow Limb - Lower -->
+  <path d="M55,105 C65,140 55,170 25,185" fill="none" stroke="url(#bowWood)" stroke-width="8" stroke-linecap="round"/>
+  
+  <!-- Outer edge highlight -->
+  <path d="M25,15 C55,30 65,60 55,95" fill="none" stroke="url(#bowEdge)" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+  <path d="M55,105 C65,140 55,170 25,185" fill="none" stroke="url(#bowEdge)" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+  
+  <!-- Grip (Center) -->
+  <rect x="48" y="90" width="14" height="20" rx="4" fill="#3D1F0F" stroke="#D4A574" stroke-width="1"/>
+  <rect x="50" y="92" width="10" height="16" rx="3" fill="#5C3320" opacity="0.8"/>
+  <!-- Grip wrap lines -->
+  <line x1="49" y1="95" x2="61" y2="95" stroke="#8B5E3C" stroke-width="0.8"/>
+  <line x1="49" y1="98" x2="61" y2="98" stroke="#8B5E3C" stroke-width="0.8"/>
+  <line x1="49" y1="101" x2="61" y2="101" stroke="#8B5E3C" stroke-width="0.8"/>
+  <line x1="49" y1="104" x2="61" y2="104" stroke="#8B5E3C" stroke-width="0.8"/>
+  
+  <!-- Limb Tips (Nocks) -->
+  <circle cx="25" cy="15" r="3" fill="#D4A574" stroke="#8B5E3C" stroke-width="1"/>
+  <circle cx="25" cy="185" r="3" fill="#D4A574" stroke="#8B5E3C" stroke-width="1"/>
+  
+  <!-- String -->
+  <line x1="25" y1="15" x2="25" y2="185" stroke="#F0E8D8" stroke-width="1.5" filter="url(#bowGlow)"/>
 </svg>
