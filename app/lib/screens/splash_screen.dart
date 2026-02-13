@@ -16,7 +16,7 @@ import 'package:talkbingo_app/utils/migration_manager.dart';
 import 'package:talkbingo_app/utils/url_cleaner.dart';
 import 'package:app_links/app_links.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:talkbingo_app/main.dart' show isPasswordRecoveryFromUrl;
+import 'package:talkbingo_app/globals.dart' show isPasswordRecoveryFromUrl;
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

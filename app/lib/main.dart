@@ -25,7 +25,7 @@ Future<void> main() async {
     final fullUrl = Uri.base.toString();
     final fragment = Uri.base.fragment;
     if (fragment.contains('type=recovery') || fullUrl.contains('type=recovery')) {
-      _isPasswordRecoveryFromUrl = true;
+      isPasswordRecoveryFromUrl = true;
       debugPrint('🔑 MAIN: Password recovery detected in URL before Supabase init');
     }
   }
@@ -63,12 +63,6 @@ Future<void> main() async {
 
   runApp(const TalkBingoApp());
 }
-
-/// Global flag: set in main() before Supabase init consumes the URL tokens
-bool _isPasswordRecoveryFromUrl = false;
-
-/// Public getter for SplashScreen to read
-bool get isPasswordRecoveryFromUrl => _isPasswordRecoveryFromUrl;
 
 
 class TalkBingoApp extends StatefulWidget {
