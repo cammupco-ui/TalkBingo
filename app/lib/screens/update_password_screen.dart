@@ -104,9 +104,9 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(
-          AppLocalizations.get('update_password') ?? 'Update Password',
-          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        title: const Text(
+          'Reset Password',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         automaticallyImplyLeading: false,
@@ -116,17 +116,10 @@ class _UpdatePasswordScreenState extends State<UpdatePasswordScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(Icons.lock_reset, size: 64, color: AppColors.hostPrimary),
             const SizedBox(height: 16),
-            Text(
-              AppLocalizations.get('set_new_password') ?? 'Set your new password',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              AppLocalizations.get('password_requirements') ?? 'Must be at least 6 characters',
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
+            const Text(
+              'Must be at least 6 characters',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
