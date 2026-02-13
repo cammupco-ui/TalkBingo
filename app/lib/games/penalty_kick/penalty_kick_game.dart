@@ -814,8 +814,15 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                                                      ),
                                                      const SizedBox(height: 20),
                                                      if (isKicker) ...[
+                                                       // ▶ START — clears pause + starts game
                                                        ElevatedButton.icon(
-                                                         onPressed: _startRoundManually,
+                                                         onPressed: () {
+                                                           if (_isPaused) {
+                                                             setState(() => _isPaused = false);
+                                                             _session.sendGameEvent({'eventType': 'game_resume'});
+                                                           }
+                                                           _startRoundManually();
+                                                         },
                                                          icon: const Icon(Icons.play_arrow, color: Colors.white),
                                                          label: Text("START GAME", style: GoogleFonts.alexandria(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                                                          style: ElevatedButton.styleFrom(
@@ -825,15 +832,19 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                                                          ),
                                                        ),
                                                        const SizedBox(height: 16),
+                                                       // ⏸ PAUSE toggle — ON/OFF
                                                        ElevatedButton.icon(
                                                          onPressed: () {
-                                                           setState(() => _isPaused = true);
-                                                           _session.sendGameEvent({'eventType': 'game_pause'});
+                                                           setState(() => _isPaused = !_isPaused);
+                                                           _session.sendGameEvent({'eventType': _isPaused ? 'game_pause' : 'game_resume'});
                                                          },
-                                                         icon: const Icon(Icons.pause, color: Colors.black87),
-                                                         label: Text("PAUSE", style: GoogleFonts.alexandria(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold)),
+                                                         icon: Icon(_isPaused ? Icons.pause_circle : Icons.pause, color: _isPaused ? Colors.white : Colors.black87),
+                                                         label: Text(
+                                                           _isPaused ? "PAUSED" : "PAUSE",
+                                                           style: GoogleFonts.alexandria(color: _isPaused ? Colors.white : Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
+                                                         ),
                                                          style: ElevatedButton.styleFrom(
-                                                           backgroundColor: Colors.amberAccent,
+                                                           backgroundColor: _isPaused ? Colors.redAccent : Colors.amberAccent,
                                                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                                          ),
@@ -868,38 +879,6 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                                                      Text(
                                                        isKicker ? "KICK!" : "DEFEND!",
                                                        style: GoogleFonts.alexandria(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold),
-                                                     ),
-                                                   ],
-                                                 ),
-                                               ),
-                                             ),
-
-                                           // PAUSE OVERLAY (with resume button)
-                                           if (_isPaused)
-                                             Positioned.fill(
-                                               child: Container(
-                                                 color: Colors.black.withOpacity(0.7),
-                                                 alignment: Alignment.center,
-                                                 child: Column(
-                                                   mainAxisSize: MainAxisSize.min,
-                                                   children: [
-                                                     Icon(Icons.pause_circle_outline, color: Colors.white70, size: 48),
-                                                     const SizedBox(height: 12),
-                                                     Text('PAUSED', style: GoogleFonts.alexandria(
-                                                       color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-                                                     const SizedBox(height: 16),
-                                                     ElevatedButton.icon(
-                                                       onPressed: () {
-                                                         setState(() => _isPaused = false);
-                                                         _session.sendGameEvent({'eventType': 'game_resume'});
-                                                       },
-                                                       icon: const Icon(Icons.play_arrow, color: Colors.white),
-                                                       label: Text("RESUME", style: GoogleFonts.alexandria(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                                                       style: ElevatedButton.styleFrom(
-                                                         backgroundColor: Colors.green,
-                                                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                                       ),
                                                      ),
                                                    ],
                                                  ),
