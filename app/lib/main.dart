@@ -19,6 +19,17 @@ import 'package:talkbingo_app/widgets/dev_navigation_bar.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // ⚡ CRITICAL: Capture password recovery flag from URL BEFORE Supabase.initialize()
+  // Supabase PKCE flow will consume and remove the hash tokens during init.
+  if (kIsWeb) {
+    final fullUrl = Uri.base.toString();
+    final fragment = Uri.base.fragment;
+    if (fragment.contains('type=recovery') || fullUrl.contains('type=recovery')) {
+      _isPasswordRecoveryFromUrl = true;
+      debugPrint('🔑 MAIN: Password recovery detected in URL before Supabase init');
+    }
+  }
+  
   // Fire and forget - don't block app startup
   AdState.initialize(); 
   AdState.loadBannerAd(); // Load banner ad on startup
@@ -52,6 +63,12 @@ Future<void> main() async {
 
   runApp(const TalkBingoApp());
 }
+
+/// Global flag: set in main() before Supabase init consumes the URL tokens
+bool _isPasswordRecoveryFromUrl = false;
+
+/// Public getter for SplashScreen to read
+bool get isPasswordRecoveryFromUrl => _isPasswordRecoveryFromUrl;
 
 
 class TalkBingoApp extends StatefulWidget {

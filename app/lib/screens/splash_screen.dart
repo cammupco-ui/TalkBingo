@@ -16,6 +16,7 @@ import 'package:talkbingo_app/utils/migration_manager.dart';
 import 'package:talkbingo_app/utils/url_cleaner.dart';
 import 'package:app_links/app_links.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:talkbingo_app/main.dart' show isPasswordRecoveryFromUrl;
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -129,23 +130,20 @@ class _SplashScreenState extends State<SplashScreen> {
       }
     }
     
-    // EARLY DETECTION: Check for password recovery token in URL hash
-    if (kIsWeb) {
-      final fragment = Uri.base.fragment;
-      final fullUrl = Uri.base.toString();
-      if (fragment.contains('type=recovery') || fullUrl.contains('type=recovery')) {
-        _isPasswordRecovery = true;
-        _addLog('🔑 Password recovery token detected in URL!');
-        // Give Supabase a moment to process the token, then navigate directly
-        Future.delayed(const Duration(milliseconds: 1500), () {
-          if (!mounted) return;
-          _addLog('🔑 Navigating to UpdatePasswordScreen');
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const UpdatePasswordScreen()),
-          );
-        });
-        return; // Skip normal session check entirely
-      }
+    // RECOVERY DETECTION: Use pre-captured flag from main.dart
+    // (URL tokens are consumed by Supabase.initialize() before SplashScreen loads)
+    if (kIsWeb && isPasswordRecoveryFromUrl) {
+      _isPasswordRecovery = true;
+      _addLog('🔑 Password recovery detected via main.dart pre-capture flag!');
+      // Give Supabase a moment to process the token, then navigate directly
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        if (!mounted) return;
+        _addLog('🔑 Navigating to UpdatePasswordScreen');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const UpdatePasswordScreen()),
+        );
+      });
+      return; // Skip normal session check entirely
     }
     
     _isDeepLinkCheckDone = true; 
