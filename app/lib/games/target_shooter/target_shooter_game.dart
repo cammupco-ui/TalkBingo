@@ -894,7 +894,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                               )
                            ),
 
-                        // MANUAL START OVERLAY
+                        // MANUAL START OVERLAY (pre-game)
                         if (_isWaitingForStart && !_showRoundOverlay && state['step'] != 'finished')
                            Container(
                               color: Colors.black.withOpacity(0.8),
@@ -907,7 +907,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                                        style: GoogleFonts.alexandria(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold)
                                     ),
                                     const SizedBox(height: 20),
-                                    if (isShooter)
+                                    if (isShooter) ...[
                                       ElevatedButton.icon(
                                          onPressed: _startRoundManually,
                                          icon: const Icon(Icons.play_arrow, color: Colors.white),
@@ -917,15 +917,29 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                                             padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                          ),
-                                      )
-                                    else
+                                      ),
+                                      const SizedBox(height: 16),
+                                      ElevatedButton.icon(
+                                         onPressed: () {
+                                           setState(() => _isPaused = true);
+                                           _session.sendGameEvent({'eventType': 'game_pause'});
+                                         },
+                                         icon: const Icon(Icons.pause, color: Colors.black87),
+                                         label: Text("PAUSE", style: GoogleFonts.alexandria(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold)),
+                                         style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.amberAccent,
+                                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                         ),
+                                      ),
+                                    ] else
                                       Column(
                                         children: [
                                            const CircularProgressIndicator(color: Colors.white),
                                            const SizedBox(height: 20),
                                            Text("Waiting for Shooter...", style: GoogleFonts.alexandria(color: Colors.white70, fontSize: 14)),
                                         ],
-                                      )
+                                      ),
                                  ],
                               ),
                            ),
@@ -951,76 +965,11 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                               ),
                            ),
 
-                        // ── START / PAUSE BUTTONS (always both visible) ──
-                        Positioned(
-                          top: 8, right: 8,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // ▶ START (enabled when paused)
-                              GestureDetector(
-                                onTap: _isPaused ? () {
-                                  setState(() => _isPaused = false);
-                                  _session.sendGameEvent({'eventType': 'game_resume'});
-                                } : null,
-                                child: Opacity(
-                                  opacity: _isPaused ? 1.0 : 0.4,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green.withValues(alpha: 0.9),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: Colors.greenAccent, width: 1.5),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
-                                        const SizedBox(width: 4),
-                                        Text('START', style: GoogleFonts.alexandria(
-                                          color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // ⏸ PAUSE (enabled when playing)
-                              GestureDetector(
-                                onTap: !_isPaused ? () {
-                                  setState(() => _isPaused = true);
-                                  _session.sendGameEvent({'eventType': 'game_pause'});
-                                } : null,
-                                child: Opacity(
-                                  opacity: !_isPaused ? 1.0 : 0.4,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.amber.withValues(alpha: 0.9),
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: Colors.amberAccent, width: 1.5),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.pause_rounded, color: Colors.black87, size: 20),
-                                        const SizedBox(width: 4),
-                                        Text('PAUSE', style: GoogleFonts.alexandria(
-                                          color: Colors.black87, fontSize: 12, fontWeight: FontWeight.bold)),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // PAUSE OVERLAY (dim screen when paused)
+                        // PAUSE OVERLAY (with resume button)
                         if (_isPaused)
                           Positioned.fill(
                             child: Container(
-                              color: Colors.black.withValues(alpha: 0.5),
+                              color: Colors.black.withOpacity(0.7),
                               alignment: Alignment.center,
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
@@ -1029,13 +978,25 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                                   const SizedBox(height: 12),
                                   Text('PAUSED', style: GoogleFonts.alexandria(
                                     color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-                                  const SizedBox(height: 8),
-                                  Text('Tap START to resume', style: GoogleFonts.alexandria(
-                                    color: Colors.white54, fontSize: 13)),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton.icon(
+                                    onPressed: () {
+                                      setState(() => _isPaused = false);
+                                      _session.sendGameEvent({'eventType': 'game_resume'});
+                                    },
+                                    icon: const Icon(Icons.play_arrow, color: Colors.white),
+                                    label: Text("RESUME", style: GoogleFonts.alexandria(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
                           ),
+
 
                       ],  // Stack children
                     ),   // Stack
