@@ -710,10 +710,7 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                              return Container(
                                 width: double.infinity,
                                 height: double.infinity,
-                                decoration: BoxDecoration(
-                                   border: Border.all(color: Colors.white, width: 2),
-                                   color: Colors.white10, // Slight tint
-                                ),
+                                color: Colors.black,
                                 child: ClipRect(
                                    child: Stack(
                                       children: [
@@ -813,43 +810,55 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                                                        style: GoogleFonts.alexandria(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold),
                                                      ),
                                                      const SizedBox(height: 20),
-                                                     if (isKicker) ...[
-                                                       // ▶ START — clears pause + starts game
-                                                       ElevatedButton.icon(
-                                                         onPressed: () {
-                                                           if (_isPaused) {
-                                                             setState(() => _isPaused = false);
-                                                             _session.sendGameEvent({'eventType': 'game_resume'});
-                                                           }
-                                                           _startRoundManually();
-                                                         },
-                                                         icon: const Icon(Icons.play_arrow, color: Colors.white),
-                                                         label: Text("START GAME", style: GoogleFonts.alexandria(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                                                         style: ElevatedButton.styleFrom(
-                                                           backgroundColor: AppColors.hostPrimary,
-                                                           padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                                         ),
-                                                       ),
-                                                       const SizedBox(height: 16),
-                                                       // ⏸ PAUSE toggle — ON/OFF
-                                                       ElevatedButton.icon(
-                                                         onPressed: () {
-                                                           setState(() => _isPaused = !_isPaused);
-                                                           _session.sendGameEvent({'eventType': _isPaused ? 'game_pause' : 'game_resume'});
-                                                         },
-                                                         icon: Icon(_isPaused ? Icons.pause_circle : Icons.pause, color: _isPaused ? Colors.white : Colors.black87),
-                                                         label: Text(
-                                                           _isPaused ? "PAUSED" : "PAUSE",
-                                                           style: GoogleFonts.alexandria(color: _isPaused ? Colors.white : Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
-                                                         ),
-                                                         style: ElevatedButton.styleFrom(
-                                                           backgroundColor: _isPaused ? Colors.redAccent : Colors.amberAccent,
-                                                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                                         ),
-                                                       ),
-                                                     ] else
+                                                      if (isKicker) ...[
+                                                        // START + PAUSE — horizontal, same size
+                                                        Row(
+                                                          mainAxisSize: MainAxisSize.min,
+                                                          children: [
+                                                            SizedBox(
+                                                              width: 150,
+                                                              height: 50,
+                                                              child: ElevatedButton.icon(
+                                                                onPressed: () {
+                                                                  if (_isPaused) {
+                                                                    setState(() => _isPaused = false);
+                                                                    _session.sendGameEvent({'eventType': 'game_resume'});
+                                                                  }
+                                                                  _startRoundManually();
+                                                                },
+                                                                icon: const Icon(Icons.play_arrow, color: Colors.white, size: 20),
+                                                                label: Text("START", style: GoogleFonts.alexandria(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                                                                style: ElevatedButton.styleFrom(
+                                                                  backgroundColor: AppColors.hostPrimary,
+                                                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            const SizedBox(width: 16),
+                                                            SizedBox(
+                                                              width: 150,
+                                                              height: 50,
+                                                              child: ElevatedButton.icon(
+                                                                onPressed: () {
+                                                                  setState(() => _isPaused = !_isPaused);
+                                                                  _session.sendGameEvent({'eventType': _isPaused ? 'game_pause' : 'game_resume'});
+                                                                },
+                                                                icon: Icon(_isPaused ? Icons.pause_circle : Icons.pause, color: _isPaused ? Colors.white : Colors.black87, size: 20),
+                                                                label: Text(
+                                                                  _isPaused ? "PAUSED" : "PAUSE",
+                                                                  style: GoogleFonts.alexandria(color: _isPaused ? Colors.white : Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
+                                                                ),
+                                                                style: ElevatedButton.styleFrom(
+                                                                  backgroundColor: _isPaused ? Colors.redAccent : Colors.amberAccent,
+                                                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ] else
                                                        Column(
                                                          children: [
                                                            const CircularProgressIndicator(color: Colors.white),
@@ -1001,56 +1010,74 @@ class _SoccerPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
      final double w = size.width;
      final double h = size.height;
-     
-     // 1. GREEN PITCH BACKGROUND
-     final pitchPaint = Paint()
-       ..shader = LinearGradient(
-         begin: Alignment.topCenter,
-         end: Alignment.bottomCenter,
-         colors: [
-           const Color(0xFF1A5C2A),  // Dark green (goal area)
-           const Color(0xFF228B3B),  // Mid green
-           const Color(0xFF2DA84A),  // Light green (kick zone)
-         ],
-       ).createShader(Rect.fromLTWH(0, 0, w, h));
-     canvas.drawRect(Rect.fromLTWH(0, 0, w, h), pitchPaint);
-     
-     // Grass stripe pattern
-     final stripePaint = Paint()..color = const Color(0xFF1E7A34).withValues(alpha: 0.15);
-     double stripeHeight = 30.0;
-     for (double y = 0; y < h; y += stripeHeight * 2) {
-        canvas.drawRect(Rect.fromLTWH(0, y, w, stripeHeight), stripePaint);
-     }
-     
-     // 2. FIELD MARKINGS
-     final linePaint = Paint()
-       ..color = Colors.white.withValues(alpha: 0.5)
-       ..style = PaintingStyle.stroke
-       ..strokeWidth = 2;
-     
-     // Center line
-     canvas.drawLine(Offset(0, h / 2), Offset(w, h / 2), linePaint);
-     
-     // Center circle
-     canvas.drawCircle(Offset(w / 2, h / 2), 50, linePaint);
-     canvas.drawCircle(Offset(w / 2, h / 2), 3, Paint()..color = Colors.white.withValues(alpha: 0.5));
-     
-     // Penalty area (top)
-     final double penW = w * 0.6;
-     final double penH = zoneHeight * 0.8;
-     canvas.drawRect(
-       Rect.fromLTWH((w - penW) / 2, 0, penW, penH), 
-       linePaint
-     );
-     
-     // Penalty spot
-     canvas.drawCircle(Offset(w / 2, h * 0.75), 4, Paint()..color = Colors.white.withValues(alpha: 0.5));
-     
-     // Kick zone arc (bottom)
-     final kickPaint = Paint()
-       ..color = colPrimary.withValues(alpha: 0.1)
-       ..style = PaintingStyle.fill;
-     canvas.drawRect(Rect.fromLTWH(0, zoneHeight * 2, w, zoneHeight), kickPaint);
+          // 1. BLACK BACKGROUND
+      final bgPaint = Paint()..color = const Color(0xFF111111);
+      canvas.drawRect(Rect.fromLTWH(0, 0, w, h), bgPaint);
+      
+      // Subtle grid pattern
+      final gridPaint2 = Paint()
+        ..color = Colors.white.withValues(alpha: 0.04)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.5;
+      for (double gx = 0; gx < w; gx += 40) {
+         canvas.drawLine(Offset(gx, 0), Offset(gx, h), gridPaint2);
+      }
+      for (double gy = 0; gy < h; gy += 40) {
+         canvas.drawLine(Offset(0, gy), Offset(w, gy), gridPaint2);
+      }
+      
+      // 2. ZONE SEPARATOR
+      final zonePaint = Paint()
+        ..color = Colors.white.withValues(alpha: 0.15)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1;
+      canvas.drawLine(Offset(0, zoneHeight), Offset(w, zoneHeight), zonePaint);
+
+      // 2b. SUBTLE FIELD MARKINGS (gray, semi-transparent — soccer identity)
+      final fieldPaint = Paint()
+        ..color = Colors.white.withValues(alpha: 0.08)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0;
+
+      // Center line (horizontal, in the kick zone area)
+      final kickZoneCenter = zoneHeight + (h - zoneHeight) / 2;
+      canvas.drawLine(Offset(0, kickZoneCenter), Offset(w, kickZoneCenter), fieldPaint);
+
+      // Center circle
+      final centerRadius = w * 0.15;
+      canvas.drawCircle(Offset(w / 2, kickZoneCenter), centerRadius, fieldPaint);
+
+      // Penalty area box (around the goal zone)
+      final penaltyWidth = w * 0.6;
+      final penaltyLeft = (w - penaltyWidth) / 2;
+      final penaltyBottom = zoneHeight + (h - zoneHeight) * 0.25;
+      canvas.drawRect(
+        Rect.fromLTRB(penaltyLeft, 0, penaltyLeft + penaltyWidth, penaltyBottom),
+        fieldPaint,
+      );
+
+      // Goal area box (smaller box inside penalty area)
+      final goalAreaWidth = w * 0.35;
+      final goalAreaLeft = (w - goalAreaWidth) / 2;
+      final goalAreaBottom = zoneHeight * 0.7;
+      canvas.drawRect(
+        Rect.fromLTRB(goalAreaLeft, 0, goalAreaLeft + goalAreaWidth, goalAreaBottom),
+        fieldPaint,
+      );
+
+      // Penalty arc (semicircle at bottom of penalty area)
+      final arcPaint = Paint()
+        ..color = Colors.white.withValues(alpha: 0.06)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0;
+      final penaltySpot = Offset(w / 2, penaltyBottom + 20);
+      canvas.drawArc(
+        Rect.fromCenter(center: penaltySpot, width: centerRadius * 1.2, height: centerRadius * 1.2),
+        3.14 * 0.2, // start angle
+        3.14 * 0.6, // sweep angle (partial arc facing down)
+        false,
+        arcPaint,
+      );
 
      // 3. GOAL NET (Perspective depth)
      // Net grid (slightly wider at top for perspective)

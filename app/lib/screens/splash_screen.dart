@@ -197,12 +197,16 @@ class _SplashScreenState extends State<SplashScreen> {
       
       if (data.session != null) {
           _addLog("✅ Session Found in Listener.");
+          // If password recovery is in progress, don't route to HOME
+          if (_isPasswordRecovery) {
+             _addLog("🔑 Recovery in progress — skipping normal auth routing.");
+             return;
+          }
           // We MUST wait for deep link check before handling user
           if (_isDeepLinkCheckDone) {
              _handleAuthenticatedUser(data.session!);
           } else {
              _addLog("Queued Auth Handling until Deep Link check done.");
-             // The sequence loop will eventually call _checkExistingSession which handles this case or currentSession
           }
       }
     });
@@ -258,6 +262,17 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _handleAuthenticatedUser(Session session) async {
+    // Guard: If password recovery flow is active, redirect there instead
+    if (_isPasswordRecovery) {
+      _addLog("🔑 Recovery active — redirecting to UpdatePasswordScreen instead of Home.");
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const UpdatePasswordScreen()),
+        );
+      }
+      return;
+    }
+
     _addLog("Handling Auth User. Migrating...");
     // 1. Attempt Migration (Guest -> Host) if pending
     await MigrationManager().attemptMigration();

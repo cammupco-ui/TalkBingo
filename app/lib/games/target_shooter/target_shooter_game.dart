@@ -908,40 +908,52 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                                     ),
                                     const SizedBox(height: 20),
                                     if (isShooter) ...[
-                                      // ▶ START — clears pause + starts game
-                                      ElevatedButton.icon(
-                                         onPressed: () {
-                                           if (_isPaused) {
-                                             setState(() => _isPaused = false);
-                                             _session.sendGameEvent({'eventType': 'game_resume'});
-                                           }
-                                           _startRoundManually();
-                                         },
-                                         icon: const Icon(Icons.play_arrow, color: Colors.white),
-                                         label: Text("START GAME", style: GoogleFonts.alexandria(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                                         style: ElevatedButton.styleFrom(
-                                            backgroundColor: AppColors.hostPrimary,
-                                            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                         ),
-                                      ),
-                                      const SizedBox(height: 16),
-                                      // ⏸ PAUSE toggle — ON/OFF
-                                      ElevatedButton.icon(
-                                         onPressed: () {
-                                           setState(() => _isPaused = !_isPaused);
-                                           _session.sendGameEvent({'eventType': _isPaused ? 'game_pause' : 'game_resume'});
-                                         },
-                                         icon: Icon(_isPaused ? Icons.pause_circle : Icons.pause, color: _isPaused ? Colors.white : Colors.black87),
-                                         label: Text(
-                                           _isPaused ? "PAUSED" : "PAUSE",
-                                           style: GoogleFonts.alexandria(color: _isPaused ? Colors.white : Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
-                                         ),
-                                         style: ElevatedButton.styleFrom(
-                                            backgroundColor: _isPaused ? Colors.redAccent : Colors.amberAccent,
-                                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                         ),
+                                      // START + PAUSE — horizontal, same size
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          SizedBox(
+                                            width: 150,
+                                            height: 50,
+                                            child: ElevatedButton.icon(
+                                              onPressed: () {
+                                                if (_isPaused) {
+                                                  setState(() => _isPaused = false);
+                                                  _session.sendGameEvent({'eventType': 'game_resume'});
+                                                }
+                                                _startRoundManually();
+                                              },
+                                              icon: const Icon(Icons.play_arrow, color: Colors.white, size: 20),
+                                              label: Text("START", style: GoogleFonts.alexandria(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: AppColors.hostPrimary,
+                                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          SizedBox(
+                                            width: 150,
+                                            height: 50,
+                                            child: ElevatedButton.icon(
+                                              onPressed: () {
+                                                setState(() => _isPaused = !_isPaused);
+                                                _session.sendGameEvent({'eventType': _isPaused ? 'game_pause' : 'game_resume'});
+                                              },
+                                              icon: Icon(_isPaused ? Icons.pause_circle : Icons.pause, color: _isPaused ? Colors.white : Colors.black87, size: 20),
+                                              label: Text(
+                                                _isPaused ? "PAUSED" : "PAUSE",
+                                                style: GoogleFonts.alexandria(color: _isPaused ? Colors.white : Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
+                                              ),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: _isPaused ? Colors.redAccent : Colors.amberAccent,
+                                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ] else
                                       Column(
