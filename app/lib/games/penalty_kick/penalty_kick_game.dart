@@ -258,11 +258,11 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
       } else if (payload['eventType'] == 'ball_reset') {
          if (!isKicker) {
             setState(() => _resetBall());
-         } else if (payload['eventType'] == 'game_pause') {
+         }
+      } else if (payload['eventType'] == 'game_pause') {
          setState(() => _isPaused = true);
       } else if (payload['eventType'] == 'game_resume') {
          setState(() => _isPaused = false);
-      }
       }
    }
 
@@ -524,7 +524,7 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
     if (_shotTaken) return;
     
     final ballRect = Rect.fromLTWH(_ball.x, _ball.y, _ball.width, _ball.height);
-    final touchRect = ballRect.inflate(20);
+    final touchRect = ballRect.inflate(60);
     
     if (touchRect.contains(details.localPosition)) {
        setState(() {
@@ -799,22 +799,24 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
 
                                          // OVERLAYS (Centered)
 
-                                          // ── START / PAUSE BUTTONS ──
+                                          // ── START / PAUSE BUTTONS (always both visible) ──
                                           Positioned(
                                             top: 8, right: 8,
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                if (_isPaused)
-                                                  GestureDetector(
-                                                    onTap: () {
-                                                      setState(() => _isPaused = false);
-                                                      _session.sendGameEvent({'eventType': 'game_resume'});
-                                                    },
+                                                // ▶ START (enabled when paused)
+                                                GestureDetector(
+                                                  onTap: _isPaused ? () {
+                                                    setState(() => _isPaused = false);
+                                                    _session.sendGameEvent({'eventType': 'game_resume'});
+                                                  } : null,
+                                                  child: Opacity(
+                                                    opacity: _isPaused ? 1.0 : 0.4,
                                                     child: Container(
                                                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                                       decoration: BoxDecoration(
-                                                        color: Colors.green.withOpacity(0.9),
+                                                        color: Colors.green.withValues(alpha: 0.9),
                                                         borderRadius: BorderRadius.circular(20),
                                                         border: Border.all(color: Colors.greenAccent, width: 1.5),
                                                       ),
@@ -829,17 +831,20 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                                                       ),
                                                     ),
                                                   ),
-                                                if (_isPaused) const SizedBox(width: 8),
-                                                if (!_isPaused)
-                                                  GestureDetector(
-                                                    onTap: () {
-                                                      setState(() => _isPaused = true);
-                                                      _session.sendGameEvent({'eventType': 'game_pause'});
-                                                    },
+                                                ),
+                                                const SizedBox(width: 8),
+                                                // ⏸ PAUSE (enabled when playing)
+                                                GestureDetector(
+                                                  onTap: !_isPaused ? () {
+                                                    setState(() => _isPaused = true);
+                                                    _session.sendGameEvent({'eventType': 'game_pause'});
+                                                  } : null,
+                                                  child: Opacity(
+                                                    opacity: !_isPaused ? 1.0 : 0.4,
                                                     child: Container(
                                                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                                       decoration: BoxDecoration(
-                                                        color: Colors.amber.withOpacity(0.9),
+                                                        color: Colors.amber.withValues(alpha: 0.9),
                                                         borderRadius: BorderRadius.circular(20),
                                                         border: Border.all(color: Colors.amberAccent, width: 1.5),
                                                       ),
@@ -854,6 +859,7 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                                                       ),
                                                     ),
                                                   ),
+                                                ),
                                               ],
                                             ),
                                           ),
@@ -861,7 +867,7 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                                           if (_isPaused)
                                             Positioned.fill(
                                               child: Container(
-                                                color: Colors.black.withOpacity(0.5),
+                                                color: Colors.black.withValues(alpha: 0.5),
                                                 alignment: Alignment.center,
                                                 child: Column(
                                                   mainAxisSize: MainAxisSize.min,

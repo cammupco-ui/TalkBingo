@@ -410,6 +410,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
       
       // Update Bullets (Both sides need to run physics for bullets they know about)
       for (var b in _bullets) {
+        if (b.isDead) continue;
         b.update(dt);
         // Collision: Only Authoritative on Shooter side?
         // Or both simulate?
@@ -464,7 +465,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
            }
            // 2. Raycast Check (Tunneling - Line Segment vs Rect)
            // If we crossed the bottom edge of the target
-           else if (prevTipY > targetRect.bottom && tipY < targetRect.bottom) {
+           else if (!b.isDead && prevTipY > targetRect.bottom && tipY < targetRect.bottom) {
                 // Find X intersection at bottom
                 // t = (Y_target - Y_prev) / (Y_curr - Y_prev)
                 double t = (targetRect.bottom - prevTipY) / (tipY - prevTipY);
@@ -473,11 +474,12 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                 if (intersectX >= targetRect.left && intersectX <= targetRect.right) {
                     b.isDead = true;
                     // Stick at intersection
-                    _stickArrow(b, intersectX, targetRect.bottom - 2); 
+                    _stickArrow(b, intersectX, targetRect.bottom - 2);
+                    continue;
                 }
            }
            
-           if (b.y < -50) b.isDead = true;
+           if (!b.isDead && b.y < -50) b.isDead = true;
         } else {
            // Spectator: Just Visuals
            if (b.y < -50) b.isDead = true;
@@ -949,19 +951,20 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                               ),
                            ),
 
-                        // ── START / PAUSE BUTTONS (top-right, always visible) ──
+                        // ── START / PAUSE BUTTONS (always both visible) ──
                         Positioned(
                           top: 8, right: 8,
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // ▶ START / RESUME
-                              if (_isPaused)
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() => _isPaused = false);
-                                    _session.sendGameEvent({'eventType': 'game_resume'});
-                                  },
+                              // ▶ START (enabled when paused)
+                              GestureDetector(
+                                onTap: _isPaused ? () {
+                                  setState(() => _isPaused = false);
+                                  _session.sendGameEvent({'eventType': 'game_resume'});
+                                } : null,
+                                child: Opacity(
+                                  opacity: _isPaused ? 1.0 : 0.4,
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                     decoration: BoxDecoration(
@@ -980,14 +983,16 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                                     ),
                                   ),
                                 ),
-                              if (_isPaused) const SizedBox(width: 8),
-                              // ⏸ PAUSE
-                              if (!_isPaused)
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() => _isPaused = true);
-                                    _session.sendGameEvent({'eventType': 'game_pause'});
-                                  },
+                              ),
+                              const SizedBox(width: 8),
+                              // ⏸ PAUSE (enabled when playing)
+                              GestureDetector(
+                                onTap: !_isPaused ? () {
+                                  setState(() => _isPaused = true);
+                                  _session.sendGameEvent({'eventType': 'game_pause'});
+                                } : null,
+                                child: Opacity(
+                                  opacity: !_isPaused ? 1.0 : 0.4,
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                     decoration: BoxDecoration(
@@ -1006,6 +1011,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                                     ),
                                   ),
                                 ),
+                              ),
                             ],
                           ),
                         ),
