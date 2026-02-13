@@ -805,14 +805,18 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                // ▶ START (enabled when paused)
+                                                // ▶ START (enabled when paused OR waiting for start)
                                                 GestureDetector(
-                                                  onTap: _isPaused ? () {
-                                                    setState(() => _isPaused = false);
-                                                    _session.sendGameEvent({'eventType': 'game_resume'});
+                                                  onTap: (_isPaused || _isWaitingForStart) ? () {
+                                                    if (_isWaitingForStart) {
+                                                      _startRoundManually();
+                                                    } else {
+                                                      setState(() => _isPaused = false);
+                                                      _session.sendGameEvent({'eventType': 'game_resume'});
+                                                    }
                                                   } : null,
                                                   child: Opacity(
-                                                    opacity: _isPaused ? 1.0 : 0.4,
+                                                    opacity: (_isPaused || _isWaitingForStart) ? 1.0 : 0.4,
                                                     child: Container(
                                                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                                       decoration: BoxDecoration(
