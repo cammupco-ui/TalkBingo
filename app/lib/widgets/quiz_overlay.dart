@@ -406,7 +406,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
               child: _buildOptionButton(
                 context,
                 label: widget.optionA,
-                color: const Color(0xFF3B82F6), // Vibrant Blue
+                color: AppColors.hostPrimary, // Design System: Host Pink
                 value: 'A',
                 enabled: !readOnly,
                 isSelected: isASelected,
@@ -420,7 +420,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
               child: _buildOptionButton(
                 context,
                 label: widget.optionB,
-                color: const Color(0xFFEC4899), // Hot Pink
+                color: AppColors.guestPrimary, // Design System: Guest Purple
                 value: 'B',
                 enabled: !readOnly,
                 isSelected: isBSelected,
