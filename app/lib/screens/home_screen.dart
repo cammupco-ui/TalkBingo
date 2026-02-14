@@ -366,24 +366,29 @@ class _HomeScreenState extends State<HomeScreen> {
               // 3. Touch Targets (Ghost Buttons over text areas)
               // Text is baked into SVG. We just keep the GestureDetector areas.
 
-              // Invisible anchor for coach mark spotlight on center NEW GAME button
+              // Invisible anchor for coach mark spotlight — matches SVG pink button exactly
               Positioned(
-                left: (designWidth - 150) / 2,
-                top: (designHeight - 150) / 2,
-                width: 150,
-                height: 150,
+                left: 198, top: 130,
+                width: 120, height: 120,
                 child: IgnorePointer(
                   child: Container(key: _newGameKey, color: Colors.transparent),
                 ),
               ),
               
-              // Resume Game (Top Left Quadrant)
+              // Invisible anchor for coach mark spotlight — matches SVG top-left quadrant
+              Positioned(
+                left: 80, top: 11,
+                width: 120, height: 120,
+                child: IgnorePointer(
+                  child: Container(key: _resumeKey, color: Colors.transparent),
+                ),
+              ),
+              
+              // Resume Game (Top Left Quadrant) — touch target
               Positioned(
                 left: 55, top: 10,
                 width: 160, height: 140,
-                child: Container(
-                  key: _resumeKey,
-                  child: _InteractiveTextButton(
+                child: _InteractiveTextButton(
                   text: AppLocalizations.get('resume_game'),
                   isActive: true, // Always allow interaction to show hover effect
                   onTap: () {
@@ -402,7 +407,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontSize: 18,
                   width: 160,
                   height: 140,
-                )),
+                ),
               ),
 
               // Find Players (Bottom Right Quadrant)
