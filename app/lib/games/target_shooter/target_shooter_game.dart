@@ -515,8 +515,17 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
   }
 
   void _stickArrow(GameEntity b, double hitX, double hitY) {
-       double relX = hitX - _target.x - (_config!.arrowWidth/2);
-       double relY = hitY - _target.y;
+       double relX = hitX - _target.x - (_config!.stuckArrowWidth / 2);
+       double relY = hitY - _target.y - (_config!.stuckArrowHeight / 2);
+
+       // Clamp to visual target circle area so arrows appear ON the target
+       final double minX = _target.width * 0.10;
+       final double maxX = _target.width * 0.90 - _config!.stuckArrowWidth;
+       final double minY = _target.height * 0.10;
+       final double maxY = _target.height * 0.80 - _config!.stuckArrowHeight;
+       relX = relX.clamp(minX, maxX);
+       relY = relY.clamp(minY, maxY);
+
        double angle = (b.vx != 0 || b.vy != 0) ? atan2(b.vy, b.vx) + pi/2 : 0;
        
        _stuckArrows.add({
