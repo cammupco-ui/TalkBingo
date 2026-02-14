@@ -312,6 +312,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   
   @override
   void dispose() {
+    _centerNotificationEntry?.remove();
+    _centerNotificationEntry = null;
     WidgetsBinding.instance.removeObserver(this); // Remove Keyboard Metrics Observer
     AdState.isGameActive.value = false;
     _pollingTimer?.cancel();
@@ -369,21 +371,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         _session.guestNickname != null && _session.guestNickname!.isNotEmpty) {
       _hasShownEntranceToast = true;
       final guestName = _session.guestNickname!;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.person_add, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
-              Text(AppLocalizations.get('guest_joined').replaceAll('{name}', guestName),
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-            ],
-          ),
-          backgroundColor: Colors.green.shade700,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          duration: const Duration(seconds: 3),
-        ),
+      _showCenterNotification(
+        AppLocalizations.get('guest_joined').replaceAll('{name}', guestName),
+        icon: Icons.person_add,
+        duration: const Duration(seconds: 3),
       );
     }
 
@@ -2152,9 +2143,30 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
 
   void _showSnackBar(String msg, {Color color = Colors.red}) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: color),
+    _showCenterNotification(msg);
+  }
+
+  OverlayEntry? _centerNotificationEntry;
+
+  void _showCenterNotification(String msg, {IconData? icon, Duration duration = const Duration(seconds: 2)}) {
+    if (!mounted) return;
+    // Remove existing notification if any
+    _centerNotificationEntry?.remove();
+    _centerNotificationEntry = null;
+
+    _centerNotificationEntry = OverlayEntry(
+      builder: (context) => _CenterNotificationWidget(
+        message: msg,
+        icon: icon,
+        duration: duration,
+        onDismiss: () {
+          _centerNotificationEntry?.remove();
+          _centerNotificationEntry = null;
+        },
+      ),
     );
+
+    Overlay.of(context).insert(_centerNotificationEntry!);
   }
 
   // Legacy _handleQuizResult removed as logic moved to _handleOptionSelected & _session
@@ -3697,6 +3709,102 @@ class _HoverMenuItemState extends State<_HoverMenuItem> {
         style: TextStyle(
           color: _isHovered ? widget.hoverColor : Colors.black87,
           fontWeight: _isHovered ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+    );
+  }
+}
+
+/// Centered notification widget that fades in/out with semi-transparent background
+class _CenterNotificationWidget extends StatefulWidget {
+  final String message;
+  final IconData? icon;
+  final Duration duration;
+  final VoidCallback onDismiss;
+
+  const _CenterNotificationWidget({
+    required this.message,
+    this.icon,
+    required this.duration,
+    required this.onDismiss,
+  });
+
+  @override
+  State<_CenterNotificationWidget> createState() => _CenterNotificationWidgetState();
+}
+
+class _CenterNotificationWidgetState extends State<_CenterNotificationWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeInOut,
+    );
+
+    _animController.forward();
+
+    // Auto dismiss after duration
+    Future.delayed(widget.duration, () {
+      if (mounted) {
+        _animController.reverse().then((_) {
+          widget.onDismiss();
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Center(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 40),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.75),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (widget.icon != null) ...[
+                    Icon(widget.icon, color: Colors.white, size: 22),
+                    const SizedBox(width: 10),
+                  ],
+                  Flexible(
+                    child: Text(
+                      widget.message,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        decoration: TextDecoration.none,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
