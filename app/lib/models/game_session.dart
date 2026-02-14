@@ -18,7 +18,19 @@ class GameSession with ChangeNotifier {
   void _detectLanguage() {
       try {
          final locale = ui.PlatformDispatcher.instance.locale;
-         _language = locale.languageCode == 'ko' ? 'ko' : 'en';
+         final allLocales = ui.PlatformDispatcher.instance.locales;
+         debugPrint('🌐 [Language] Primary locale: ${locale.languageCode}_${locale.countryCode}');
+         debugPrint('🌐 [Language] All locales: ${allLocales.map((l) => '${l.languageCode}_${l.countryCode}').join(', ')}');
+         
+         // Check primary locale first
+         if (locale.languageCode == 'ko') {
+           _language = 'ko';
+         } else {
+           // Also check all browser locales — if any is Korean, use Korean
+           final hasKo = allLocales.any((l) => l.languageCode == 'ko');
+           _language = hasKo ? 'ko' : 'en';
+         }
+         debugPrint('🌐 [Language] Selected: $_language');
       } catch (e) {
          debugPrint("Error detecting locale: $e");
       }
