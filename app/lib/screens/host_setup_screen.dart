@@ -60,35 +60,27 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
 
   Future<void> _shareCode() async {
     if (_inviteCode != null) {
+      // Always use web URL for SMS sharing (custom schemes like talkbingo:// 
+      // are not auto-linked by SMS apps)
       String link;
       if (kIsWeb) {
-        // Fix: Ensure we include the base path (e.g. /TalkBingo/) 
-        // Uri.base.origin gives "https://domain.com"
-        // Uri.base.path gives "/TalkBingo/" (or similar)
-        // Combine them to get "https://domain.com/TalkBingo/"
         String baseUrl = Uri.base.origin + Uri.base.path;
-        // Remove trailing 'index.html' if present (unlikely but possible)
         baseUrl = baseUrl.replaceAll('index.html', '');
-        // Remove trailing slash to clean up before appending query
         if (baseUrl.endsWith('/')) {
-             baseUrl = baseUrl.substring(0, baseUrl.length - 1);
+              baseUrl = baseUrl.substring(0, baseUrl.length - 1);
         }
-        
-        // Force Hash Routing Format for GitHub Pages consistency
-        // Even if local dev doesn't use it, Prod does.
         link = '$baseUrl/#/?code=$_inviteCode';
       } else {
-        // Mobile App: Use a deep link or valid web placeholder
-        // Since we don't have a real domain yet, using a standard schema example or custom scheme
-        link = 'talkbingo://join?code=$_inviteCode';
+        // Mobile: use the production web URL so SMS apps auto-linkify it
+        link = 'https://talkbingo.app/#/?code=$_inviteCode';
       }
       
+      // Place URL on its own line so SMS apps auto-linkify it
       final String message = 
-          'TalkBingo Invite Code\n'
-          'An invitation has arrived! 💌\n'
-          '초대장이 도착했습니다! 💌\n\n'
-          'Code : $_inviteCode\n'
-          'Join : $link';
+          'TalkBingo 💌\n'
+          '초대장이 도착했습니다!\n\n'
+          '$link\n\n'
+          'Code: $_inviteCode';
 
       // 1. Try to open System Share Sheet
       // We attempt this on ALL platforms (including Web).
