@@ -15,6 +15,8 @@ import 'package:talkbingo_app/games/config/penalty_kick_config.dart';
 import 'package:talkbingo_app/games/config/responsive_config.dart';
 import 'package:talkbingo_app/widgets/game_header.dart';
 import 'package:talkbingo_app/widgets/power_gauge.dart';
+import 'package:talkbingo_app/widgets/mini_game_coach_overlay.dart';
+import 'package:talkbingo_app/services/onboarding_service.dart';
 
 class PenaltyKickGame extends StatefulWidget {
   final VoidCallback onWin; 
@@ -85,12 +87,18 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
   // Visual Effects
   double _goalFlash = 0.0;
   double _ballRotation = 0.0;
+  bool _showCoachOverlay = false;
 
   @override
   void initState() {
     super.initState();
     _session.addListener(_onSessionUpdate);
     _eventSub = _session.gameEvents.listen(_onGameEvent);
+    
+    // Check coach mark
+    OnboardingService.shouldShowCoachMark('mini_penalty').then((show) {
+      if (show && mounted) setState(() => _showCoachOverlay = true);
+    });
     
     // Shake Animation
     _goalieShakeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
@@ -296,7 +304,10 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
   }
   
   void _onTick(Duration elapsed) {
-    if (!_isRoundActive || _isRoundOver || _isPaused) return;
+    if (!_isRoundActive || _isRoundOver || _isPaused) {
+      _lastTime = 0; // Reset so resume doesn't jump the timer
+      return;
+    }
 
     final double currentTime = elapsed.inMicroseconds / 1000000.0;
     double dt = currentTime - _lastTime;
@@ -904,6 +915,18 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
               ],
             ),
             
+
+          // ── Coach Mark Overlay ──
+          if (_showCoachOverlay)
+            Positioned.fill(
+              child: MiniGameCoachOverlay(
+                gameType: 'penalty',
+                onClose: () {
+                  setState(() => _showCoachOverlay = false);
+                  if (_isWaitingForStart) _startRoundManually();
+                },
+              ),
+            ),
 
          ]
       ),

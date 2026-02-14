@@ -689,6 +689,11 @@ You may also manage your privacy settings directly within the App under Settings
       'report_other': 'Other',
       'report_sent': 'Report has been submitted.',
 
+      // ── Mini-Game Coach Marks ──
+      'mini_coach_penalty': 'Swipe toward the goal to shoot!',
+      'mini_coach_target': 'Pull back to shoot the arrow!',
+      'mini_coach_dismiss': 'Don\'t show again',
+
       // ── Power Gauge ──
       'power_gauge_tip': 'Green zone is optimal power',
 
@@ -1448,6 +1453,11 @@ TalkBingo는 14세 미만의 어린이를 대상으로 하지 않습니다. 당�
       'report_weird': '내용 이상함 (Weird)',
       'report_other': '기타 (Other)',
       'report_sent': '신고가 접수되었습니다.',
+
+      // ── Mini-Game Coach Marks ──
+      'mini_coach_penalty': '골대 방향으로 밀어서 슛!',
+      'mini_coach_target': '활시위를 당겨서 발사!',
+      'mini_coach_dismiss': '다신 안보기',
 
       // ── Power Gauge ──
       'power_gauge_tip': '초록 구간이 최적 파워',

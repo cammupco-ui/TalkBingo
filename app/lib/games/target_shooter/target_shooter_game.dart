@@ -14,6 +14,8 @@ import 'package:talkbingo_app/games/config/target_shooter_config.dart';
 import 'package:talkbingo_app/games/config/responsive_config.dart';
 import 'package:talkbingo_app/widgets/game_header.dart';
 import 'package:talkbingo_app/widgets/power_gauge.dart';
+import 'package:talkbingo_app/widgets/mini_game_coach_overlay.dart';
+import 'package:talkbingo_app/services/onboarding_service.dart';
 
 class TargetShooterGame extends StatefulWidget {
   final VoidCallback onWin; 
@@ -80,6 +82,7 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
   
   // Size
   Size _gameSize = Size.zero;
+  bool _showCoachOverlay = false;
 
   @override
   void initState() {
@@ -97,6 +100,11 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
     _ticker = createTicker(_onTick)..start();
     _session.addListener(_onSessionUpdate);
     _eventSub = _session.gameEvents.listen(_onGameEvent);
+    
+    // Check coach mark
+    OnboardingService.shouldShowCoachMark('mini_target').then((show) {
+      if (show && mounted) setState(() => _showCoachOverlay = true);
+    });
     
     // Check initial state
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -318,7 +326,10 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
   }
 
   void _onTick(Duration elapsed) {
-    if (!_isRoundActive || _isRoundOver || _isPaused) return;
+    if (!_isRoundActive || _isRoundOver || _isPaused) {
+      _lastTime = 0; // Reset so resume doesn't jump the timer
+      return;
+    }
 
     final double currentTime = elapsed.inMicroseconds / 1000000.0;
     double dt = currentTime - _lastTime;
@@ -695,7 +706,9 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0118),
-      body: SafeArea(
+      body: Stack(
+        children: [
+          SafeArea(
         child: Column(
           children: [
             // 1. GAME HEADER
@@ -999,6 +1012,20 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
           ],      // Column children
         ),        // Column
       ),          // SafeArea
+
+          // ── Coach Mark Overlay ──
+          if (_showCoachOverlay)
+            Positioned.fill(
+              child: MiniGameCoachOverlay(
+                gameType: 'target',
+                onClose: () {
+                  setState(() => _showCoachOverlay = false);
+                  if (_isWaitingForStart) _startRoundManually();
+                },
+              ),
+            ),
+        ],
+      ),
       // GLOBAL OVERLAYS (Covering Header too)
       bottomSheet: (state != null && state['step'] == 'finished') ? Container(
           width: double.infinity,
