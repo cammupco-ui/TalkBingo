@@ -39,6 +39,7 @@ import 'package:talkbingo_app/utils/file_helper.dart';
 import 'package:audioplayers/audioplayers.dart'; // For Playback
 import 'package:talkbingo_app/services/onboarding_service.dart';
 import 'package:talkbingo_app/widgets/coach_mark_overlay.dart';
+import 'package:talkbingo_app/widgets/game_tooltip.dart';
 
 class GameScreen extends StatefulWidget {
   final bool isReviewMode;
@@ -146,6 +147,28 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
 
   // Two-Tap Preview State
   int? _previewIndex;
+
+  // ── Contextual Tooltip State ──
+  String? _activeTooltipMessage;
+  bool _hasShownTapConfirmTip = false;
+  bool _hasShownLockedCellTip = false;
+  bool _hasShownChallengeTip = false;
+  bool _hasShownBingoTip = false;
+  int _chatHintIndex = 0; // Cycle through dynamic hints
+
+  void _showGameTooltip(String messageKey) {
+    if (!mounted) return;
+    setState(() {
+      _activeTooltipMessage = AppLocalizations.get(messageKey);
+    });
+  }
+
+  void _dismissGameTooltip() {
+    if (!mounted) return;
+    setState(() {
+      _activeTooltipMessage = null;
+    });
+  }
 
   // ── Coach Mark ──
   bool _showCoachMark = false;
@@ -375,8 +398,25 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
        if (currentLineCount > _previousLineCount) {
           _bingoLineController.forward(from: 0.0);
           HapticFeedback.heavyImpact(); // Add tactile feedback
+          // Tooltip 5: Bingo cells untouchable (once per session)
+          if (!_hasShownBingoTip) {
+            _hasShownBingoTip = true;
+            _showGameTooltip('tip_bingo_untouchable');
+          }
        }
        _previousLineCount = currentLineCount;
+    }
+
+    // Auto-trigger challenge hint mid-game (once, around turn 8+)
+    if (!_hasShownChallengeTip && _session.turnCount >= 8) {
+      // Check if opponent has any owned cells on the board
+      final hasOpponentCells = _session.tileOwnership.any(
+        (o) => o.isNotEmpty && o != _session.myRole && !o.startsWith('LOCKED')
+      );
+      if (hasOpponentCells) {
+        _hasShownChallengeTip = true;
+        _showGameTooltip('tip_challenge_hint');
+      }
     }
 
     // 1. Check for Mid-Game Ad Break (Synced Handshake)
@@ -604,6 +644,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       _challengeNotificationShown = false;
     }
 
+    // Cycle chat hint during reviewing phase
+    if (currentState != null && currentState['step'] == 'reviewing') {
+      _chatHintIndex = (_chatHintIndex + 1) % 3;
+    }
+
     // --- Modal 2: Disagree (Reject / Lock) ---
     // Detect tile changing from empty/owned to LOCKED_X where X is MY role
     for (int i = 0; i < 25; i++) {
@@ -620,6 +665,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         final msg = AppLocalizations.get('disagree_notify').replaceAll('{name}', opponentName);
         final hint = AppLocalizations.get('disagree_unlock_hint');
         _showNotificationModal(title: title, message: msg, subMessage: hint, icon: Icons.thumb_down_alt, iconColor: Colors.orangeAccent);
+        // Tooltip 3: First locked cell hint (once per session)
+        if (!_hasShownLockedCellTip) {
+          _hasShownLockedCellTip = true;
+          Future.delayed(const Duration(seconds: 2), () {
+            if (mounted) _showGameTooltip('tip_locked_cell');
+          });
+        }
       }
     }
 
@@ -1422,6 +1474,19 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                 ),
               ),
 
+              // ── Contextual Game Tooltip Overlay ──
+              if (_activeTooltipMessage != null)
+                Positioned(
+                  left: 24, right: 24, bottom: 140,
+                  child: Center(
+                    child: GameTooltip(
+                      key: ValueKey(_activeTooltipMessage),
+                      message: _activeTooltipMessage!,
+                      onDismiss: _dismissGameTooltip,
+                    ),
+                  ),
+                ),
+
               // ── Coach Mark Overlay ──
               if (_showCoachMark)
                 CoachMarkOverlay(
@@ -1675,6 +1740,17 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     return "$formattedHour:$minute $period";
   }
 
+  // ── Dynamic Chat Hint based on game state ──
+  String _getDynamicChatHint() {
+    final state = _session.interactionState;
+    if (state != null && state['step'] == 'reviewing') {
+      // During empathy review phase, cycle through contextual hints
+      final hints = ['tip_chat_hello', 'tip_chat_ask', 'tip_chat_empathy'];
+      return AppLocalizations.get(hints[_chatHintIndex % hints.length]);
+    }
+    return AppLocalizations.get('tip_type_message');
+  }
+
   Widget _buildBottomControls() {
     return ValueListenableBuilder<bool>(
       valueListenable: AdState.showAd,
@@ -1703,7 +1779,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
               controller: _chatController,
               // onChanged removed in favor of listener in initState for better Web IME support
               decoration: InputDecoration(
-                hintText: _isPaused ? 'Game Paused' : 'Type a message...',
+                hintText: _isPaused ? 'Game Paused' : _getDynamicChatHint(),
                 hintStyle: GoogleFonts.alexandria(
                   textStyle: const TextStyle(color: Colors.grey, fontFamilyFallback: ['EliceDigitalBaeum'])
                 ),
@@ -1865,6 +1941,27 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     if (_previewIndex != index) {
       setState(() { _previewIndex = index; });
       await _session.broadcastPreview(index, _getPreviewLabel(index));
+      // Context-aware first-tap tooltip (once per type per session)
+      if (owner.startsWith('LOCKED')) {
+        // Locked cell that may be unlockable
+        final int lockedAt = _session.lockedTurns[index.toString()] ?? 0;
+        final int turnsSinceLock = _session.turnCount - lockedAt;
+        if (turnsSinceLock > 2) {
+          // Cooldown expired → show "한번 더 누르면 도전!"
+          _showGameTooltip('tip_locked_unlock');
+        }
+      } else if (owner.isNotEmpty && owner != _session.myRole) {
+        // Opponent's cell → show remaining challenges "N/2 기회!"
+        final int remaining = _session.challengeCounts[_session.myRole] ?? 0;
+        setState(() {
+          _activeTooltipMessage = AppLocalizations.get('tip_challenge_remaining')
+              .replaceAll('{remaining}', remaining.toString());
+        });
+      } else if (!_hasShownTapConfirmTip) {
+        // Normal empty cell → "한번 더 누르면 선택확정!"
+        _hasShownTapConfirmTip = true;
+        _showGameTooltip('tip_tap_confirm');
+      }
       return;
     }
 

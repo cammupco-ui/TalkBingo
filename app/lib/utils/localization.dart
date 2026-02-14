@@ -670,6 +670,18 @@ You may also manage your privacy settings directly within the App under Settings
       'quiz_enter_answer': 'Enter or select an answer',
       'quiz_balance_hint': 'If both choose the same, you claim the cell.',
 
+      // ── Game Tooltips ──
+      'tip_chat_hello': 'Say hello! 👋',
+      'tip_chat_ask': 'Ask questions if you\'re curious!',
+      'tip_chat_empathy': 'Do you agree with their answer?',
+      'tip_tap_confirm': 'Tap again to confirm!',
+      'tip_locked_unlock': 'Tap again to challenge!',
+      'tip_locked_cell': 'Try again after 3 turns!',
+      'tip_challenge_hint': 'You can challenge up to 2 times!',
+      'tip_challenge_remaining': '{remaining}/2 chances!',
+      'tip_bingo_untouchable': 'Bingo cells can\'t be touched!',
+      'tip_type_message': 'Type a message...',
+
       // ── Report Dialog ──
       'report_title': 'Report Question',
       'report_typo': 'Typo',
@@ -1417,6 +1429,18 @@ TalkBingo는 14세 미만의 어린이를 대상으로 하지 않습니다. 당�
       'quiz_opponent_answering': '상대방이 답변 중입니다...',
       'quiz_enter_answer': '답변을 입력하거나 선택하세요',
       'quiz_balance_hint': '둘이 같은 선택이면 칸을 차지합니다.',
+
+      // ── Game Tooltips ──
+      'tip_chat_hello': '서로 인사를 나눠요! 👋',
+      'tip_chat_ask': '궁금한 점이 있으면 물어보세요!',
+      'tip_chat_empathy': '상대방의 의견에 공감하시나요?',
+      'tip_tap_confirm': '한번 더 누르면 선택확정!',
+      'tip_locked_unlock': '한번 더 누르면 도전!',
+      'tip_locked_cell': '3턴 후에 다시 도전!',
+      'tip_challenge_hint': '최대 2번 도전 할수 있어요!',
+      'tip_challenge_remaining': '{remaining}/2 기회!',
+      'tip_bingo_untouchable': '빙고셀은 터치불가!',
+      'tip_type_message': '메시지를 입력하세요...',
 
       // ── Report Dialog ──
       'report_title': '질문 신고하기',
