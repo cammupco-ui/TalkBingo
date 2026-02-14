@@ -923,7 +923,6 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                 gameType: 'penalty',
                 onClose: () {
                   setState(() => _showCoachOverlay = false);
-                  if (_isWaitingForStart) _startRoundManually();
                 },
               ),
             ),

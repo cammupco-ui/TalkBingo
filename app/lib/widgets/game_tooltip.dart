@@ -2,20 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 
-/// A reusable animated speech-bubble tooltip for in-game contextual hints.
+/// A floating tooltip that appears near the user's tap position.
+/// Bright, vibrant text with a subtle glow — no heavy background.
 /// Auto-dismisses after [duration] and calls [onDismiss] when done.
 class GameTooltip extends StatefulWidget {
   final String message;
   final VoidCallback? onDismiss;
   final Duration duration;
-  final Alignment alignment;
+  final Offset? tapPosition; // Screen-relative position of the tap
 
   const GameTooltip({
     super.key,
     required this.message,
     this.onDismiss,
-    this.duration = const Duration(seconds: 4),
-    this.alignment = Alignment.center,
+    this.duration = const Duration(seconds: 3),
+    this.tapPosition,
   });
 
   @override
@@ -26,7 +27,7 @@ class _GameTooltipState extends State<GameTooltip>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnim;
-  late Animation<Offset> _slideAnim;
+  late Animation<double> _scaleAnim;
   Timer? _dismissTimer;
 
   @override
@@ -34,19 +35,17 @@ class _GameTooltipState extends State<GameTooltip>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 350),
     );
 
     _fadeAnim = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+    _scaleAnim = Tween<double>(begin: 0.8, end: 1.0)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
 
     _controller.forward();
 
     // Auto-dismiss
-    _dismissTimer = Timer(widget.duration - const Duration(milliseconds: 400), () {
+    _dismissTimer = Timer(widget.duration - const Duration(milliseconds: 350), () {
       if (mounted) {
         _controller.reverse().then((_) {
           widget.onDismiss?.call();
@@ -64,8 +63,8 @@ class _GameTooltipState extends State<GameTooltip>
 
   @override
   Widget build(BuildContext context) {
-    return SlideTransition(
-      position: _slideAnim,
+    return ScaleTransition(
+      scale: _scaleAnim,
       child: FadeTransition(
         opacity: _fadeAnim,
         child: GestureDetector(
@@ -76,30 +75,29 @@ class _GameTooltipState extends State<GameTooltip>
             });
           },
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0xFF2D2D3A),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              color: Colors.black.withOpacity(0.55),
+              borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('💡', style: TextStyle(fontSize: 16)),
-                const SizedBox(width: 8),
+                const Text('💡', style: TextStyle(fontSize: 14)),
+                const SizedBox(width: 6),
                 Flexible(
                   child: Text(
                     widget.message,
                     style: GoogleFonts.alexandria(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFFF5F0D0),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFFFFE066), // Bright golden yellow
+                      shadows: [
+                        Shadow(
+                          color: Colors.orangeAccent.withOpacity(0.7),
+                          blurRadius: 8,
+                        ),
+                      ],
                       textStyle: const TextStyle(
                         fontFamilyFallback: ['EliceDigitalBaeum'],
                       ),

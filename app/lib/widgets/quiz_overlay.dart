@@ -558,49 +558,39 @@ class _QuizOverlayState extends State<QuizOverlay> {
     bool enabled = true,
     bool isSelected = false,
   }) {
-    // Fix: Remove Opacity widget here. Controlled by parent or disabledStyle.
-    // If disabled but selected, we want it full vivid color, not greyed out.
-    // If disabled and NOT selected, it will be dimmed by parent Opacity (0.6 * 0.3 = 0.18 roughly).
-    
-    // We need to apply the opacity for "disabled but no selection yet" case?
-    // Parent _buildBalanceContent logic:
-    // aOpacity = (highlightAnswer != null && !isASelected) ? 0.3 : 1.0;
-    // So if no selection, 1.0.
-    // If we are readOnly and no selection (Partner Thinking), we want Dimmed?
-    // Old code: 0.6.
-    
-    // Let's implement the 0.6 opacity via color alpha interaction if needed, or re-add Opacity simplified.
-    // But crucial fix is `disabledBackgroundColor` matching active color.
-
     final double contentOpacity = (enabled || isSelected) ? 1.0 : 0.6;
+
+    // When selected: solid color fill. When not: light tint.
+    final Color bgColor = isSelected ? color : color.withOpacity(0.15);
+    final Color textColor = isSelected ? Colors.white : Colors.black87;
+    final Color borderColor = isSelected ? color : color.withOpacity(0.4);
 
     return Opacity(
       opacity: contentOpacity,
       child: AnimatedButton(
         onPressed: enabled ? () => widget.onOptionSelected(value) : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: color.withOpacity(0.2),
-          foregroundColor: Colors.black87,
-          // FIX: Override disabled colors to prevent greying out when selected
-          disabledBackgroundColor: isSelected ? color.withOpacity(0.2) : color.withOpacity(0.1), 
-          disabledForegroundColor: Colors.black87,
-          
+          backgroundColor: bgColor,
+          foregroundColor: textColor,
+          disabledBackgroundColor: bgColor,
+          disabledForegroundColor: textColor,
           elevation: isSelected ? 4 : 0, 
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
             side: BorderSide(
-                color: isSelected ? AppColors.hostPrimary : color, 
-                width: isSelected ? 4 : 2 
+                color: borderColor, 
+                width: isSelected ? 3 : 2,
             ), 
           ),
         ),
         child: Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16, 
             fontWeight: FontWeight.bold,
-            height: 1.3, 
+            height: 1.3,
+            color: textColor,
           ),
           textAlign: TextAlign.center,
           softWrap: true, 

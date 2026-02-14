@@ -150,16 +150,18 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
 
   // ── Contextual Tooltip State ──
   String? _activeTooltipMessage;
+  Offset? _tooltipPosition; // Screen position for tooltip placement
   bool _hasShownTapConfirmTip = false;
   bool _hasShownLockedCellTip = false;
   bool _hasShownChallengeTip = false;
   bool _hasShownBingoTip = false;
   int _chatHintIndex = 0; // Cycle through dynamic hints
 
-  void _showGameTooltip(String messageKey) {
+  void _showGameTooltip(String messageKey, {Offset? position}) {
     if (!mounted) return;
     setState(() {
       _activeTooltipMessage = AppLocalizations.get(messageKey);
+      _tooltipPosition = position;
     });
   }
 
@@ -167,6 +169,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     if (!mounted) return;
     setState(() {
       _activeTooltipMessage = null;
+      _tooltipPosition = null;
     });
   }
 
@@ -1477,11 +1480,20 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
               // ── Contextual Game Tooltip Overlay ──
               if (_activeTooltipMessage != null)
                 Positioned(
-                  left: 24, right: 24, bottom: 140,
-                  child: Center(
+                  left: _tooltipPosition != null
+                      ? (_tooltipPosition!.dx - 120).clamp(16, MediaQuery.of(context).size.width - 280)
+                      : 24,
+                  top: _tooltipPosition != null
+                      ? (_tooltipPosition!.dy - 60).clamp(60, MediaQuery.of(context).size.height - 100)
+                      : null,
+                  right: _tooltipPosition != null ? null : 24,
+                  bottom: _tooltipPosition != null ? null : 140,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 280),
                     child: GameTooltip(
                       key: ValueKey(_activeTooltipMessage),
                       message: _activeTooltipMessage!,
+                      tapPosition: _tooltipPosition,
                       onDismiss: _dismissGameTooltip,
                     ),
                   ),
@@ -1918,6 +1930,22 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     // Review Mode: Block Interaction
     if (widget.isReviewMode) return;
 
+    // Compute tap position from cell index for tooltip placement
+    Offset? cellPosition;
+    final boardBox = _boardKey.currentContext?.findRenderObject() as RenderBox?;
+    if (boardBox != null) {
+      final boardPos = boardBox.localToGlobal(Offset.zero);
+      final boardSize = boardBox.size;
+      final cellW = boardSize.width / 5;
+      final cellH = boardSize.height / 5;
+      final row = index ~/ 5;
+      final col = index % 5;
+      cellPosition = Offset(
+        boardPos.dx + col * cellW + cellW / 2,
+        boardPos.dy + row * cellH,
+      );
+    }
+
     if (_isPaused) {
        _showSnackBar("Game paused. Please wait.");
        return;
@@ -1948,7 +1976,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         final int turnsSinceLock = _session.turnCount - lockedAt;
         if (turnsSinceLock > 2) {
           // Cooldown expired → show "한번 더 누르면 도전!"
-          _showGameTooltip('tip_locked_unlock');
+          _showGameTooltip('tip_locked_unlock', position: cellPosition);
         }
       } else if (owner.isNotEmpty && owner != _session.myRole) {
         // Opponent's cell → show remaining challenges "N/2 기회!"
@@ -1956,11 +1984,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         setState(() {
           _activeTooltipMessage = AppLocalizations.get('tip_challenge_remaining')
               .replaceAll('{remaining}', remaining.toString());
+          _tooltipPosition = cellPosition;
         });
       } else if (!_hasShownTapConfirmTip) {
         // Normal empty cell → "한번 더 누르면 선택확정!"
         _hasShownTapConfirmTip = true;
-        _showGameTooltip('tip_tap_confirm');
+        _showGameTooltip('tip_tap_confirm', position: cellPosition);
       }
       return;
     }

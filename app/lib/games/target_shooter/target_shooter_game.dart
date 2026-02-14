@@ -1020,7 +1020,6 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                 gameType: 'target',
                 onClose: () {
                   setState(() => _showCoachOverlay = false);
-                  if (_isWaitingForStart) _startRoundManually();
                 },
               ),
             ),
