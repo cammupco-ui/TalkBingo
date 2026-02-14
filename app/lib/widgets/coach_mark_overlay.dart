@@ -18,15 +18,6 @@ class CoachMarkStep {
 }
 
 /// Full-screen overlay that highlights one element at a time.
-///
-/// Usage:
-/// ```dart
-/// CoachMarkOverlay(
-///   screenName: 'home',
-///   steps: [ CoachMarkStep(targetKey: _newGameKey, labelKey: 'coach_home_new_game'), ... ],
-///   onFinished: () => setState(() => _showCoach = false),
-/// )
-/// ```
 class CoachMarkOverlay extends StatefulWidget {
   final String screenName;
   final List<CoachMarkStep> steps;
@@ -123,12 +114,42 @@ class _CoachMarkOverlayState extends State<CoachMarkOverlay>
 
     // Decide if text goes above or below the target center
     final targetCenter = targetRect?.center ?? screenSize.center(Offset.zero);
-    final bool textBelow = targetCenter.dy < screenSize.height * 0.5;
+    final bool textBelow = targetCenter.dy < screenSize.height * 0.45;
 
-    // Text position
-    final double textY = textBelow
-        ? targetCenter.dy + (targetRect != null ? targetRect.height / 2 : 0) + 60
-        : targetCenter.dy - (targetRect != null ? targetRect.height / 2 : 0) - 60;
+    // ── Compute text position ──
+    // Text is placed with a comfortable gap from the spotlight edge
+    const double gapFromSpotlight = 50.0;
+    double textY;
+    if (textBelow) {
+      // Text below: position after bottom edge of target
+      final spotlightBottom = targetRect?.bottom ?? targetCenter.dy;
+      textY = spotlightBottom + gapFromSpotlight;
+    } else {
+      // Text above: position before top edge of target
+      final spotlightTop = targetRect?.top ?? targetCenter.dy;
+      textY = spotlightTop - gapFromSpotlight;
+    }
+
+    // ── Compute arrow endpoints ──
+    // Arrow "from" starts near the label text, slightly toward the target
+    // Arrow "to" points at the nearest edge of the spotlight, not the center
+    Offset arrowFrom;
+    Offset arrowTo;
+    if (targetRect != null) {
+      // "To" = closest point on spotlight edge to text
+      if (textBelow) {
+        // Text is below → arrow points up to bottom edge of spotlight
+        arrowTo = Offset(targetCenter.dx, targetRect.top + targetRect.height * 0.75);
+        arrowFrom = Offset(targetCenter.dx, textY - 8);
+      } else {
+        // Text is above → arrow points down to top edge of spotlight
+        arrowTo = Offset(targetCenter.dx, targetRect.top + targetRect.height * 0.25);
+        arrowFrom = Offset(targetCenter.dx, textY + 8);
+      }
+    } else {
+      arrowFrom = Offset(screenSize.width / 2, textY);
+      arrowTo = targetCenter;
+    }
 
     return GestureDetector(
       onTap: _next,
@@ -152,15 +173,15 @@ class _CoachMarkOverlayState extends State<CoachMarkOverlay>
                   child: Container(color: Colors.black.withOpacity(0.75)),
                 ),
 
-              // ── 2. Curly arrow + text ──
+              // ── 2. Gentle curved arrow ──
               if (targetRect != null)
                 Positioned.fill(
                   child: FadeTransition(
                     opacity: _fadeAnim,
                     child: CustomPaint(
                       painter: _CurlyArrowPainter(
-                        from: Offset(screenSize.width / 2, textY + (textBelow ? -10 : 10)),
-                        to: targetCenter,
+                        from: arrowFrom,
+                        to: arrowTo,
                         color: _arrowColor.withOpacity(0.9),
                         pulseScale: _pulseAnim.value,
                         pointDown: textBelow,
@@ -169,7 +190,7 @@ class _CoachMarkOverlayState extends State<CoachMarkOverlay>
                   ),
                 ),
 
-              // ── 3. Label text (no background) ──
+              // ── 3. Label text ──
               if (targetRect != null)
                 Positioned(
                   left: 32,
@@ -179,7 +200,7 @@ class _CoachMarkOverlayState extends State<CoachMarkOverlay>
                   child: FadeTransition(
                     opacity: _fadeAnim,
                     child: Transform.scale(
-                      scale: 0.9 + (_pulseAnim.value - 0.85) * 0.33, // subtle pulse 0.9–1.0
+                      scale: 0.9 + (_pulseAnim.value - 0.85) * 0.33,
                       child: Text(
                         label,
                         textAlign: TextAlign.center,
@@ -256,7 +277,7 @@ class _CoachMarkOverlayState extends State<CoachMarkOverlay>
                 left: 0,
                 right: 0,
                 child: Opacity(
-                  opacity: 0.5 + (_pulseAnim.value - 0.85) * 1.67, // 0.5–1.0
+                  opacity: 0.5 + (_pulseAnim.value - 0.85) * 1.67,
                   child: Text(
                     _currentStep < widget.steps.length - 1
                         ? AppLocalizations.get('coach_next')
@@ -280,33 +301,16 @@ class _CoachMarkOverlayState extends State<CoachMarkOverlay>
 
   /// Detect device language (bypass GameSession if needed)
   String _getDeviceLanguage() {
-    // Try GameSession first
-    try {
-      final lang = AppLocalizations.get('_lang_test_marker');
-      // If the marker doesn't exist, fall back to PlatformDispatcher
-    } catch (_) {}
-
-    // Use PlatformDispatcher directly for coach marks
     try {
       final locale = ui.PlatformDispatcher.instance.locale;
       if (locale.languageCode == 'ko') return 'ko';
     } catch (_) {}
 
-    // Also check via GameSession (it reads same source)
     try {
-      // GameSession().language already does this, but let's trust it
-      final gameSessionLang = _getCurrentLanguageFromSession();
-      return gameSessionLang;
+      final testVal = AppLocalizations.get('coach_skip');
+      if (testVal == '건너뛰기') return 'ko';
     } catch (_) {}
 
-    return 'en';
-  }
-
-  String _getCurrentLanguageFromSession() {
-    // Access through the localization utility (which reads GameSession)
-    // If we can get a known Korean key and it returns Korean text, we know it's KO
-    final testVal = AppLocalizations.get('coach_skip');
-    if (testVal == '건너뛰기') return 'ko';
     return 'en';
   }
 }
@@ -346,10 +350,10 @@ class _SpotlightPainter extends CustomPainter {
       old.targetRect != targetRect || old.pulseRadius != pulseRadius;
 }
 
-/// Curly pig-tail dotted arrow painter
+/// Gentle curved dotted arrow painter — clean S-curve, no exaggerated loops
 class _CurlyArrowPainter extends CustomPainter {
   final Offset from; // near the text
-  final Offset to;   // target center
+  final Offset to;   // spotlight edge
   final Color color;
   final double pulseScale;
   final bool pointDown;
@@ -367,76 +371,71 @@ class _CurlyArrowPainter extends CustomPainter {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0
+      ..strokeWidth = 1.8
       ..strokeCap = StrokeCap.round;
 
-    // Build the curly path from text area toward target
-    final path = _buildCurlyPath(from, to);
+    // Build the smooth curve (gentle S-curve, no pig-tail)
+    final path = _buildSmoothCurve(from, to);
 
     // Convert to dashed path
-    final dashedPath = _dashPath(path, dashLength: 6, gapLength: 4);
+    final dashedPath = _dashPath(path, dashLength: 6, gapLength: 5);
     canvas.drawPath(dashedPath, paint);
 
-    // Draw arrowhead at the end (at 'to')
-    _drawArrowhead(canvas, from, to, paint);
+    // Draw arrowhead aligned to the curve's tangent at the tip
+    _drawArrowheadAlongCurve(canvas, path);
 
     // Pulsing dot at arrow tip
     final dotPaint = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
-    final dotRadius = 4.0 * pulseScale;
+    final dotRadius = 3.5 * pulseScale;
     canvas.drawCircle(to, dotRadius, dotPaint);
 
     // Outer glow on tip
     final glowPaint = Paint()
-      ..color = color.withOpacity(0.3)
+      ..color = color.withOpacity(0.25)
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(to, dotRadius * 1.8, glowPaint);
+    canvas.drawCircle(to, dotRadius * 2.0, glowPaint);
   }
 
-  Path _buildCurlyPath(Offset start, Offset end) {
+  /// Build a gentle S-curve from text to target edge.
+  /// Uses a single cubic bezier with modest lateral offset — no loops.
+  Path _buildSmoothCurve(Offset start, Offset end) {
     final path = Path();
     path.moveTo(start.dx, start.dy);
 
     final dx = end.dx - start.dx;
     final dy = end.dy - start.dy;
     final dist = sqrt(dx * dx + dy * dy);
+    if (dist < 1) {
+      path.lineTo(end.dx, end.dy);
+      return path;
+    }
 
-    // Create a gentle S-curve with a pig-tail loop
-    // Control points for an expressive curly arrow
-
-    // Midpoint
-    final mx = (start.dx + end.dx) / 2;
-    final my = (start.dy + end.dy) / 2;
-
-    // Perpendicular offset for the curl
+    // Perpendicular direction for the curve offset
     final perpX = -dy / dist;
     final perpY = dx / dist;
-    final curlAmount = dist * 0.25; // How far the curl extends sideways
 
-    // First curve: from start, curling to one side
-    final cp1x = start.dx + dx * 0.15 + perpX * curlAmount;
-    final cp1y = start.dy + dy * 0.15 + perpY * curlAmount;
+    // Subtle lateral curve — capped to avoid wild arcs
+    final curlAmount = min(dist * 0.15, 40.0);
 
-    // Pig-tail: small loop near the middle
-    final loopX = mx + perpX * curlAmount * 0.8;
-    final loopY = my + perpY * curlAmount * 0.8;
+    // Control point 1: ~30% along, offset to one side
+    final cp1 = Offset(
+      start.dx + dx * 0.3 + perpX * curlAmount,
+      start.dy + dy * 0.3 + perpY * curlAmount,
+    );
 
-    // Second curve: from loop back toward target
-    final cp2x = mx - perpX * curlAmount * 0.4;
-    final cp2y = my - perpY * curlAmount * 0.4;
+    // Control point 2: ~70% along, offset to opposite side
+    final cp2 = Offset(
+      start.dx + dx * 0.7 - perpX * curlAmount * 0.5,
+      start.dy + dy * 0.7 - perpY * curlAmount * 0.5,
+    );
 
-    final cp3x = end.dx + perpX * curlAmount * 0.3;
-    final cp3y = end.dy + perpY * curlAmount * 0.3;
-
-    // Build the curly S-shape with loop
-    path.cubicTo(cp1x, cp1y, loopX, loopY, mx, my);
-    path.cubicTo(cp2x, cp2y, cp3x, cp3y, end.dx, end.dy);
-
+    path.cubicTo(cp1.dx, cp1.dy, cp2.dx, cp2.dy, end.dx, end.dy);
     return path;
   }
 
-  Path _dashPath(Path source, {double dashLength = 6, double gapLength = 4}) {
+  Path _dashPath(Path source, {double dashLength = 6, double gapLength = 5}) {
     final result = Path();
     for (final metric in source.computeMetrics()) {
       double distance = 0;
@@ -457,23 +456,29 @@ class _CurlyArrowPainter extends CustomPainter {
     return result;
   }
 
-  void _drawArrowhead(Canvas canvas, Offset from, Offset to, Paint paint) {
-    // Direction vector from near-end to tip
-    final dx = to.dx - from.dx;
-    final dy = to.dy - from.dy;
-    final dist = sqrt(dx * dx + dy * dy);
-    if (dist == 0) return;
+  /// Draw arrowhead aligned to the curve's actual tangent at the tip,
+  /// so it always looks natural regardless of curve direction.
+  void _drawArrowheadAlongCurve(Canvas canvas, Path curvePath) {
+    final metrics = curvePath.computeMetrics().toList();
+    if (metrics.isEmpty) return;
+    final metric = metrics.last;
+    final length = metric.length;
+    if (length < 2) return;
 
-    final ux = dx / dist;
-    final uy = dy / dist;
+    // Get tangent at the very end of the curve
+    final tangent = metric.getTangentForOffset(length);
+    if (tangent == null) return;
 
-    // Arrowhead size
-    const headLen = 12.0;
-    const headWidth = 6.0;
+    final tipPos = tangent.position;
+    final dir = tangent.vector; // unit direction at tip
+    final ux = dir.dx;
+    final uy = dir.dy;
 
-    final basePt = Offset(to.dx - ux * headLen, to.dy - uy * headLen);
-    // Perpendicular
-    final px = -uy;
+    const headLen = 10.0;
+    const headWidth = 5.0;
+
+    final basePt = Offset(tipPos.dx - ux * headLen, tipPos.dy - uy * headLen);
+    final px = -uy; // perpendicular
     final py = ux;
 
     final left = Offset(basePt.dx + px * headWidth, basePt.dy + py * headWidth);
@@ -484,7 +489,7 @@ class _CurlyArrowPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     final headPath = Path()
-      ..moveTo(to.dx, to.dy)
+      ..moveTo(tipPos.dx, tipPos.dy)
       ..lineTo(left.dx, left.dy)
       ..lineTo(right.dx, right.dy)
       ..close();
