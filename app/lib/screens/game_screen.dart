@@ -37,6 +37,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:talkbingo_app/utils/file_helper.dart';
 import 'package:audioplayers/audioplayers.dart'; // For Playback
+import 'package:talkbingo_app/services/onboarding_service.dart';
+import 'package:talkbingo_app/widgets/coach_mark_overlay.dart';
 
 class GameScreen extends StatefulWidget {
   final bool isReviewMode;
@@ -145,6 +147,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   // Two-Tap Preview State
   int? _previewIndex;
 
+  // ── Coach Mark ──
+  bool _showCoachMark = false;
+  final GlobalKey _boardKey = GlobalKey();
+  final GlobalKey _tickerKey = GlobalKey();
+  final GlobalKey _chatKey = GlobalKey();
+  final GlobalKey _headerKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -221,6 +230,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
           _currentPage = _pageController.page?.round() ?? 1;
           setState(() {});
        }
+       _initGameCoachMark();
     });
 
     // Polling Fallback for Game Screen (Robust Sync)
@@ -241,6 +251,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     });
 
     WidgetsBinding.instance.addObserver(this); // Add Observer for Keyboard Metrics
+  }
+
+  Future<void> _initGameCoachMark() async {
+    final shouldShow = await OnboardingService.shouldShowCoachMark('game');
+    await OnboardingService.incrementVisit('game');
+    if (shouldShow && mounted) {
+      setState(() => _showCoachMark = true);
+    }
   }
 
   @override
@@ -1116,7 +1134,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                 child: Column(
                   children: [
                     // New Header
-                    _buildHeader(),
+                    Container(key: _headerKey, child: _buildHeader()),
 
                     // Main Content Area
                     Expanded(
@@ -1129,7 +1147,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                controller: _pageController,
                                children: [
                                    _buildChatView(),
-                                   _buildBingoBoard(),
+                                   Container(key: _boardKey, child: _buildBingoBoard()),
                                ],
                              ),
 
@@ -1232,7 +1250,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                     color: Colors.white,
                                     child: SafeArea(
                                       top: false, 
-                                      child: _buildBottomControls(),
+                                      child: Container(key: _chatKey, child: _buildBottomControls()),
                                     ),
                                  ),
                                ),
@@ -1367,7 +1385,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                     (_session.interactionState!['type'] == 'mini_target' || 
                      _session.interactionState!['type'] == 'mini_penalty' ||
                      _session.interactionState!['type'] == 'challenge')))
-              DraggableFloatingButton(
+              Container(
+                key: _tickerKey,
+                child: DraggableFloatingButton(
                 isOnChatTab: _targetPage == 0,
                 unreadCount: _unreadCount,
                 latestMessage: _latestChatPreview,
@@ -1385,7 +1405,20 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                      );
                    }
                 },
-              ),
+              )),
+
+              // ── Coach Mark Overlay ──
+              if (_showCoachMark)
+                CoachMarkOverlay(
+                  screenName: 'game',
+                  steps: [
+                    CoachMarkStep(targetKey: _boardKey, labelKey: 'coach_game_board'),
+                    CoachMarkStep(targetKey: _tickerKey, labelKey: 'coach_game_ticker', spotlightPadding: const EdgeInsets.all(12)),
+                    CoachMarkStep(targetKey: _chatKey, labelKey: 'coach_game_chat'),
+                    CoachMarkStep(targetKey: _headerKey, labelKey: 'coach_game_header'),
+                  ],
+                  onFinished: () => setState(() => _showCoachMark = false),
+                ),
             ],
           ), // Stack (Outer)
       ), // BubbleBackground

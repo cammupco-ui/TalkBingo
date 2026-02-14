@@ -733,6 +733,24 @@ You may also manage your privacy settings directly within the App under Settings
       'splash_9': 'Just be ready to be honest',
       'splash_10': 'Respect your own pace',
       'splash_11': 'You\'re already enough to begin',
+
+      // ── Coach Mark: Home Screen ──
+      'coach_home_new_game': 'Set up a game and invite someone to talk!',
+      'coach_home_join': 'Jump right into a game with an invite code!',
+      'coach_home_resume': 'Return to your ongoing game',
+      'coach_home_settings': 'Manage your profile & settings',
+
+      // ── Coach Mark: Game Screen ──
+      'coach_game_board': 'Answer questions and complete your bingo!',
+      'coach_game_ticker': 'Tap to open chat, or drag me around!',
+      'coach_game_chat': 'Type a message or send one with your voice 🎤',
+      'coach_game_header': 'Check your game status',
+
+      // ── Coach Mark: UI ──
+      'coach_skip': 'Skip',
+      'coach_next': 'Next',
+      'coach_done': 'Got it!',
+      'coach_dont_show': "Don't show again",
     },
     'ko': {
       'new_game': '새 게임',
@@ -1463,6 +1481,24 @@ TalkBingo는 14세 미만의 어린이를 대상으로 하지 않습니다. 당�
       'splash_9': '솔직해질 준비만 있으면 돼',
       'splash_10': '너의 속도를 존중해',
       'splash_11': '시작하기에 이미 충분해',
+
+      // ── Coach Mark: Home Screen ──
+      'coach_home_new_game': '게임 세팅하고, 대화 할 사람을 초청하세요!',
+      'coach_home_join': '초대받은 코드로 게임에 바로 입장하세요!',
+      'coach_home_resume': '진행 중인 게임으로 돌아갈 수 있어요',
+      'coach_home_settings': '프로필과 설정을 관리하세요',
+
+      // ── Coach Mark: Game Screen ──
+      'coach_game_board': '질문에 답하면서, 빙고를 완성하세요!',
+      'coach_game_ticker': '탭하면 채팅보드, 저를 움직여 보세요!',
+      'coach_game_chat': '키보드나 음성🎤으로 메세지를 보내세요!',
+      'coach_game_header': '게임의 상태를 확인하세요',
+
+      // ── Coach Mark: UI ──
+      'coach_skip': '건너뛰기',
+      'coach_next': '다음',
+      'coach_done': '확인!',
+      'coach_dont_show': '다시 보지 않기',
     },
   };
   static String get(String key) {

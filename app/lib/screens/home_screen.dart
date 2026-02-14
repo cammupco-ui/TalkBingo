@@ -5,25 +5,25 @@ import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:talkbingo_app/utils/ad_state.dart';
-import 'package:talkbingo_app/screens/host_setup_screen.dart'; // Ensure this is present
+import 'package:talkbingo_app/screens/host_setup_screen.dart';
 import 'package:talkbingo_app/models/game_session.dart';
-import 'package:talkbingo_app/screens/host_info_screen.dart'; // Added import
+import 'package:talkbingo_app/screens/host_info_screen.dart';
 import 'package:talkbingo_app/screens/game_screen.dart';
 import 'package:talkbingo_app/screens/settings_screen.dart';
 import 'package:talkbingo_app/widgets/game_history_item.dart';
 import 'package:talkbingo_app/screens/bingo_history_screen.dart';
-import 'package:talkbingo_app/screens/invite_code_screen.dart'; // Still useful if we want to reuse logic, but here we inline
+import 'package:talkbingo_app/screens/invite_code_screen.dart';
 import 'package:talkbingo_app/utils/localization.dart';
 import 'package:talkbingo_app/screens/point_purchase_screen.dart';
 import 'package:talkbingo_app/screens/notice_screen.dart';
 import 'package:talkbingo_app/models/notice.dart';
-
 import 'package:talkbingo_app/screens/game_setup_screen.dart';
-import 'package:talkbingo_app/utils/localization.dart'; // Localization
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:math';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:talkbingo_app/services/onboarding_service.dart';
+import 'package:talkbingo_app/widgets/coach_mark_overlay.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -36,6 +36,13 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _inviteCodeController = TextEditingController();
   final GameSession _session = GameSession();
   bool _showSignupNudge = false;
+
+  // ── Coach Mark ──
+  bool _showCoachMark = false;
+  final GlobalKey _newGameKey = GlobalKey();
+  final GlobalKey _joinKey = GlobalKey();
+  final GlobalKey _resumeKey = GlobalKey();
+  final GlobalKey _settingsKey = GlobalKey();
 
   
   @override
@@ -52,7 +59,16 @@ class _HomeScreenState extends State<HomeScreen> {
     // Defer UI logic to after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
        _checkInitialFlows();
+       _initCoachMark();
     });
+  }
+
+  Future<void> _initCoachMark() async {
+    final shouldShow = await OnboardingService.shouldShowCoachMark('home');
+    await OnboardingService.incrementVisit('home');
+    if (shouldShow && mounted) {
+      setState(() => _showCoachMark = true);
+    }
   }
 
   Future<void> _checkInitialFlows() async {
@@ -170,7 +186,9 @@ class _HomeScreenState extends State<HomeScreen> {
               // 2. Center Button (HomeMainButton2.svg)
               // Text "NEW GAME" is baked into SVG, so we remove the Text overlay.
               Positioned.fill(
-                child: _AnimatedSvgButton(
+                child: Container(
+                  key: _newGameKey,
+                  child: _AnimatedSvgButton(
                    assetPath: 'assets/images/HomeMainButton2.svg',
                    label: AppLocalizations.get('new_game'),
                    width: designWidth,
@@ -345,7 +363,7 @@ class _HomeScreenState extends State<HomeScreen> {
                      }
                    },
                 ),
-              ),
+              )),
 
               // 3. Touch Targets (Ghost Buttons over text areas)
               // Text is baked into SVG. We just keep the GestureDetector areas.
@@ -354,7 +372,9 @@ class _HomeScreenState extends State<HomeScreen> {
               Positioned(
                 left: 55, top: 10,
                 width: 160, height: 140,
-                child: _InteractiveTextButton(
+                child: Container(
+                  key: _resumeKey,
+                  child: _InteractiveTextButton(
                   text: AppLocalizations.get('resume_game'),
                   isActive: true, // Always allow interaction to show hover effect
                   onTap: () {
@@ -373,7 +393,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontSize: 18,
                   width: 160,
                   height: 140,
-                ),
+                )),
               ),
 
               // Find Players (Bottom Right Quadrant)
@@ -608,6 +628,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                  
                                  // Settings Icon
                                  GestureDetector(
+                                   key: _settingsKey,
                                    onTap: () async {
                                      await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
                                      if (mounted) setState(() {}); // Refresh UI (e.g. nickname) on return
@@ -628,16 +649,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 20),
                     _buildNavHub(AppColors.hostPrimary),
                     const SizedBox(height: 30),
-                    _buildJoinSection(AppColors.playerA),
+                    Container(key: _joinKey, child: _buildJoinSection(AppColors.playerA)),
                     const SizedBox(height: 20),
                     _buildHistorySection(),
                  ],
                ),
              ),
           ),
+
+           // ── 3. Coach Mark Overlay ──
+           if (_showCoachMark)
+             CoachMarkOverlay(
+               screenName: 'home',
+               steps: [
+                 CoachMarkStep(targetKey: _newGameKey, labelKey: 'coach_home_new_game'),
+                 CoachMarkStep(targetKey: _joinKey, labelKey: 'coach_home_join'),
+                 CoachMarkStep(targetKey: _resumeKey, labelKey: 'coach_home_resume'),
+                 CoachMarkStep(targetKey: _settingsKey, labelKey: 'coach_home_settings', spotlightPadding: const EdgeInsets.all(12)),
+               ],
+               onFinished: () => setState(() => _showCoachMark = false),
+             ),
         ],
       ),
-      ),
+    ),
     );
   }
 
