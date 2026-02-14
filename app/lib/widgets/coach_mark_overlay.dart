@@ -149,7 +149,7 @@ class _CoachMarkOverlayState extends State<CoachMarkOverlay>
                 )
               else
                 Positioned.fill(
-                  child: Container(color: Colors.black.withOpacity(0.5)),
+                  child: Container(color: Colors.black.withOpacity(0.75)),
                 ),
 
               // ── 2. Curly arrow + text ──
@@ -322,7 +322,7 @@ class _SpotlightPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final overlayPaint = Paint()..color = Colors.black.withOpacity(0.5);
+    final overlayPaint = Paint()..color = Colors.black.withOpacity(0.75);
     final rr = RRect.fromRectAndRadius(
       targetRect.inflate(pulseRadius),
       const Radius.circular(12),
@@ -335,9 +335,9 @@ class _SpotlightPainter extends CustomPainter {
 
     // Subtle glow ring
     final glowPaint = Paint()
-      ..color = const Color(0xFFF5F0D0).withOpacity(0.25)
+      ..color = const Color(0xFFF5F0D0).withOpacity(0.5)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
+      ..strokeWidth = 2.5;
     canvas.drawRRect(rr.inflate(2), glowPaint);
   }
 
