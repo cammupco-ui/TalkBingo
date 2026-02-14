@@ -131,20 +131,21 @@ class _CoachMarkOverlayState extends State<CoachMarkOverlay>
     }
 
     // ── Compute arrow endpoints ──
-    // Arrow "from" starts near the label text, slightly toward the target
-    // Arrow "to" points at the nearest edge of the spotlight, not the center
+    // Arrow "to" points at the nearest edge of the spotlight (not center)
+    // Arrow "from" starts near the label text
     Offset arrowFrom;
     Offset arrowTo;
     if (targetRect != null) {
-      // "To" = closest point on spotlight edge to text
+      // Slight horizontal offset for visual variety (hand-drawn feel)
+      final xOffset = targetRect.width * 0.08;
       if (textBelow) {
-        // Text is below → arrow points up to bottom edge of spotlight
-        arrowTo = Offset(targetCenter.dx, targetRect.top + targetRect.height * 0.75);
-        arrowFrom = Offset(targetCenter.dx, textY - 8);
+        // Text is below → arrow tip points at bottom edge of spotlight
+        arrowTo = Offset(targetCenter.dx - xOffset, targetRect.bottom + 2);
+        arrowFrom = Offset(targetCenter.dx + xOffset, textY - 8);
       } else {
-        // Text is above → arrow points down to top edge of spotlight
-        arrowTo = Offset(targetCenter.dx, targetRect.top + targetRect.height * 0.25);
-        arrowFrom = Offset(targetCenter.dx, textY + 8);
+        // Text is above → arrow tip points at top edge of spotlight
+        arrowTo = Offset(targetCenter.dx + xOffset, targetRect.top - 2);
+        arrowFrom = Offset(targetCenter.dx - xOffset, textY + 8);
       }
     } else {
       arrowFrom = Offset(screenSize.width / 2, textY);

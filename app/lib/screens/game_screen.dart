@@ -1199,7 +1199,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
 
                              // Invisible anchor for coach mark spotlight on board center
                              Positioned(
-                               left: 40, top: 40, right: 40, bottom: 80,
+                               left: 20, top: 10, right: 20, bottom: 10,
                                child: IgnorePointer(
                                  child: Container(key: _boardKey, color: Colors.transparent),
                                ),
