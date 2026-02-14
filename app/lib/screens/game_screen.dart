@@ -1147,8 +1147,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                controller: _pageController,
                                children: [
                                    _buildChatView(),
-                                   Container(key: _boardKey, child: _buildBingoBoard()),
+                                   _buildBingoBoard(),
                                ],
+                             ),
+
+                             // Invisible anchor for coach mark spotlight on board center
+                             Positioned(
+                               left: 40, top: 40, right: 40, bottom: 80,
+                               child: IgnorePointer(
+                                 child: Container(key: _boardKey, color: Colors.transparent),
+                               ),
                              ),
 
                              // B. Quiz Overlay (Inner, below Input)
@@ -1385,9 +1393,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                     (_session.interactionState!['type'] == 'mini_target' || 
                      _session.interactionState!['type'] == 'mini_penalty' ||
                      _session.interactionState!['type'] == 'challenge')))
-              Container(
-                key: _tickerKey,
-                child: DraggableFloatingButton(
+              DraggableFloatingButton(
                 isOnChatTab: _targetPage == 0,
                 unreadCount: _unreadCount,
                 latestMessage: _latestChatPreview,
@@ -1405,7 +1411,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                      );
                    }
                 },
-              )),
+              ),
+
+              // Invisible anchor for coach mark spotlight on floating ticker button
+              Positioned(
+                right: 16, bottom: 120,
+                width: 70, height: 60,
+                child: IgnorePointer(
+                  child: Container(key: _tickerKey, color: Colors.transparent),
+                ),
+              ),
 
               // ── Coach Mark Overlay ──
               if (_showCoachMark)
