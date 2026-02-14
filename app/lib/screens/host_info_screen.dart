@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:talkbingo_app/screens/game_setup_screen.dart';
 import 'package:talkbingo_app/screens/home_screen.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
+import 'package:talkbingo_app/utils/ad_state.dart';
 import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/screens/host_setup_screen.dart';
 import 'package:talkbingo_app/styles/app_spacing.dart';
@@ -75,6 +76,11 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Show Ad Banner on Host Info Screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AdState.showAd.value = true;
+    });
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -97,7 +103,12 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
         iconTheme: const IconThemeData(color: Color(0xFFBD0558)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
+        padding: const EdgeInsets.only(
+          left: AppSpacing.screenPadding,
+          right: AppSpacing.screenPadding,
+          top: AppSpacing.screenPadding,
+          bottom: AppSpacing.screenPadding + 100, // Extra space for Ad Banner
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

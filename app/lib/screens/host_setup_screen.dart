@@ -118,7 +118,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
   Widget build(BuildContext context) {
     // Hide Ad on Host Setup Screen
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      AdState.showAd.value = false;
+      AdState.showAd.value = true;
     });
 
     return Scaffold(
@@ -143,7 +143,12 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
         iconTheme: const IconThemeData(color: Color(0xFFBD0558)),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
+        padding: const EdgeInsets.only(
+          left: AppSpacing.screenPadding,
+          right: AppSpacing.screenPadding,
+          top: AppSpacing.screenPadding,
+          bottom: AppSpacing.screenPadding + 100, // Extra space for Ad Banner
+        ),
 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

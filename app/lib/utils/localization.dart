@@ -1001,11 +1001,11 @@ You may also manage your privacy settings directly within the App under Settings
 
       // Setup Screens
       'main_player': '메인플레이어',
-      'enter_nickname_hint': '닉네임을 입력하세요',
+      'enter_nickname_hint': '당신의 별명을 입력하세요',
       'nickname_validation': '닉네임을 입력해 주세요',
       'form_incomplete': '👆 닉네임을 입력하고 성별을 선택해 주세요',
-      'generate': '생성',
-      'share': '공유',
+      'generate': '생성하기',
+      'share': '초대코드 보내기',
       'tap_to_copy': '탭하여 복사',
       'code_copied': '코드가 클립보드에 복사되었습니다!',
       'link_ready': '링크가 준비되었습니다! (클립보드에 복사 및 공유 열기...)',
