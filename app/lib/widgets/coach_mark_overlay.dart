@@ -127,7 +127,7 @@ class _CoachMarkOverlayState extends State<CoachMarkOverlay>
                 )
               else
                 Positioned.fill(
-                  child: Container(color: Colors.black.withOpacity(0.7)),
+                  child: Container(color: Colors.black.withOpacity(0.5)),
                 ),
 
               // ── 2. Tooltip bubble ──
@@ -332,7 +332,7 @@ class _SpotlightPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // Dark overlay
-    final overlayPaint = Paint()..color = Colors.black.withOpacity(0.75);
+    final overlayPaint = Paint()..color = Colors.black.withOpacity(0.5);
     canvas.drawRect(Offset.zero & size, overlayPaint);
 
     // Clear the spotlight area (rounded rect)

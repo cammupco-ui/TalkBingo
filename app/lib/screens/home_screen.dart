@@ -186,9 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // 2. Center Button (HomeMainButton2.svg)
               // Text "NEW GAME" is baked into SVG, so we remove the Text overlay.
               Positioned.fill(
-                child: Container(
-                  key: _newGameKey,
-                  child: _AnimatedSvgButton(
+                child: _AnimatedSvgButton(
                    assetPath: 'assets/images/HomeMainButton2.svg',
                    label: AppLocalizations.get('new_game'),
                    width: designWidth,
@@ -363,10 +361,21 @@ class _HomeScreenState extends State<HomeScreen> {
                      }
                    },
                 ),
-              )),
+              ),
 
               // 3. Touch Targets (Ghost Buttons over text areas)
               // Text is baked into SVG. We just keep the GestureDetector areas.
+
+              // Invisible anchor for coach mark spotlight on center NEW GAME button
+              Positioned(
+                left: (designWidth - 150) / 2,
+                top: (designHeight - 150) / 2,
+                width: 150,
+                height: 150,
+                child: IgnorePointer(
+                  child: Container(key: _newGameKey, color: Colors.transparent),
+                ),
+              ),
               
               // Resume Game (Top Left Quadrant)
               Positioned(
