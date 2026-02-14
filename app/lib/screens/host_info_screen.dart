@@ -9,6 +9,7 @@ import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/screens/host_setup_screen.dart';
 import 'package:talkbingo_app/styles/app_spacing.dart';
+import 'package:talkbingo_app/utils/localization.dart';
 
 class HostInfoScreen extends StatefulWidget {
   final bool isGameSetupFlow;
@@ -103,29 +104,29 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
             // Logo removed - already in AppBar
             const SizedBox(height: 20),
 
-            const Text(
-              'MainPlayer',
-              style: TextStyle(
+            Text(
+              AppLocalizations.get('main_player'),
+              style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
                 fontFamily: 'NURA',
                 color: AppColors.hostPrimary,
-              ),
+              )),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.spacingLg),
 
             // Nickname
-            _buildLabel('Nickname'),
+            _buildLabel(AppLocalizations.get('nickname')),
 
             TextField(
               controller: _nicknameController,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
-                hintText: 'Enter your nickname',
+                hintText: AppLocalizations.get('enter_nickname_hint'),
                 hintStyle: GoogleFonts.alexandria(color: Colors.grey),
                 errorText: _nicknameController.text.trim().isEmpty && _nicknameController.text.isNotEmpty 
-                    ? 'Nickname cannot be empty' : null,
+                    ? AppLocalizations.get('nickname_validation') : null,
                 suffixIcon: _nicknameController.text.trim().isNotEmpty 
                     ? const Icon(Icons.check_circle, color: Colors.green) 
                     : null,
@@ -144,12 +145,12 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
             const SizedBox(height: AppSpacing.spacingSm),
 
             // Gender
-            _buildLabel('Gender'),
+            _buildLabel(AppLocalizations.get('gender')),
             Row(
               children: [
-                Expanded(child: _buildGenderButton('Male', 'Male')),
+                Expanded(child: _buildGenderButton(AppLocalizations.get('male'), 'Male')),
                 const SizedBox(width: 16),
-                Expanded(child: _buildGenderButton('Female', 'Female')),
+                Expanded(child: _buildGenderButton(AppLocalizations.get('female'), 'Female')),
               ],
             ),
             const SizedBox(height: AppSpacing.spacingLg),
@@ -159,7 +160,7 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: Text(
-                  '👆 Please enter nickname and select gender',
+                  AppLocalizations.get('form_incomplete'),
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey[600],
@@ -171,7 +172,7 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
 
             // Next Button
             Tooltip(
-              message: _isFormValid ? 'Continue' : 'Complete the form first',
+              message: _isFormValid ? AppLocalizations.get('next') : AppLocalizations.get('form_incomplete'),
               child: AnimatedButton(
                 onPressed: _isFormValid ? _onNextPressed : null,
                 style: ElevatedButton.styleFrom(
@@ -184,9 +185,9 @@ class _HostInfoScreenState extends State<HostInfoScreen> {
                   ),
                   disabledBackgroundColor: Colors.grey[300],
                 ),
-                child: const Text(
-                  'Next',
-                  style: TextStyle(fontSize: AppSpacing.buttonFontSize, fontFamily: 'NURA', fontWeight: FontWeight.bold),
+                child: Text(
+                  AppLocalizations.get('next'),
+                  style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(fontSize: AppSpacing.buttonFontSize, fontFamily: 'NURA', fontWeight: FontWeight.bold)),
                 ),
               ),
             ),

@@ -222,6 +222,18 @@ class AppLocalizations {
       'tier_king_royal': 'King Royal',
       'tier_queen_royal': 'Queen Royal',
 
+      // Setup Screens
+      'main_player': 'MainPlayer',
+      'enter_nickname_hint': 'Enter your nickname',
+      'nickname_validation': 'Nickname cannot be empty',
+      'form_incomplete': '👆 Please enter nickname and select gender',
+      'generate': 'Generate',
+      'share': 'Share',
+      'tap_to_copy': 'Tap to Copy',
+      'code_copied': 'Code copied to clipboard!',
+      'link_ready': 'Link is ready! (Copied to clipboard & Opening Share...)',
+      'create_failed': 'Failed to create game session. Please try again.',
+
       // Guides
       'guide_read_confirm': 'I have read and understood the above.',
       'guide_confirm_btn': 'Confirm',
@@ -804,7 +816,7 @@ You may also manage your privacy settings directly within the App under Settings
       'start_game': '게임 시작',
       'relationship': '관계',
       'intimacy_level': '친밀도',
-      'guest_settings': '게스트 설정',
+      'guest_settings': '초대자 설정',
       'select_relation': '세부 관계 선택',
       'preparing_game': '게임 준비 중...',
       'gen_codename': '코드네임 생성 중...',
@@ -986,6 +998,18 @@ You may also manage your privacy settings directly within the App under Settings
       'tier_platinum': '플래티넘',
       'tier_king_royal': '킹 로열',
       'tier_queen_royal': '퀸 로열',
+
+      // Setup Screens
+      'main_player': '메인플레이어',
+      'enter_nickname_hint': '닉네임을 입력하세요',
+      'nickname_validation': '닉네임을 입력해 주세요',
+      'form_incomplete': '👆 닉네임을 입력하고 성별을 선택해 주세요',
+      'generate': '생성',
+      'share': '공유',
+      'tap_to_copy': '탭하여 복사',
+      'code_copied': '코드가 클립보드에 복사되었습니다!',
+      'link_ready': '링크가 준비되었습니다! (클립보드에 복사 및 공유 열기...)',
+      'create_failed': '게임 세션 생성에 실패했습니다. 다시 시도해 주세요.',
 
       // Guides
       'guide_read_confirm': '위 내용을 모두 확인했습니다.',

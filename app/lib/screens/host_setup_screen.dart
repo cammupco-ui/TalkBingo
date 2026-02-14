@@ -50,7 +50,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
     if (!success) {
       if (mounted) {
          ScaffoldMessenger.of(context).showSnackBar(
-           const SnackBar(content: Text('Failed to create game session. Please try again.'), backgroundColor: Colors.red),
+           SnackBar(content: Text(AppLocalizations.get('create_failed')), backgroundColor: Colors.red),
          );
       }
     } else {
@@ -104,10 +104,10 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Link is ready! (Copied to clipboard & Opening Share...)'),
-            duration: Duration(seconds: 2),
-            backgroundColor: Color(0xFFBD0558),
+          SnackBar(
+            content: Text(AppLocalizations.get('link_ready')),
+            duration: const Duration(seconds: 2),
+            backgroundColor: const Color(0xFFBD0558),
           ),
         );
       }
@@ -149,14 +149,14 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'Invite Code',
-              style: TextStyle(
+            Text(
+              AppLocalizations.get('invite_code_title'),
+              style: AppLocalizations.getTextStyle(baseStyle: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700, // Bold
                 fontFamily: 'NURA',
                 color: AppColors.hostPrimary,
-              ),
+              )),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sectionSpacing),
@@ -172,10 +172,10 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                   await Clipboard.setData(ClipboardData(text: _inviteCode!));
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Code copied to clipboard!'),
-                        duration: Duration(seconds: 2),
-                        backgroundColor: Color(0xFFBD0558),
+                      SnackBar(
+                        content: Text(AppLocalizations.get('code_copied')),
+                        duration: const Duration(seconds: 2),
+                        backgroundColor: const Color(0xFFBD0558),
                       ),
                     );
                   }
@@ -206,7 +206,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Tap to Copy',
+                        AppLocalizations.get('tap_to_copy'),
                         style: TextStyle(
                           fontSize: 12,
                           color: const Color(0xFFBD0558).withOpacity(0.6),
@@ -234,9 +234,9 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                   children: [
                     const Icon(Icons.share, color: AppColors.hostPrimary),
                     const SizedBox(width: 8),
-                    const Text(
-                      'Share', 
-                      style: TextStyle(
+                    Text(
+                      AppLocalizations.get('share'), 
+                      style: const TextStyle(
                         fontSize: 16, 
                         fontFamily: 'NURA', 
                         fontWeight: FontWeight.bold,
@@ -272,7 +272,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                   ),
                 ),
                 child: Text(
-                  'Next',
+                  AppLocalizations.get('next'),
                   style: TextStyle(fontSize: AppSpacing.buttonFontSize, fontFamily: 'NURA', fontWeight: FontWeight.bold),
                 ),
               ),
@@ -290,7 +290,7 @@ class _HostSetupScreenState extends State<HostSetupScreen> {
                   ),
                 ),
                 child: Text(
-                  'Generate',
+                  AppLocalizations.get('generate'),
                   style: TextStyle(fontSize: AppSpacing.buttonFontSize, fontFamily: 'NURA', fontWeight: FontWeight.bold),
                 ),
               ),
