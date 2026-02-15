@@ -287,6 +287,35 @@ class _SplashScreenState extends State<SplashScreen> {
     await gameSession.loadProfile(); 
 
     _addLog("Host Nickname: ${gameSession.hostNickname}");
+
+    // 3. Validate session: If anonymous user has no real profile in DB,
+    //    this is likely a stale session restored from Android backup.
+    //    Clear it and send to login.
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null && user.isAnonymous) {
+      try {
+        final profile = await Supabase.instance.client
+            .from('profiles')
+            .select('id')
+            .eq('id', user.id)
+            .maybeSingle();
+        if (profile == null) {
+          _addLog("⚠️ Anonymous user with no DB profile — stale session. Signing out.");
+          await Supabase.instance.client.auth.signOut();
+          // Clear cached prefs that may have been restored from backup
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.clear();
+          if (!mounted) return;
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+          );
+          return;
+        }
+      } catch (e) {
+        _addLog("Profile validation error (non-fatal): $e");
+        // Continue normally on error — don't block user
+      }
+    }
       
       // If code is pending, SKIP HostInfo requirement to allow Fast Track
       // This is crucial for "Guest Mode" join where we don't want to force profile setup yet.

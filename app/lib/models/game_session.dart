@@ -712,7 +712,7 @@ class GameSession with ChangeNotifier {
     
     // 1. Try to fetch from Supabase first if logged in
     final user = _supabase.auth.currentUser;
-    if (user != null && !user.isAnonymous) {
+    if (user != null) {
       try {
         // Fetch from 'profiles' table
         final data = await _supabase.from('profiles').select().eq('id', user.id).maybeSingle();

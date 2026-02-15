@@ -37,6 +37,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:talkbingo_app/utils/file_helper.dart';
 import 'package:audioplayers/audioplayers.dart'; // For Playback
+import 'package:talkbingo_app/utils/audio_helper.dart' as audio_helper;
 import 'package:talkbingo_app/services/onboarding_service.dart';
 import 'package:talkbingo_app/widgets/coach_mark_overlay.dart';
 import 'package:talkbingo_app/widgets/game_tooltip.dart';
@@ -1753,8 +1754,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                   debugPrint('[Voice] Play tapped, url: $url');
                                   if (url != null && url.toString().isNotEmpty) {
                                     try {
-                                      await _audioPlayer.stop(); // Stop any currently playing
-                                      await _audioPlayer.play(UrlSource(url));
+                                      await audio_helper.playAudioUrl(url, player: _audioPlayer);
                                       debugPrint('[Voice] Playback started');
                                     } catch (e) {
                                       debugPrint('[Voice] Playback error: $e');
