@@ -714,23 +714,16 @@ class GameSession with ChangeNotifier {
     final user = _supabase.auth.currentUser;
     if (user != null && !user.isAnonymous) {
       try {
-        // Fetch from 'users' table
-        // We assume 'users' table exists and has these columns.
-        // If not, we might need to handle specific errors, but for now we try.
-        final data = await _supabase.from('users').select().eq('id', user.id).maybeSingle();
+        // Fetch from 'profiles' table
+        final data = await _supabase.from('profiles').select().eq('id', user.id).maybeSingle();
         
         if (data != null) {
           debugPrint("✅ Loaded Profile from Supabase: ${data['nickname']}");
           hostNickname = data['nickname'];
-          hostAge = data['age'];
+          hostAge = data['age']?.toString();
           hostGender = data['gender'];
-          hostHometownProvince = data['hometown_province'];
-          hostHometownCity = data['hometown_city'];
-          // New Fields
-          hostSns = data['sns'];
-          hostBirthDate = data['birth_date'];
-          hostAddress = data['address'];
-          hostPhone = data['phone'];
+          hostHometownProvince = data['hometown'];
+          hostHometownCity = data['location'];
           
           
           // Sync back to Prefs so offline works next time
@@ -793,19 +786,14 @@ class GameSession with ChangeNotifier {
     final user = _supabase.auth.currentUser;
     if (user != null && !user.isAnonymous) {
       try {
-        await _supabase.from('users').upsert({
+        await _supabase.from('profiles').upsert({
           'id': user.id,
           'updated_at': DateTime.now().toIso8601String(),
           'nickname': hostNickname,
-          'age': hostAge,
+          'age': hostAge != null ? int.tryParse(hostAge!) : null,
           'gender': hostGender,
-          'hometown_province': hostHometownProvince,
-          'hometown_city': hostHometownCity,
-          'sns': hostSns,
-          'birth_date': hostBirthDate,
-          'address': hostAddress,
-          'phone': hostPhone,
-          // 'region_consent': hostRegionConsent, // If we have this column
+          'hometown': hostHometownProvince,
+          'location': hostHometownCity,
         });
         debugPrint("✅ Profile synced to Supabase");
       } catch (e) {
@@ -1350,6 +1338,7 @@ class GameSession with ChangeNotifier {
     if (interactionState != null) {
       interactionState!['answer'] = answer;
       interactionState!['step'] = 'reviewing'; // Move to review step
+      debugPrint('[Quiz] submitAnswer: answer="$answer", step=reviewing, type=${interactionState!["type"]}');
     
     // Inject System Message: The Answer
     messages.add({
@@ -1586,7 +1575,6 @@ class GameSession with ChangeNotifier {
     final gameState = {
       'tileOwnership': _tileOwnership,
       'currentTurn': currentTurn,
-      'interactionState': interactionState,
       'interactionState': interactionState,
       'messages': messages,
       'questions': questions,
