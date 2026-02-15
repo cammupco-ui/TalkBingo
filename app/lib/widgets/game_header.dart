@@ -26,6 +26,7 @@ class GameHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final config = ResponsiveGameConfig(MediaQuery.of(context).size);
     final session = GameSession();
+    final isCompact = config.sizeClass == GameSize.small || config.sizeClass == GameSize.medium;
     
     // Determine Role Colors
     final myColor = session.myRole == 'A' 
@@ -54,31 +55,31 @@ class GameHeader extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 8,
+          padding: EdgeInsets.symmetric(
+            horizontal: isCompact ? 8 : 16,
+            vertical: isCompact ? 4 : 8,
           ),
           child: Row(
             children: [
               // Timer Badge
-              _buildTimerBadge(config, timeLeft),
+              _buildTimerBadge(config, timeLeft, isCompact),
               
-              const SizedBox(width: 8),
+              SizedBox(width: isCompact ? 4 : 8),
 
               // Turn Indicator
-              _buildTurnBadge(isMyTurn),
+              _buildTurnBadge(isMyTurn, isCompact),
 
-              const SizedBox(width: 8), 
+              SizedBox(width: isCompact ? 4 : 8), 
               
               // Title
               Expanded(
                 child: Text(
                   gameTitle,
                   style: GoogleFonts.alexandria(
-                    fontSize: 18,
+                    fontSize: isCompact ? 13 : 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
-                    letterSpacing: 1.5,
+                    letterSpacing: isCompact ? 0.5 : 1.5,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 1,
@@ -86,16 +87,16 @@ class GameHeader extends StatelessWidget {
                 ),
               ),
               
-              const SizedBox(width: 12),
+              SizedBox(width: isCompact ? 4 : 12),
               
               // Score Badges — show both when opponent score available
               // Always: score=ME, opponentScore=OPP (caller must pass correct values)
               if (opponentScore != null) ...[
-                _buildScoreBadge(config, score, label: 'ME'),
-                const SizedBox(width: 4),
-                _buildScoreBadge(config, opponentScore!, label: 'OPP', isSecondary: true),
+                _buildScoreBadge(config, score, label: 'ME', isCompact: isCompact),
+                SizedBox(width: isCompact ? 2 : 4),
+                _buildScoreBadge(config, opponentScore!, label: 'OPP', isSecondary: true, isCompact: isCompact),
               ] else
-                _buildScoreBadge(config, score),
+                _buildScoreBadge(config, score, isCompact: isCompact),
             ],
           ),
         ),
@@ -103,11 +104,11 @@ class GameHeader extends StatelessWidget {
     );
   }
   
-  Widget _buildTimerBadge(ResponsiveGameConfig config, double time) {
+  Widget _buildTimerBadge(ResponsiveGameConfig config, double time, bool isCompact) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 6,
+      padding: EdgeInsets.symmetric(
+        horizontal: isCompact ? 6 : 12,
+        vertical: isCompact ? 3 : 6,
       ),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.2),
@@ -120,12 +121,12 @@ class GameHeader extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.timer, color: Colors.white, size: 16),
-          const SizedBox(width: 4),
+          Icon(Icons.timer, color: Colors.white, size: isCompact ? 12 : 16),
+          SizedBox(width: isCompact ? 2 : 4),
           Text(
-            '${time.toStringAsFixed(0)}s',
+            '${time.toStringAsFixed(0)}',
             style: GoogleFonts.alexandria(
-              fontSize: 14,
+              fontSize: isCompact ? 11 : 14,
               fontWeight: FontWeight.w600,
               color: Colors.white,
             ),
@@ -135,11 +136,11 @@ class GameHeader extends StatelessWidget {
     );
   }
   
-  Widget _buildScoreBadge(ResponsiveGameConfig config, int score, {String? label, bool isSecondary = false}) {
+  Widget _buildScoreBadge(ResponsiveGameConfig config, int score, {String? label, bool isSecondary = false, bool isCompact = false}) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 6,
+      padding: EdgeInsets.symmetric(
+        horizontal: isCompact ? 6 : 12,
+        vertical: isCompact ? 2 : 6,
       ),
       decoration: BoxDecoration(
         color: isSecondary 
@@ -151,42 +152,48 @@ class GameHeader extends StatelessWidget {
           width: 1,
         ),
       ),
-      child: Row(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.star, 
-            color: isSecondary ? Colors.grey[400] : Colors.amber, 
-            size: 16,
-          ),
-          const SizedBox(width: 4),
-          if (label != null) ...[
+          if (label != null)
             Text(
               label,
               style: GoogleFonts.alexandria(
-                fontSize: 10,
+                fontSize: isCompact ? 7 : 10,
                 fontWeight: FontWeight.w600,
                 color: isSecondary ? Colors.grey[300] : Colors.white70,
               ),
             ),
-            const SizedBox(width: 2),
-          ],
-          Text(
-            '$score',
-            style: GoogleFonts.alexandria(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: isSecondary ? Colors.grey[300] : Colors.white,
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.star, 
+                color: isSecondary ? Colors.grey[400] : Colors.amber, 
+                size: isCompact ? 10 : 16,
+              ),
+              SizedBox(width: isCompact ? 1 : 4),
+              Text(
+                '$score',
+                style: GoogleFonts.alexandria(
+                  fontSize: isCompact ? 11 : 14,
+                  fontWeight: FontWeight.bold,
+                  color: isSecondary ? Colors.grey[300] : Colors.white,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTurnBadge(bool isMyTurn) {
+  Widget _buildTurnBadge(bool isMyTurn, bool isCompact) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: isCompact ? 6 : 10, 
+        vertical: isCompact ? 2 : 4,
+      ),
       decoration: BoxDecoration(
         color: isMyTurn ? const Color(0xFFBD0558) : Colors.grey[700],
         borderRadius: BorderRadius.circular(12),
@@ -195,12 +202,12 @@ class GameHeader extends StatelessWidget {
           : [],
       ),
       child: Text(
-        isMyTurn ? "MY TURN" : "WAIT",
-        style: const TextStyle(
+        isMyTurn ? (isCompact ? "MY" : "MY TURN") : "WAIT",
+        style: TextStyle(
           color: Colors.white,
-          fontSize: 10,
+          fontSize: isCompact ? 8 : 10,
           fontWeight: FontWeight.bold,
-          letterSpacing: 1.0,
+          letterSpacing: isCompact ? 0.5 : 1.0,
         ),
       ),
     );
