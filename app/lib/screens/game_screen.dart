@@ -971,7 +971,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
             .uploadBinary(
                 path, 
                 bytes,
-                fileOptions: FileOptions(contentType: kIsWeb ? 'audio/webm' : 'audio/m4a')
+                fileOptions: FileOptions(contentType: kIsWeb ? 'audio/webm' : 'audio/mp4')
             );
             
         // Get Public URL
@@ -1747,28 +1747,38 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                         // border: Border.all(color: Colors.white.withOpacity(0.1), width: 0.5), // Glass edge
                       ),
                         child: (msg['type'] == 'audio') 
-                          ? Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.play_circle_fill, color: Colors.white, size: 28),
-                                const SizedBox(width: 8),
-                                Text("Voice Message", style: GoogleFonts.alexandria(color: Colors.white)),
-                                const SizedBox(width: 8),
-                                // Simple Play Handler (In real app, manage state per bubble)
-                                GestureDetector(
-                                    onTap: () async {
-                                        final url = msg['extra']?['url'] ?? msg['url']; // backward compat
-                                        if (url != null) {
-                                           await _audioPlayer.play(UrlSource(url));
-                                        }
-                                    },
-                                    child: Container(
-                                        padding: EdgeInsets.all(4),
-                                        decoration: BoxDecoration(color: Colors.white24, shape: BoxShape.circle),
-                                        child: Icon(Icons.volume_up, color: Colors.white, size: 20)
-                                    ), 
-                                )
-                              ],
+                          ? GestureDetector(
+                              onTap: () async {
+                                  final url = msg['extra']?['url'] ?? msg['url']; // backward compat
+                                  debugPrint('[Voice] Play tapped, url: $url');
+                                  if (url != null && url.toString().isNotEmpty) {
+                                    try {
+                                      await _audioPlayer.stop(); // Stop any currently playing
+                                      await _audioPlayer.play(UrlSource(url));
+                                      debugPrint('[Voice] Playback started');
+                                    } catch (e) {
+                                      debugPrint('[Voice] Playback error: $e');
+                                      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('재생 실패: $e')));
+                                    }
+                                  } else {
+                                    debugPrint('[Voice] No URL found in message');
+                                    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('음성 URL을 찾을 수 없습니다')));
+                                  }
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.play_circle_fill, color: Colors.white, size: 28),
+                                  const SizedBox(width: 8),
+                                  Text("Voice Message", style: GoogleFonts.alexandria(color: Colors.white)),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                      padding: EdgeInsets.all(4),
+                                      decoration: BoxDecoration(color: Colors.white24, shape: BoxShape.circle),
+                                      child: Icon(Icons.volume_up, color: Colors.white, size: 20)
+                                  ), 
+                                ],
+                              ),
                             )
                           : Text(
                               msg['text'] ?? '',
