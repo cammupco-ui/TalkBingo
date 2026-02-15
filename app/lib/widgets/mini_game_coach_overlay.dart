@@ -145,6 +145,29 @@ class _MiniGameCoachOverlayState extends State<MiniGameCoachOverlay>
                         ],
                       ),
                     ),
+
+                    const SizedBox(height: 32),
+
+                    // Close Button
+                    SizedBox(
+                      width: 160,
+                      height: 48,
+                      child: OutlinedButton(
+                        onPressed: _handleClose,
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.white38, width: 1.5),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                        ),
+                        child: Text(
+                          AppLocalizations.get('close_btn'),
+                          style: GoogleFonts.alexandria(
+                            color: Colors.white70,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),

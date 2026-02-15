@@ -723,8 +723,9 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
             // 1. GAME HEADER
              GameHeader(
                gameTitle: "ARROW SHOT",
-               score: isShooter ? _score : _remoteScore,
-               opponentScore: isShooter ? _remoteScore : (scores[_session.myRole] ?? 0),
+               // Always: score=MY score, opponentScore=OPPONENT's score
+               score: isShooter ? _score : (scores[_session.myRole] ?? 0),
+               opponentScore: isShooter ? (scores[_session.myRole == 'A' ? 'B' : 'A'] ?? 0) : _remoteScore,
                timeLeft: _timeLeft,
                isMyTurn: isShooter,
                onMenuTap: widget.onClose,
@@ -1059,11 +1060,11 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                 Row(
                    mainAxisAlignment: MainAxisAlignment.center,
                    children: [
-                      _buildBigScore("YOU", isShooter ? _score : (scores[_session.myRole] ?? 0), isShooter),
-                      const SizedBox(width: 40),
-                      Text("VS", style: GoogleFonts.alexandria(color: Colors.white24, fontSize: 30, fontWeight: FontWeight.bold)),
-                      const SizedBox(width: 40),
-                      _buildBigScore("OPPONENT", scores[isShooter ? (_session.myRole == 'A' ? 'B' : 'A') : activePlayer] ?? 0, !isShooter),
+                      _buildBigScore("YOU", scores[_session.myRole] ?? 0, state['winner'] == _session.myRole),
+                       const SizedBox(width: 40),
+                       Text("VS", style: GoogleFonts.alexandria(color: Colors.white24, fontSize: 30, fontWeight: FontWeight.bold)),
+                       const SizedBox(width: 40),
+                       _buildBigScore("OPPONENT", scores[_session.myRole == 'A' ? 'B' : 'A'] ?? 0, state['winner'] != _session.myRole && state['winner'] != null),
                    ],
                 ),
                 const SizedBox(height: 50),

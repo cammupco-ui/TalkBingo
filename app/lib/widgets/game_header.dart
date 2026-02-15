@@ -89,10 +89,11 @@ class GameHeader extends StatelessWidget {
               const SizedBox(width: 12),
               
               // Score Badges — show both when opponent score available
+              // Always: score=ME, opponentScore=OPP (caller must pass correct values)
               if (opponentScore != null) ...[
-                _buildScoreBadge(config, isMyTurn ? score : opponentScore!, label: isMyTurn ? 'ME' : 'OPP'),
+                _buildScoreBadge(config, score, label: 'ME'),
                 const SizedBox(width: 4),
-                _buildScoreBadge(config, isMyTurn ? opponentScore! : score, label: isMyTurn ? 'OPP' : 'ME', isSecondary: true),
+                _buildScoreBadge(config, opponentScore!, label: 'OPP', isSecondary: true),
               ] else
                 _buildScoreBadge(config, score),
             ],

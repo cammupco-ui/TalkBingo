@@ -171,6 +171,9 @@ class _SplashScreenState extends State<SplashScreen> {
         final session = Supabase.instance.client.auth.currentSession;
         if (session != null) {
             _addLog("Immediate Session Found");
+            // Ensure splash is visible for at least 2 seconds
+            await Future.delayed(const Duration(milliseconds: 2000));
+            if (!mounted) return;
             await _handleAuthenticatedUser(session);
         } else {
             _addLog("No Immediate Session. Waiting for Timeout fallback.");

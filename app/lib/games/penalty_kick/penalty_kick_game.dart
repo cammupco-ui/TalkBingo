@@ -676,8 +676,9 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                  // 1. GAME HEADER
                  GameHeader(
                    gameTitle: "PENALTY KICK",
-                   score: isKicker ? _score : _remoteScore,
-                   opponentScore: isKicker ? _remoteScore : (scores[_session.myRole] ?? 0),
+                   // Always: score=MY score, opponentScore=OPPONENT's score
+                   score: isKicker ? _score : (scores[_session.myRole] ?? 0),
+                   opponentScore: isKicker ? (scores[_session.myRole == 'A' ? 'B' : 'A'] ?? 0) : _remoteScore,
                    timeLeft: _timeLeft,
                    isMyTurn: isKicker,
                    onMenuTap: widget.onClose,
@@ -954,11 +955,11 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                 Row(
                    mainAxisAlignment: MainAxisAlignment.center,
                    children: [
-                      _buildBigScore("YOU", isKicker ? _score : (scores[_session.myRole] ?? 0), isKicker),
-                      const SizedBox(width: 40),
-                      Text("VS", style: GoogleFonts.alexandria(color: Colors.white24, fontSize: 30, fontWeight: FontWeight.bold)),
-                      const SizedBox(width: 40),
-                      _buildBigScore("OPPONENT", scores[isKicker ? (_session.myRole == 'A' ? 'B' : 'A') : activePlayer] ?? 0, !isKicker),
+                      _buildBigScore("YOU", scores[_session.myRole] ?? 0, state['winner'] == _session.myRole),
+                       const SizedBox(width: 40),
+                       Text("VS", style: GoogleFonts.alexandria(color: Colors.white24, fontSize: 30, fontWeight: FontWeight.bold)),
+                       const SizedBox(width: 40),
+                       _buildBigScore("OPPONENT", scores[_session.myRole == 'A' ? 'B' : 'A'] ?? 0, state['winner'] != _session.myRole && state['winner'] != null),
                    ],
                 ),
                 const SizedBox(height: 50),
