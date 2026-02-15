@@ -1323,6 +1323,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                        if (localized['q']!.isNotEmpty) q = localized['q']!;
                                        if (localized['A']!.isNotEmpty) optA = localized['A']!;
                                        if (localized['B']!.isNotEmpty) optB = localized['B']!;
+                                       // Localize truth answer hints
+                                       if (localized['answer'] != null && localized['answer']!.isNotEmpty) {
+                                         truthHints = localized['answer']!;
+                                       }
                                      }
                                    }
 
