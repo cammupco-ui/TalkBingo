@@ -485,8 +485,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
          context: context,
          barrierDismissible: false,
          builder: (ctx) => AlertDialog(
-           title: Text("Game Over! 🏁", style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
-           content: Text("The game has ended.\nProceed to collect your rewards!", style: GoogleFonts.alexandria(fontSize: 14, color: Colors.black87)),
+           title: Text(AppLocalizations.get('game_over_title'), style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
+           content: Text(AppLocalizations.get('game_over_desc'), style: GoogleFonts.alexandria(fontSize: 14, color: Colors.black87)),
            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
            actions: [
              ElevatedButton(
@@ -499,7 +499,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                  foregroundColor: Colors.white,
                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                ),
-               child: const Text("Accept & Continue"),
+               child: Text(AppLocalizations.get('game_over_btn')),
              )
            ],
          ),
@@ -745,9 +745,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       _session.updateAdStatus(false); // I am done
       // Show waiting toast
       ScaffoldMessenger.of(context).showSnackBar(
-         const SnackBar(
-           content: Text("Waiting for opponent to finish ad..."),
-           duration: Duration(seconds: 20), // Long duration, clears on resume
+         SnackBar(
+           content: Text(AppLocalizations.get('game_waiting_ad')),
+           duration: const Duration(seconds: 20), // Long duration, clears on resume
          )
       );
   }
@@ -797,7 +797,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     if (!status.isGranted) {
         status = await Permission.microphone.request();
         if (!status.isGranted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Microphone permission required.")));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.get('game_mic_permission'))));
             return;
         }
     }
@@ -846,8 +846,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     try {
       // Use permission_handler for explicit permission request
       var status = await Permission.microphone.status;
+      debugPrint('[Voice] Mic permission status: $status');
       if (!status.isGranted) {
         status = await Permission.microphone.request();
+        debugPrint('[Voice] Mic permission after request: $status');
         if (!status.isGranted) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -858,6 +860,18 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         }
       }
 
+      // Check if recorder supports recording
+      final hasPermission = await _audioRecorder.hasPermission();
+      debugPrint('[Voice] AudioRecorder hasPermission: $hasPermission');
+      if (!hasPermission) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AppLocalizations.get('game_mic_permission'))),
+          );
+        }
+        return;
+      }
+
       String? path;
       
       // Only generate path on Mobile/Desktop
@@ -865,9 +879,19 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
          final dir = await getApplicationDocumentsDirectory();
          final String fileName = 'voice_msg_${DateTime.now().millisecondsSinceEpoch}.m4a';
          path = '${dir.path}/$fileName';
+         debugPrint('[Voice] Recording path: $path');
       }
       
-      await _audioRecorder.start(const RecordConfig(), path: path ?? '');
+      // Use platform-appropriate encoder
+      // Web browsers don't support AAC-LC, use Opus/WebM instead
+      final config = RecordConfig(
+        encoder: kIsWeb ? AudioEncoder.opus : AudioEncoder.aacLc,
+        sampleRate: 44100,
+        bitRate: 128000,
+      );
+
+      await _audioRecorder.start(config, path: path ?? '');
+      debugPrint('[Voice] Recording started successfully');
       
       setState(() {
         _isRecording = true;
@@ -875,8 +899,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         _recordingPath = path; // Null on Web
       });
       HapticFeedback.mediumImpact(); 
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint("Start Recording Error: $e");
+      debugPrint("Stack Trace: $stackTrace");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('${AppLocalizations.get('game_recording_fail')}$e')),
@@ -887,35 +912,66 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
 
   Future<void> _stopRecording({bool send = true}) async {
     try {
+      if (!_isRecording) {
+        debugPrint('[Voice] _stopRecording called but not recording, ignoring');
+        return;
+      }
+
+      // Check minimum recording duration (500ms)
+      final recordDuration = _recordStartTime != null 
+          ? DateTime.now().difference(_recordStartTime!) 
+          : Duration.zero;
+      debugPrint('[Voice] Recording duration: ${recordDuration.inMilliseconds}ms');
+
       // On Web, stop() returns the Blob URL
       final path = await _audioRecorder.stop();
       setState(() => _isRecording = false);
+
+      if (recordDuration.inMilliseconds < 500) {
+        debugPrint('[Voice] Recording too short (${recordDuration.inMilliseconds}ms), discarding');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AppLocalizations.get('game_voice_too_short'))),
+          );
+        }
+        return;
+      }
       
       if (path != null && send) {
+         debugPrint('[Voice] Sending recording: $path');
          _uploadAndSendVoice(path);
       }
     } catch (e) {
       debugPrint("Stop Recording Error: $e");
+      setState(() => _isRecording = false);
     }
   }
   
   Future<void> _uploadAndSendVoice(String localPath) async {
      try {
         // Read bytes using platform-specific helper
+        debugPrint('[Voice] Reading file bytes: $localPath');
         final bytes = await readFileBytes(localPath);
-        if (bytes.isEmpty) return;
+        debugPrint('[Voice] File bytes length: ${bytes.length}');
+        if (bytes.isEmpty) {
+          debugPrint('[Voice] File is empty, aborting upload');
+          if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.get('game_voice_failed'))));
+          return;
+        }
 
         // Generate filename
-        final fileName = 'voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
+        final ext = kIsWeb ? 'webm' : 'm4a';
+        final fileName = 'voice_${DateTime.now().millisecondsSinceEpoch}.$ext';
         final String path = 'voice/${_session.sessionId}/$fileName';
         
         // Upload Binary (Works on Web & Mobile)
+        debugPrint('[Voice] Uploading to storage: $path');
         await Supabase.instance.client.storage
             .from('voice-messages')
             .uploadBinary(
                 path, 
                 bytes,
-                fileOptions: const FileOptions(contentType: 'audio/m4a')
+                fileOptions: FileOptions(contentType: kIsWeb ? 'audio/webm' : 'audio/m4a')
             );
             
         // Get Public URL
@@ -926,10 +982,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         // Send Message
         _session.sendMessage("🎤 Voice Message", type: 'audio', extra: {'url': publicUrl, 'duration': 0}); 
         
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Voice message sent!")));
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.get('game_voice_sent'))));
      } catch (e) {
         debugPrint("Upload Error: $e");
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Failed to send voice message.")));
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.get('game_voice_failed'))));
      }
   }
 
@@ -949,7 +1005,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
             // 1. Logo Only
             SvgPicture.asset(
               'assets/images/logo_vector.svg', 
-              height: 24, // Slightly smaller logo to save space
+              height: 36, // 1.5x larger logo for visibility
             ),
             
             const SizedBox(height: 10), // Reduced spacing from 18 to 10
@@ -1297,7 +1353,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                ),
                       
                              // C. Persistent Input Field (Positioned at Bottom)
-                             if (!_isQuizInputFocused) 
+                             if (!_isQuizInputFocused || _targetPage == 0) 
                                Positioned(
                                  left: 0, right: 0, bottom: 0,
                                  child: Container(
@@ -1825,12 +1881,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                },
                child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.all(10),
+                  padding: EdgeInsets.all(_isRecording ? 16 : 10),
                   decoration: BoxDecoration(
                      shape: BoxShape.circle,
                      color: _isRecording ? Colors.red : (_isListening ? Colors.redAccent : (_hasInput ? _themePrimary : Colors.grey[400])),
                      boxShadow: _isRecording || _isListening ? [
-                        BoxShadow(color: Colors.red.withOpacity(0.5), blurRadius: 10, spreadRadius: 2)
+                        BoxShadow(color: Colors.red.withOpacity(0.5), blurRadius: 16, spreadRadius: 4)
                      ] : [],
                   ),
                   child: Icon(
@@ -1838,7 +1894,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                          ? Icons.send 
                          : (_isRecording ? Icons.mic : (_isListening ? Icons.graphic_eq : Icons.mic)), 
                       color: Colors.white,
-                      size: 20,
+                      size: _isRecording ? 36 : 22,
                   ),
                ),
                onTap: () {
@@ -1865,7 +1921,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     final text = _chatController.text.trim();
     if (text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Voice to text not implemented yet.')),
+        SnackBar(content: Text(AppLocalizations.get('game_voice_sent'))),
       );
       return;
     }
@@ -1938,20 +1994,20 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     }
 
     if (_isPaused) {
-       _showSnackBar("Game paused. Please wait.");
+       _showSnackBar(AppLocalizations.get('game_paused'));
        return;
     }
     final owner = _session.tileOwnership[index];
 
     // Own tile → no action
     if (owner.isNotEmpty && owner == _session.myRole && !owner.startsWith('LOCKED')) {
-      _showSnackBar('This tile is already taken!');
+      _showSnackBar(AppLocalizations.get('game_tile_taken'));
       return;
     }
 
     // Turn check
     if (_session.currentTurn != _session.myRole) {
-       _showSnackBar("It's not your turn!");
+       _showSnackBar(AppLocalizations.get('game_not_your_turn'));
        return;
     }
 
@@ -1995,13 +2051,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     // 1. Opponent's cell → Challenge
     if (owner.isNotEmpty && owner != _session.myRole && !owner.startsWith('LOCKED')) {
        if (_session.isTileInCompletedLine(index)) {
-          _showSnackBar("Cannot challenge a completed Bingo line!");
+          _showSnackBar(AppLocalizations.get('game_challenge_bingo_line'));
           HapticFeedback.heavyImpact();
           return;
        }
        final int remaining = _session.challengeCounts[_session.myRole] ?? 0;
        if (remaining <= 0) {
-          _showSnackBar("No Challenge attempts remaining!");
+          _showSnackBar(AppLocalizations.get('game_no_challenges'));
           return;
        }
        showDialog(
@@ -2041,7 +2097,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
        final int lockedAt = _session.lockedTurns[index.toString()] ?? 0;
        final int turnsSinceLock = _session.turnCount - lockedAt;
        if (turnsSinceLock <= 2) {
-           _showSnackBar("🔒 Locked! Cooldown active for ${3 - turnsSinceLock} turns.");
+           _showSnackBar(AppLocalizations.get('game_locked_cooldown').replaceAll('{turns}', (3 - turnsSinceLock).toString()));
            HapticFeedback.heavyImpact();
            return;
        }
@@ -2054,20 +2110,20 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
          SnackBar(
-            content: const Text('Interaction in progress! Please finish the quiz.'),
+            content: Text(AppLocalizations.get('game_interaction_in_progress')),
             duration: const Duration(seconds: 5),
             action: SnackBarAction(
-               label: 'RESET',
+               label: AppLocalizations.get('game_reset_label'),
                textColor: Colors.amber,
                onPressed: () async {
                   try {
                     await _session.cancelInteraction();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('State Reset! Try clicking again.'))
+                      SnackBar(content: Text(AppLocalizations.get('game_state_reset')))
                     );
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Reset Sync Failed: $e. Local state cleared.'))
+                      SnackBar(content: Text(AppLocalizations.get('game_reset_failed').replaceAll('{error}', e.toString())))
                     );
                   }
                },
@@ -2119,11 +2175,22 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
 
      if (step == 'answering') {
        // Player submitted answer
-       String fullText = value;
-       if (value == 'A') fullText = state['optionA'] ?? value;
-       if (value == 'B') fullText = state['optionB'] ?? value;
+       // For balance quiz, keep 'A' or 'B' as the answer key (language-independent)
+       // For truth quiz, submit the full text
+       final interactionType = state['type'] ?? '';
+       String answerToStore = value;
        
-       _session.submitAnswer(fullText);
+       if (interactionType == 'balance') {
+         // Store 'A' or 'B' so highlight matching works across languages
+         answerToStore = value; // value is already 'A' or 'B' from QuizOverlay
+         debugPrint('[Quiz] Balance answer: key=$value, optionA=${state["optionA"]}, optionB=${state["optionB"]}');
+       } else {
+         // Truth: resolve to full text
+         if (value == 'A') answerToStore = state['optionA'] ?? value;
+         if (value == 'B') answerToStore = state['optionB'] ?? value;
+       }
+       
+       _session.submitAnswer(answerToStore);
      } else if (step == 'reviewing') {
        // Reviewer decided
        bool approved = (value != 'REJECT');
@@ -2135,7 +2202,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
          // _session Listener will handle tile update, but we can show snackbar here?
          // Actually wait for tile update in listener to sound effect/snackbar.
        } else {
-         _showSnackBar('Tile Locked! 🔒', color: Colors.grey);
+         _showSnackBar(AppLocalizations.get('game_tile_locked'), color: Colors.grey);
        }
      }
   }
@@ -2959,10 +3026,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Restart Game?', style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
-        content: Text('This will clear the board and reset turns.\nCurrent progress will be lost.', style: GoogleFonts.alexandria(fontSize: 14, color: Colors.black87)),
+        title: Text(AppLocalizations.get('game_restart_title'), style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
+        content: Text(AppLocalizations.get('game_restart_desc'), style: GoogleFonts.alexandria(fontSize: 14, color: Colors.black87)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel', style: GoogleFonts.alexandria(color: Colors.black54))),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.get('cancel'), style: GoogleFonts.alexandria(color: Colors.black54))),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
@@ -2972,7 +3039,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
               });
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-            child: const Text('Restart'),
+            child: Text(AppLocalizations.get('game_restart_btn')),
           ),
         ],
       ),
@@ -3045,12 +3112,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('End Game?', style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
-        content: Text('Are you sure you want to end the game?', style: GoogleFonts.alexandria(fontSize: 14, color: Colors.black87)),
+        title: Text(AppLocalizations.get('game_end_title'), style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
+        content: Text(AppLocalizations.get('game_end_desc'), style: GoogleFonts.alexandria(fontSize: 14, color: Colors.black87)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: GoogleFonts.alexandria(color: Colors.black54)),
+            child: Text(AppLocalizations.get('cancel'), style: GoogleFonts.alexandria(color: Colors.black54)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -3063,7 +3130,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('End Game'),
+            child: Text(AppLocalizations.get('game_end')),
           ),
         ],
       ),
@@ -3073,7 +3140,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   void _shuffleQuestions() {
     if (_session.tileOwnership.any((owner) => owner.isNotEmpty)) { // Check if any tile is owned
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cannot shuffle once the game has started!')),
+        SnackBar(content: Text(AppLocalizations.get('game_shuffle_started'))),
       );
       return;
     }
@@ -3095,7 +3162,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     });
     
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Questions Shuffled!')),
+      SnackBar(content: Text(AppLocalizations.get('game_shuffled'))),
     );
   }
 
@@ -3113,7 +3180,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       await prefs.setString('saved_game', json.encode(saveData));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Game Saved Locally (Dev Mode)!'), backgroundColor: Colors.green),
+          SnackBar(content: Text(AppLocalizations.get('game_saved_local')), backgroundColor: Colors.green),
         );
       }
     } else {
@@ -3123,7 +3190,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         if (user == null) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('You must be logged in to save!'), backgroundColor: Colors.red),
+              SnackBar(content: Text(AppLocalizations.get('game_login_required_save')), backgroundColor: Colors.red),
             );
           }
           return;
@@ -3137,14 +3204,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Game Saved to Cloud!'), backgroundColor: Colors.green),
+            SnackBar(content: Text(AppLocalizations.get('game_saved_cloud')), backgroundColor: Colors.green),
           );
         }
       } catch (e) {
         print('Supabase Save Error: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to save to Cloud.'), backgroundColor: Colors.red),
+            SnackBar(content: Text(AppLocalizations.get('game_save_failed')), backgroundColor: Colors.red),
           );
         }
       }
@@ -3168,7 +3235,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         if (user == null) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('You must be logged in to load!'), backgroundColor: Colors.red),
+              SnackBar(content: Text(AppLocalizations.get('game_login_required_load')), backgroundColor: Colors.red),
             );
           }
           return;
@@ -3189,7 +3256,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         print('Supabase Load Error: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to load from Cloud.'), backgroundColor: Colors.red),
+            SnackBar(content: Text(AppLocalizations.get('game_load_failed')), backgroundColor: Colors.red),
           );
         }
         return;
@@ -3199,7 +3266,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     if (saveData == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No saved game found.'), backgroundColor: Colors.orange),
+          SnackBar(content: Text(AppLocalizations.get('game_no_saved')), backgroundColor: Colors.orange),
         );
       }
       return;
@@ -3211,13 +3278,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         final confirm = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text('Load Saved Game?', style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
-            content: Text('Found a game saved on ${saveData!['timestamp']?.substring(0, 16).replaceAll('T', ' ')}. Load it?'),
+            title: Text(AppLocalizations.get('game_load_title'), style: GoogleFonts.alexandria(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
+            content: Text(AppLocalizations.get('game_load_desc').replaceAll('{date}', saveData!['timestamp']?.substring(0, 16).replaceAll('T', ' ') ?? '')),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Cancel', style: GoogleFonts.alexandria(color: Colors.black54))),
+              TextButton(onPressed: () => Navigator.pop(context, false), child: Text(AppLocalizations.get('cancel'), style: GoogleFonts.alexandria(color: Colors.black54))),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Load'),
+                child: Text(AppLocalizations.get('game_load_btn')),
               ),
             ],
           ),
@@ -3237,7 +3304,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
           });
           
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Game Loaded!'), backgroundColor: Colors.green),
+            SnackBar(content: Text(AppLocalizations.get('game_loaded')), backgroundColor: Colors.green),
           );
         }
       }
@@ -3245,7 +3312,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       print('Error parsing game data: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to parse game data.'), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.get('game_parse_failed')), backgroundColor: Colors.red),
         );
       }
     }

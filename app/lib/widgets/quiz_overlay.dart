@@ -234,6 +234,8 @@ class _QuizOverlayState extends State<QuizOverlay> {
     final bool amIAnswering = GameSession().myRole == widget.answeringPlayer;
     final bool isReviewing = widget.interactionStep == 'reviewing';
     
+    debugPrint('[QuizOverlay] myRole=${GameSession().myRole}, answeringPlayer=${widget.answeringPlayer}, step=${widget.interactionStep}, submittedAnswer=${widget.submittedAnswer}');
+
     String mode;
     if (isReviewing) {
        if (amIAnswering) {
@@ -250,6 +252,7 @@ class _QuizOverlayState extends State<QuizOverlay> {
       }
     }
 
+    debugPrint('[QuizOverlay] Resolved mode: $mode');
     return _buildAnsweringView(mode: mode);
   }
 
