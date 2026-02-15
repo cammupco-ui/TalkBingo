@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/utils/localization.dart';
 import 'package:talkbingo_app/widgets/animated_button.dart';
+import 'package:talkbingo_app/utils/auth_error_helper.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -25,7 +26,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Future<void> _sendResetLink() async {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter your email'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.get('auth_error_invalid_email')), backgroundColor: Colors.red));
       return;
     }
 
@@ -69,9 +70,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         );
       }
     } on AuthException catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message), backgroundColor: Colors.red));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(getAuthErrorMessage(e)), backgroundColor: Colors.red));
     } catch (e) {
-       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error occurred'), backgroundColor: Colors.red));
+       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(getAuthErrorMessage(e)), backgroundColor: Colors.red));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

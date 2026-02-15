@@ -784,6 +784,19 @@ You may also manage your privacy settings directly within the App under Settings
       'host_invite_code': 'Participation Code: ',
       'host_invite_link': 'Join now: ',
 
+      // ── Auth Error Messages ──
+      'auth_error_invalid_credentials': 'Incorrect email or password.',
+      'auth_error_email_not_confirmed': 'Email not verified. Please check your email.',
+      'auth_error_user_not_found': 'No account found with this email.',
+      'auth_error_too_many_requests': 'Too many attempts. Please try again later.',
+      'auth_error_already_registered': 'This email is already registered.',
+      'auth_error_weak_password': 'Password must be at least 6 characters.',
+      'auth_error_invalid_email': 'Please enter a valid email address.',
+      'auth_error_network': 'Unable to connect to server. Please check your internet connection.',
+      'auth_error_generic': 'An error occurred. Please try again.',
+      'auth_error_fill_all': 'Please enter email and password.',
+      'auth_error_fill_all_fields': 'Please fill in all fields.',
+
       // ── Signup Screen ──
       'signup_network_error': 'Server connection is unstable. (Network Error)\nPlease refresh and try again.',
 
@@ -1597,6 +1610,19 @@ TalkBingo는 14세 미만의 어린이를 대상으로 하지 않습니다. 당�
       'host_invite_msg': '초대장이 도착했습니다! 💌\n',
       'host_invite_code': '참여 코드: ',
       'host_invite_link': '바로 입장하기: ',
+
+      // ── Auth Error Messages ──
+      'auth_error_invalid_credentials': '이메일 또는 비밀번호가 잘못되었습니다.',
+      'auth_error_email_not_confirmed': '이메일 인증이 완료되지 않았습니다. 이메일을 확인해주세요.',
+      'auth_error_user_not_found': '등록되지 않은 이메일입니다.',
+      'auth_error_too_many_requests': '시도 횟수가 너무 많습니다. 잠시 후 다시 시도해주세요.',
+      'auth_error_already_registered': '이미 가입된 이메일입니다.',
+      'auth_error_weak_password': '비밀번호는 6자 이상이어야 합니다.',
+      'auth_error_invalid_email': '올바른 이메일 주소를 입력해주세요.',
+      'auth_error_network': '서버에 연결할 수 없습니다. 인터넷 연결을 확인해주세요.',
+      'auth_error_generic': '오류가 발생했습니다. 다시 시도해주세요.',
+      'auth_error_fill_all': '이메일과 비밀번호를 입력해주세요.',
+      'auth_error_fill_all_fields': '모든 항목을 입력해주세요.',
 
       // ── Signup Screen ──
       'signup_network_error': '서버 연결 상태가 불안정합니다. (Network Error)\n새로고침 후 다시 시도해주세요.',

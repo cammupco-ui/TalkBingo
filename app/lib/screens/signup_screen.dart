@@ -10,6 +10,7 @@ import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:flutter/foundation.dart'; // Added for kIsWeb
+import 'package:talkbingo_app/utils/auth_error_helper.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -42,7 +43,7 @@ class _SignupScreenState extends State<SignupScreen> {
     final confirmPassword = _confirmPasswordController.text;
 
     if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
-      _showSnack('Please fill all fields');
+      _showSnack(AppLocalizations.get('auth_error_fill_all_fields'));
       return;
     }
 
@@ -113,15 +114,12 @@ class _SignupScreenState extends State<SignupScreen> {
               );
             }
           );
-        } else if (e.message.contains('Failed to decode error response')) {
-           // Handle generic Supabase Web error (likely network or 500)
-           _showSnack(AppLocalizations.get('signup_network_error'));
         } else {
-           _showSnack(e.message);
+           _showSnack(getAuthErrorMessage(e));
         }
       }
     } catch (e) {
-      if (mounted) _showSnack('Signup Failed: $e');
+      if (mounted) _showSnack(getAuthErrorMessage(e));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
