@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="/TalkBingo/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+
+  <!-- SEO & Search Optimization -->
+  <title>TalkBingo (톡빙고) - Relationship Conversation Game</title>
+  <meta name="description"
+    content="TalkBingo(톡빙고) is a conversation game for couples, friends, and families. Deepen your relationship with fun questions and bingo!">
+  <meta name="keywords"
+    content="TalkBingo, talkbingo, Talkbingo, 톡빙고, 빙고톡, 커플게임, 대화게임, 아이스브레이킹, Conversation Game, Couples App, Ice Breaker, Relationship Game, 스몰토크">
+
+  <!-- Open Graph / Social Media Sharing -->
+  <meta property="og:title" content="TalkBingo (톡빙고) - Start the Conversation">
+  <meta property="og:description"
+    content="Play Bingo using conversation topics! Discover new things about your partner, family, or friends.">
+  <meta property="og:image" content="icons/Icon-192.png">
+  <meta property="og:url" content="https://talkbingo.app">
+  <meta property="og:type" content="website">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="TalkBingo">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3822860765109000"
+    crossorigin="anonymous"></script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+
+  <link rel="manifest" href="manifest.json">
+  <script type="text/javascript">
+    // Single Page Apps for GitHub Pages
+    // MIT License
+    // https://github.com/rafrex/spa-github-pages
+    // This script checks to see if a redirect is present in the query string,
+    // converts it back into the correct url and adds it to the
+    // browser's history using window.history.replaceState(...),
+    // which won't cause the browser to attempt to load the new url.
+    // When the single page app is loaded further down in this file,
+    // the correct url will be waiting in the browser's history for
+    // the single page app to route accordingly.
+    (function (l) {
+      if (l.search[1] === '/') {
+        var decoded = l.search.slice(1).split('&').map(function (s) {
+          return s.replace(/~and~/g, '&')
+        }).join('?');
+        window.history.replaceState(null, null,
+          l.pathname.slice(0, -1) + decoded + l.hash
+        );
+      }
+    }(window.location))
+  </script>
+</head>
+
+<body>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+
+</html>
