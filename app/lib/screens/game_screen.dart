@@ -576,13 +576,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
            final sender = lastMsg['sender'] ?? '';
            final type = lastMsg['type'];
            final isSystem = sender.toString().startsWith('SYSTEM');
-           
-           if (type == 'chat' && !isSystem && sender != _session.myRole) {
-               if (_currentPage == 1) { // If on Board
-                   _unreadCount++;
-                   _latestChatPreview = lastMsg['text'];
-               }
-           }
+                      if ((type == 'chat' || type == 'audio') && !isSystem && sender != _session.myRole) {
+                if (_currentPage == 1) { // If on Board
+                    _unreadCount++;
+                    _latestChatPreview = type == 'audio' ? '🎤 Voice Message' : lastMsg['text'];
+                }
+            }
            _lastProcessedMsg = lastMsg;
         }
       }
@@ -883,8 +882,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
          debugPrint('[Voice] Recording path: $path');
       }
       
-      // Use platform-appropriate encoder
-      // Web browsers don't support AAC-LC, use Opus/WebM instead
+      // Web browsers don't support AAC via MediaRecorder, use Opus/WebM
+      // Native platforms use AAC/M4A for best compatibility
       final config = RecordConfig(
         encoder: kIsWeb ? AudioEncoder.opus : AudioEncoder.aacLc,
         sampleRate: 44100,
