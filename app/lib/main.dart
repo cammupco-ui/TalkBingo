@@ -37,21 +37,29 @@ Future<void> main() async {
   DeepLinkService().init(); // Initialize Deep Link Listener Globally
   
   
-  // Hybrid Config: Check build-time args first (Web Release), then .env (Local Dev)
+  // Supabase Config: 3-tier fallback
+  // 1. --dart-define (Web Release, CI/CD)
+  // 2. .env file (Local Dev)
+  // 3. Hardcoded defaults (Android Release fallback - anon key is public/safe)
+  const String _defaultSupabaseUrl = 'https://jmihbovtywtwqdjrmuey.supabase.co';
+  const String _defaultSupabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImptaWhib3Z0eXd0d3FkanJtdWV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyMDI2MjMsImV4cCI6MjA3OTc3ODYyM30.x7zgRAetwwOKgneFeFIDaFTwlfIG_FU0A3nB_3UNfqQ';
+
   String supabaseUrl = const String.fromEnvironment('SUPABASE_URL');
   String supabaseAnonKey = const String.fromEnvironment('SUPABASE_ANON_KEY');
 
   if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
     try {
-      // Fallback for local development (VS Code debug, etc)
-      // Note: On Web Release, this file is typically not bundled, so this block helps Dev only.
       await dotenv.load(fileName: ".env");
       supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
       supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
     } catch (e) {
-      debugPrint("Warning: No .env found and no --dart-define args provided.");
+      debugPrint("Warning: No .env found, using hardcoded defaults.");
     }
   }
+
+  // Final fallback: use hardcoded defaults if still empty
+  if (supabaseUrl.isEmpty) supabaseUrl = _defaultSupabaseUrl;
+  if (supabaseAnonKey.isEmpty) supabaseAnonKey = _defaultSupabaseAnonKey;
 
   await Supabase.initialize(
     url: supabaseUrl,

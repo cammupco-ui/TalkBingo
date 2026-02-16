@@ -81,13 +81,27 @@ class _SignupScreenState extends State<SignupScreen> {
       );
 
       if (mounted) {
-        if (response.session != null) {
+        // Detect duplicate signup: Supabase returns 200 with empty identities
+        // for already-registered emails (security: prevents email enumeration)
+        final identities = response.user?.identities;
+        if (identities != null && identities.isEmpty) {
+          // Already registered email
+          _showDialog(
+            AppLocalizations.get('account_exists') ?? '이미 가입된 이메일입니다.\n로그인 페이지로 이동합니다.',
+            () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            }
+          );
+        } else if (response.session != null) {
           // Auto login successful (if confirm email is off)
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (_) => const HostInfoScreen()),
           );
         } else {
-          // Email confirmation required
+          // Email confirmation required (new signup)
           _showDialog(
             AppLocalizations.get('check_email_verification') ?? 'Check your email',
             () {
