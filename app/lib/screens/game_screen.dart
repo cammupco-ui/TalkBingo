@@ -563,7 +563,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     // 5. Check for New Messages (Unread Count)
     if (_session.messages.isNotEmpty) {
       // Filter out system messages for unread count and preview
-      final chatMessages = _session.messages.where((m) => m['type'] == 'chat').toList();
+      final chatMessages = _session.messages.where((m) => m['type'] == 'chat' || m['type'] == 'audio').toList();
       if (chatMessages.isNotEmpty) {
         final lastMsg = chatMessages.last;
         // Compare by timestamp or content + timestamp to be sure
