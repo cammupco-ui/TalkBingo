@@ -969,7 +969,20 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                        _buildBigScore("OPPONENT", scores[_session.myRole == 'A' ? 'B' : 'A'] ?? 0, state['winner'] != _session.myRole && state['winner'] != null),
                    ],
                 ),
-                const SizedBox(height: 50),
+                const SizedBox(height: 24),
+                Text(
+                   (state['winner'] == _session.myRole)
+                       ? AppLocalizations.get('cell_acquired_modal')
+                       : (state['winner'] == null
+                           ? AppLocalizations.get('cell_draw_modal')
+                           : AppLocalizations.get('cell_lost_modal')),
+                   style: GoogleFonts.alexandria(
+                      color: (state['winner'] == _session.myRole) ? Colors.amber : Colors.white54,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                   ),
+                ),
+                const SizedBox(height: 40),
                 ElevatedButton(
                     style: ElevatedButton.styleFrom(
                        backgroundColor: colPrimary, 
