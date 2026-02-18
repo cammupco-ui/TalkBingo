@@ -423,7 +423,7 @@ class _GameSetupScreenState extends State<GameSetupScreen> {
 
                 hintStyle: TextStyle(fontSize: 14),
               ),
-              hint: Text(AppLocalizations.get('select_relation')),
+              hint: Text(AppLocalizations.get('select_relation'), style: const TextStyle(fontSize: 14, color: Colors.grey)),
             ),
                   ],
                 ),
