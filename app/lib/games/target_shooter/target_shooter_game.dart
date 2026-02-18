@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:talkbingo_app/games/physics/game_engine.dart';
 import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
+import 'package:talkbingo_app/utils/localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/foundation.dart'; // For kIsWeb, defaultTargetPlatform
 import 'dart:async'; // For StreamSubscription
@@ -928,6 +929,12 @@ class _TargetShooterGameState extends State<TargetShooterGame> with TickerProvid
                                     Text(
                                        isShooter ? "YOU ARE SHOOTER" : "SPECTATOR MODE",
                                        style: GoogleFonts.alexandria(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                       AppLocalizations.get('mini_game_arrow_instruction'),
+                                       style: GoogleFonts.alexandria(color: Colors.amberAccent, fontSize: 14, fontWeight: FontWeight.w600),
+                                       textAlign: TextAlign.center,
                                     ),
                                     const SizedBox(height: 20),
                                     if (isShooter) ...[

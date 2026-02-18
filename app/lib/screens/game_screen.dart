@@ -669,19 +669,31 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       }
     }
 
-    // --- Modal 3: Cell Won (Opponent acquired a cell via challenge) ---
-    // Detect tile changing from MY ownership to OPPONENT ownership
+    // --- Modal 3: Cell Won / Cell Lost (with cell counts) ---
+    // Detect tile ownership changes between players
+    final myRole = _session.myRole;
+    final oppRole = myRole == 'A' ? 'B' : 'A';
     for (int i = 0; i < 25; i++) {
       final cur = _session.tileOwnership[i];
       final prev = _previousTileOwnership[i];
-      if (prev == _session.myRole && cur.isNotEmpty && cur != _session.myRole && !cur.startsWith('LOCKED')) {
+      if (cur == prev || cur.startsWith('LOCKED')) continue;
+
+      // Count current cells for both players
+      final myCells = _session.tileOwnership.where((o) => o == myRole).length;
+      final oppCells = _session.tileOwnership.where((o) => o == oppRole).length;
+
+      if (prev == myRole && cur == oppRole) {
         // My tile was stolen by opponent
-        final opponentName = (cur == 'A')
-            ? (_session.hostNickname ?? 'Host')
-            : (_session.guestNickname ?? 'Guest');
-        final title = '⚔️';
-        final msg = AppLocalizations.get('cell_won').replaceAll('{name}', opponentName);
-        _showNotificationModal(title: title, message: msg, icon: Icons.emoji_events, iconColor: Colors.amber);
+        final msg = AppLocalizations.get('cell_lost')
+            .replaceAll('{me}', myCells.toString())
+            .replaceAll('{opp}', oppCells.toString());
+        _showNotificationModal(title: '⚔️', message: msg, icon: Icons.heart_broken, iconColor: Colors.redAccent);
+      } else if (prev == oppRole && cur == myRole) {
+        // I stole opponent's tile
+        final msg = AppLocalizations.get('cell_acquired')
+            .replaceAll('{me}', myCells.toString())
+            .replaceAll('{opp}', oppCells.toString());
+        _showNotificationModal(title: '🎉', message: msg, icon: Icons.emoji_events, iconColor: Colors.amber);
       }
     }
 

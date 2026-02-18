@@ -40,7 +40,7 @@ class AppLocalizations {
       'relationship': 'Relationship',
       'intimacy_level': 'Intimacy Level',
       'guest_settings': 'Guest Settings',
-      'select_relation': 'Select specific relationship',
+      'select_relation': 'Select relationship with inviter',
       'preparing_game': 'Preparing Game...',
       'gen_codename': 'Generating CodeName...',
       'sync_info': 'Syncing Host & Guest Info...',
@@ -648,6 +648,8 @@ You may also manage your privacy settings directly within the App under Settings
       'disagree_unlock_hint': 'Unlock it on your next turn.',
       'disagree_unlock_hint_other': '{owner} can unlock it on their next turn.',
       'cell_won': '{name} captured the cell!',
+      'cell_acquired': 'You acquired a cell! (Me: {me} | Opp: {opp})',
+      'cell_lost': 'You lost a cell! (Me: {me} | Opp: {opp})',
       'close_btn': 'Close',
 
       // ── Game Screen: Menu & Points ──
@@ -741,6 +743,8 @@ You may also manage your privacy settings directly within the App under Settings
       // ── Mini-Game Coach Marks ──
       'mini_coach_penalty': 'Swipe toward the goal to shoot!',
       'mini_coach_target': 'Pull back to shoot the arrow!',
+      'mini_game_arrow_instruction': 'Shoot as many arrows as possible!',
+      'mini_game_kick_instruction': 'Shoot for the most goals!',
       'mini_coach_dismiss': 'Don\'t show again',
 
       // ── Power Gauge ──
@@ -867,7 +871,7 @@ You may also manage your privacy settings directly within the App under Settings
       'relationship': '관계',
       'intimacy_level': '친밀도',
       'guest_settings': '초대자 설정',
-      'select_relation': '세부 관계 선택',
+      'select_relation': '초대자와의 관계를 선택하세요',
       'preparing_game': '게임 준비 중...',
       'gen_codename': '코드네임 생성 중...',
       'sync_info': '호스트 & 게스트 동기화...',
@@ -1475,6 +1479,8 @@ TalkBingo는 14세 미만의 어린이를 대상으로 하지 않습니다. 당�
       'disagree_unlock_hint': '다음 당신의 차례에 잠금을 푸세요.',
       'disagree_unlock_hint_other': '다음 {owner}님의 차례에 잠금을 풀 수 있어요.',
       'cell_won': '{name}님이 셀을 획득하셨습니다!',
+      'cell_acquired': '셀을 획득했습니다! (나: {me} | 상대: {opp})',
+      'cell_lost': '셀을 잃었습니다! (나: {me} | 상대: {opp})',
       'close_btn': '닫기',
 
       // ── Game Screen: Menu & Points ──
@@ -1568,6 +1574,8 @@ TalkBingo는 14세 미만의 어린이를 대상으로 하지 않습니다. 당�
       // ── Mini-Game Coach Marks ──
       'mini_coach_penalty': '골대 방향으로 밀어서 슛!',
       'mini_coach_target': '활시위를 당겨서 발사!',
+      'mini_game_arrow_instruction': '최대한 많은 화살을 쏘세요!',
+      'mini_game_kick_instruction': '최대한 많은 골을 넣으세요!',
       'mini_coach_dismiss': '다신 안보기',
 
       // ── Power Gauge ──
