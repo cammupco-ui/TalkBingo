@@ -14,14 +14,19 @@ ja.AudioPlayer? _voicePlayer;
 Future<void> playAudioUrl(String url, {AudioPlayer? player}) async {
   try {
     // 1) Stop & dispose any previous playback
-    await _voicePlayer?.stop();
-    await _voicePlayer?.dispose();
+    try {
+      await _voicePlayer?.stop();
+      await _voicePlayer?.dispose();
+    } catch (e) {
+      debugPrint('[AudioHelper] Cleanup error (ignored): $e');
+    }
     _voicePlayer = ja.AudioPlayer();
 
     debugPrint('[AudioHelper] Downloading: $url');
 
     // 2) Download the audio file
     final httpClient = HttpClient();
+    httpClient.connectionTimeout = const Duration(seconds: 10);
     final request = await httpClient.getUrl(Uri.parse(url));
     final response = await request.close();
 
@@ -38,6 +43,10 @@ Future<void> playAudioUrl(String url, {AudioPlayer? player}) async {
 
     debugPrint('[AudioHelper] Downloaded ${bytes.length} bytes');
 
+    if (bytes.isEmpty) {
+      throw Exception('Downloaded file is empty');
+    }
+
     // 3) Save to temp file with correct extension
     final dir = await getTemporaryDirectory();
     final ext = url.contains('.webm')
@@ -53,7 +62,10 @@ Future<void> playAudioUrl(String url, {AudioPlayer? player}) async {
     debugPrint('[AudioHelper] Saved to: ${tempFile.path}');
 
     // 4) Play from local file — no URL issues
-    await _voicePlayer!.setFilePath(tempFile.path);
+    // On iOS, we need to set the audio source first, then play.
+    // The just_audio package handles iOS audio session configuration internally.
+    final duration = await _voicePlayer!.setFilePath(tempFile.path);
+    debugPrint('[AudioHelper] Audio duration: $duration');
     await _voicePlayer!.play();
     debugPrint('[AudioHelper] Playback started (local file)');
 
@@ -65,6 +77,24 @@ Future<void> playAudioUrl(String url, {AudioPlayer? player}) async {
     });
   } catch (e) {
     debugPrint('[AudioHelper] Playback error: $e');
+    // On iOS, if audio session conflict occurs, try once more with a fresh player
+    if (e.toString().contains('AudioSession') || 
+        e.toString().contains('AVPlayerItem') ||
+        e.toString().contains('PlayerException')) {
+      debugPrint('[AudioHelper] Retrying with fresh player...');
+      try {
+        await _voicePlayer?.dispose();
+        _voicePlayer = ja.AudioPlayer();
+        
+        // Try direct URL as fallback (some iOS versions handle this better)
+        await _voicePlayer!.setUrl(url);
+        await _voicePlayer!.play();
+        debugPrint('[AudioHelper] Retry playback succeeded');
+        return;
+      } catch (retryError) {
+        debugPrint('[AudioHelper] Retry also failed: $retryError');
+      }
+    }
     rethrow;
   }
 }

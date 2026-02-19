@@ -3,7 +3,7 @@ import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:talkbingo_app/screens/guest_info_screen.dart'; // New Guest Screen
-import 'package:talkbingo_app/screens/waiting_screen.dart';
+// WaitingScreen import removed — guests always go through GuestInfoScreen first
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:talkbingo_app/screens/home_screen.dart';
 import 'package:talkbingo_app/screens/signup_screen.dart'; // Added Import
@@ -297,17 +297,19 @@ class _InviteCodeScreenState extends State<InviteCodeScreen> {
       await GameSession().joinGame(normalizedCode); // Will throw if fails
       
       if (mounted) {
+        // Always go to GuestInfoScreen so the guest sets a nickname.
+        // For authenticated users, pre-fill with their profile nickname.
         final session = Supabase.instance.client.auth.currentSession;
-        // If user is already authenticated (e.g. Host joining as Guest), skip Guest Info
+        String? prefillNickname;
         if (session != null && !session.user.isAnonymous) {
-           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const WaitingScreen()),
-          );
-        } else {
-           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const GuestInfoScreen()),
-          );
+          prefillNickname = GameSession().hostNickname;
         }
+        
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => GuestInfoScreen(initialNickname: prefillNickname),
+          ),
+        );
       }
     } catch (e) {
       debugPrint('Error in _joinGame: $e'); // Added log

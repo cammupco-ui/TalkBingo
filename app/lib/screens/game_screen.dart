@@ -801,15 +801,55 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     }
   }
 
+  void _showMicPermissionSettingsDialog() {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(AppLocalizations.get('game_mic_permission')),
+        content: Text(
+          _session.language == 'ko'
+            ? '마이크 권한이 거부되었습니다.\n설정에서 마이크 접근을 허용해주세요.'
+            : 'Microphone access was denied.\nPlease enable it in Settings.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(AppLocalizations.get('cancel')),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              openAppSettings();
+            },
+            child: Text(
+              _session.language == 'ko' ? '설정 열기' : 'Open Settings',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _startListening() async {
     SoundService().playButtonSound(); // Feedback
     
     // Check Permissions first (Robustness)
     var status = await Permission.microphone.status;
     if (!status.isGranted) {
+        if (status.isPermanentlyDenied) {
+            // iOS: Permission was previously denied — system dialog won't appear again
+            _showMicPermissionSettingsDialog();
+            return;
+        }
         status = await Permission.microphone.request();
         if (!status.isGranted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.get('game_mic_permission'))));
+            if (status.isPermanentlyDenied) {
+                _showMicPermissionSettingsDialog();
+            } else {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.get('game_mic_permission'))));
+            }
             return;
         }
     }
@@ -860,29 +900,30 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       var status = await Permission.microphone.status;
       debugPrint('[Voice] Mic permission status: $status');
       if (!status.isGranted) {
+        if (status.isPermanentlyDenied) {
+            // iOS: Permission was previously denied — system dialog won't appear again
+            _showMicPermissionSettingsDialog();
+            return;
+        }
         status = await Permission.microphone.request();
         debugPrint('[Voice] Mic permission after request: $status');
         if (!status.isGranted) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(AppLocalizations.get('game_mic_permission'))),
-            );
+            if (status.isPermanentlyDenied) {
+                _showMicPermissionSettingsDialog();
+            } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(AppLocalizations.get('game_mic_permission'))),
+                );
+            }
           }
           return;
         }
       }
 
-      // Check if recorder supports recording
-      final hasPermission = await _audioRecorder.hasPermission();
-      debugPrint('[Voice] AudioRecorder hasPermission: $hasPermission');
-      if (!hasPermission) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.get('game_mic_permission'))),
-          );
-        }
-        return;
-      }
+      // Skip _audioRecorder.hasPermission() — on iOS, the record package can
+      // return false after STT used the audio session, even when the system
+      // permission is granted. permission_handler above is authoritative.
 
       String? path;
       
@@ -1369,7 +1410,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                ),
                       
                              // C. Persistent Input Field (Positioned at Bottom)
-                             if (!_isQuizInputFocused || _targetPage == 0) 
+                             if (_targetPage == 0 || _session.interactionState == null || !_isQuizInputFocused) 
                                Positioned(
                                  left: 0, right: 0, bottom: 0,
                                  child: Container(
@@ -1438,7 +1479,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
               
               // Full-Size Mini Game Overlay
               if (_session.interactionState != null)
-                Builder(
+                Positioned.fill(
+                  child: Builder(
                   builder: (context) {
                     final state = _session.interactionState!;
                     final String? type = state['type'];
@@ -1471,6 +1513,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                     }
                     return const SizedBox.shrink();
                   }
+                ),
                 ),
 
               // Floating Scores
@@ -1861,6 +1904,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
           Expanded(
             child: TextField(
               controller: _chatController,
+              keyboardType: TextInputType.text,
+              enableIMEPersonalizedLearning: true,
               // onChanged removed in favor of listener in initState for better Web IME support
               decoration: InputDecoration(
                 hintText: _isPaused ? 'Game Paused' : _getDynamicChatHint(),
