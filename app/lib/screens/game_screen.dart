@@ -836,22 +836,25 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     SoundService().playButtonSound(); // Feedback
     
     // Check Permissions first (Robustness)
-    var status = await Permission.microphone.status;
-    if (!status.isGranted) {
-        if (status.isPermanentlyDenied) {
-            // iOS: Permission was previously denied — system dialog won't appear again
-            _showMicPermissionSettingsDialog();
-            return;
-        }
-        status = await Permission.microphone.request();
-        if (!status.isGranted) {
-            if (status.isPermanentlyDenied) {
-                _showMicPermissionSettingsDialog();
-            } else {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.get('game_mic_permission'))));
-            }
-            return;
-        }
+    // Skip on Web — the browser handles mic permissions natively via getUserMedia
+    // permission_handler on web always reports 'denied', causing repeated prompts
+    if (!kIsWeb) {
+      var status = await Permission.microphone.status;
+      if (!status.isGranted) {
+          if (status.isPermanentlyDenied) {
+              _showMicPermissionSettingsDialog();
+              return;
+          }
+          status = await Permission.microphone.request();
+          if (!status.isGranted) {
+              if (status.isPermanentlyDenied) {
+                  _showMicPermissionSettingsDialog();
+              } else {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.get('game_mic_permission'))));
+              }
+              return;
+          }
+      }
     }
 
     if (!_speechEnabled) {
@@ -897,27 +900,30 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   Future<void> _startRecording() async {
     try {
       // Use permission_handler for explicit permission request
-      var status = await Permission.microphone.status;
-      debugPrint('[Voice] Mic permission status: $status');
-      if (!status.isGranted) {
-        if (status.isPermanentlyDenied) {
-            // iOS: Permission was previously denied — system dialog won't appear again
-            _showMicPermissionSettingsDialog();
-            return;
-        }
-        status = await Permission.microphone.request();
-        debugPrint('[Voice] Mic permission after request: $status');
+      // Skip on Web — the browser handles mic permissions natively via getUserMedia
+      // permission_handler on web always reports 'denied', causing repeated prompts
+      if (!kIsWeb) {
+        var status = await Permission.microphone.status;
+        debugPrint('[Voice] Mic permission status: $status');
         if (!status.isGranted) {
-          if (mounted) {
-            if (status.isPermanentlyDenied) {
-                _showMicPermissionSettingsDialog();
-            } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(AppLocalizations.get('game_mic_permission'))),
-                );
-            }
+          if (status.isPermanentlyDenied) {
+              _showMicPermissionSettingsDialog();
+              return;
           }
-          return;
+          status = await Permission.microphone.request();
+          debugPrint('[Voice] Mic permission after request: $status');
+          if (!status.isGranted) {
+            if (mounted) {
+              if (status.isPermanentlyDenied) {
+                  _showMicPermissionSettingsDialog();
+              } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(AppLocalizations.get('game_mic_permission'))),
+                  );
+              }
+            }
+            return;
+          }
         }
       }
 
