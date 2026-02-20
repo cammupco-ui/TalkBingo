@@ -32,6 +32,7 @@ import 'package:talkbingo_app/widgets/glowing_cursor_overlay.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:talkbingo_app/widgets/draggable_floating_button.dart';
+import 'package:talkbingo_app/widgets/mini_game_waiting_overlay.dart';
 import 'package:record/record.dart'; // Audio Recorder
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -1486,6 +1487,51 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                     final state = _session.interactionState!;
                     final String? type = state['type'];
                     
+                    // Determine if the current player is the active player
+                    final String activePlayer;
+                    if (type == 'challenge') {
+                      activePlayer = state['activePlayer'] ?? state['player'] ?? '';
+                    } else {
+                      activePlayer = state['player'] ?? '';
+                    }
+                    final bool isMyTurn = activePlayer == _session.myRole;
+                    
+                    // If NOT my turn, show waiting overlay instead of mini-game
+                    if (!isMyTurn && type != null) {
+                      final opponentRole = _session.myRole == 'A' ? 'B' : 'A';
+                      final opponentName = (opponentRole == 'A')
+                          ? (_session.hostNickname ?? 'Host')
+                          : (_session.guestNickname ?? 'Guest');
+                      
+                      // Determine game name and icon
+                      final subType = state['subType'] ?? type;
+                      final bool isTarget = subType == 'mini_target';
+                      final gameName = isTarget ? '과녁 맞추기' : '골 넣기';
+                      final gameIcon = isTarget ? '🎯' : '⚽';
+                      final round = state['round'] ?? 1;
+                      final bool isFinished = state['step'] == 'finished';
+                      
+                      // Build result text if finished
+                      String? resultText;
+                      if (isFinished) {
+                        final scores = state['scores'] as Map<String, dynamic>?;
+                        if (scores != null) {
+                          final opponentScore = scores[opponentRole] ?? 0;
+                          resultText = '$opponentName: $opponentScore점 획득!';
+                        }
+                      }
+                      
+                      return MiniGameWaitingOverlay(
+                        opponentName: opponentName,
+                        gameName: gameName,
+                        gameIcon: gameIcon,
+                        roundNumber: round is int ? round : 1,
+                        isFinished: isFinished,
+                        resultText: resultText,
+                      );
+                    }
+                    
+                    // Active player: show the actual mini-game
                     if (type == 'mini_target') {
                         return TargetShooterGame(
                           onWin: () async { await _session.resolveInteraction(true); },
