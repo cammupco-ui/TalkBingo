@@ -1557,12 +1557,14 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                              ),
                            ),
                            const SizedBox(height: 6),
-                           Text(
-                             '${(() {
-                               final s = _session.interactionState!;
-                               final st = s['subType'] ?? s['type'];
-                               return st == 'mini_target' ? '과녁 맞추기' : '골 넣기';
-                             })()} 도전 중...',
+                            Text(
+                              AppLocalizations.get('mini_overlay_challenging').replaceAll('{game}', (() {
+                                final s = _session.interactionState!;
+                                final st = s['subType'] ?? s['type'];
+                                return st == 'mini_target'
+                                    ? AppLocalizations.get('mini_overlay_target')
+                                    : AppLocalizations.get('mini_overlay_penalty');
+                              })()),
                              style: TextStyle(
                                fontSize: 14,
                                color: Colors.white.withValues(alpha: 0.4),

@@ -750,6 +750,11 @@ You may also manage your privacy settings directly within the App under Settings
       'mini_game_kick_instruction': 'Shoot for the most goals!',
       'mini_coach_dismiss': 'Don\'t show again',
 
+      // ── Mini-Game Overlay (Spectator) ──
+      'mini_overlay_target': 'Target Shooting',
+      'mini_overlay_penalty': 'Penalty Kick',
+      'mini_overlay_challenging': '{game} in progress...',
+
       // ── Power Gauge ──
       'power_gauge_tip': 'Green zone is optimal power',
 
@@ -1583,6 +1588,11 @@ TalkBingo는 14세 미만의 어린이를 대상으로 하지 않습니다. 당�
       'mini_game_arrow_instruction': '최대한 많은 화살을 쏘세요!',
       'mini_game_kick_instruction': '최대한 많은 골을 넣으세요!',
       'mini_coach_dismiss': '다신 안보기',
+
+      // ── Mini-Game Overlay (Spectator) ──
+      'mini_overlay_target': '과녁 맞추기',
+      'mini_overlay_penalty': '골 넣기',
+      'mini_overlay_challenging': '{game} 도전 중...',
 
       // ── Power Gauge ──
       'power_gauge_tip': '초록 구간이 최적 파워',
