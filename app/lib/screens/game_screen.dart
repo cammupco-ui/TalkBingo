@@ -1322,7 +1322,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                  builder: (context) {
                                    final state = _session.interactionState!;
                                    final String? type = state['type'];
-                                   if (type == 'mini_target' || type == 'mini_penalty') {
+                                   if (type == 'mini_target' || type == 'mini_penalty' || type == 'challenge') {
                                      return const SizedBox.shrink(); 
                                    }
 

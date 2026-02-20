@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -7,11 +6,11 @@ import 'package:google_fonts/google_fonts.dart';
 ///
 /// Shows:
 /// - Opponent nickname + game name
-/// - Countdown timer (15 seconds per round)
+/// - Animated progress indicator (no fake timer)
 /// - Result announcement when finished
 class MiniGameWaitingOverlay extends StatefulWidget {
   final String opponentName;
-  final String gameName;     // e.g. "Target Shooting" / "Penalty Kick"
+  final String gameName;     // e.g. "과녁 맞추기" / "골 넣기"
   final String gameIcon;     // emoji string, e.g. "🎯" or "⚽"
   final int roundNumber;     // 1 or 2
   final bool isFinished;
@@ -33,8 +32,6 @@ class MiniGameWaitingOverlay extends StatefulWidget {
 
 class _MiniGameWaitingOverlayState extends State<MiniGameWaitingOverlay>
     with SingleTickerProviderStateMixin {
-  late Timer _timer;
-  int _secondsLeft = 15;
   late AnimationController _pulseController;
 
   @override
@@ -44,36 +41,10 @@ class _MiniGameWaitingOverlayState extends State<MiniGameWaitingOverlay>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
-
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_secondsLeft > 0 && !widget.isFinished) {
-        setState(() => _secondsLeft--);
-      } else {
-        timer.cancel();
-      }
-    });
-  }
-
-  @override
-  void didUpdateWidget(covariant MiniGameWaitingOverlay oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Reset timer when round changes
-    if (widget.roundNumber != oldWidget.roundNumber) {
-      _secondsLeft = 15;
-      _timer.cancel();
-      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (_secondsLeft > 0 && !widget.isFinished) {
-          setState(() => _secondsLeft--);
-        } else {
-          timer.cancel();
-        }
-      });
-    }
   }
 
   @override
   void dispose() {
-    _timer.cancel();
     _pulseController.dispose();
     super.dispose();
   }
@@ -107,9 +78,9 @@ class _MiniGameWaitingOverlayState extends State<MiniGameWaitingOverlay>
           ),
         ),
         const SizedBox(height: 20),
-        // Opponent name + action
+        // Opponent name
         Text(
-          '${widget.opponentName}',
+          widget.opponentName,
           style: GoogleFonts.alexandria(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -126,35 +97,15 @@ class _MiniGameWaitingOverlayState extends State<MiniGameWaitingOverlay>
           ),
         ),
         const SizedBox(height: 24),
-        // Timer
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
-              width: 1,
+        // Animated progress indicator instead of fake timer
+        SizedBox(
+          width: 36,
+          height: 36,
+          child: CircularProgressIndicator(
+            strokeWidth: 3,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Colors.white.withValues(alpha: 0.5),
             ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.timer_outlined,
-                color: Colors.white.withValues(alpha: 0.6),
-                size: 18,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '≈ ${_secondsLeft}s',
-                style: GoogleFonts.alexandria(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white.withValues(alpha: 0.7),
-                ),
-              ),
-            ],
           ),
         ),
         const SizedBox(height: 16),
