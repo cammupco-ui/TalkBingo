@@ -1528,51 +1528,63 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                     
                     if (miniGameWidget == null) return const SizedBox.shrink();
                     
-                    // Both players see the game; non-active player gets a
-                    // transparent overlay with semi-transparent white text
-                    if (!isMyTurn && isMiniGameType) {
+                    // Determine overlay info for non-active player
+                    final bool showOverlay = !isMyTurn && isMiniGameType;
+                    String overlayName = '';
+                    String overlayGame = '';
+                    if (showOverlay) {
                       final opponentRole = _session.myRole == 'A' ? 'B' : 'A';
-                      final opponentName = (opponentRole == 'A')
+                      overlayName = (opponentRole == 'A')
                           ? (_session.hostNickname ?? 'Host')
                           : (_session.guestNickname ?? 'Guest');
                       final subType = state['subType'] ?? type;
                       final bool isTarget = subType == 'mini_target';
-                      final gameName = isTarget ? '과녁 맞추기' : '골 넣기';
-                      
-                      return Stack(
-                        children: [
-                          miniGameWidget,
-                          // Transparent overlay with centered semi-transparent text
-                          Center(
+                      overlayGame = isTarget ? '과녁 맞추기' : '골 넣기';
+                    }
+                    
+                    // Always return a Stack (consistent widget tree)
+                    return Stack(
+                      children: [
+                        Positioned.fill(child: miniGameWidget),
+                        // Transparent overlay text for non-active player
+                        if (showOverlay)
+                          Positioned.fill(
                             child: IgnorePointer(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    '$opponentName',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white.withValues(alpha: 0.4),
+                              child: Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      overlayName,
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white.withValues(alpha: 0.5),
+                                        shadows: const [
+                                          Shadow(blurRadius: 8, color: Colors.black),
+                                          Shadow(blurRadius: 16, color: Colors.black),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    '$gameName 도전 중...',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.white.withValues(alpha: 0.3),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      '$overlayGame 도전 중...',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.white.withValues(alpha: 0.4),
+                                        shadows: const [
+                                          Shadow(blurRadius: 8, color: Colors.black),
+                                          Shadow(blurRadius: 16, color: Colors.black),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ],
-                      );
-                    }
-                    
-                    return miniGameWidget;
+                      ],
+                    );
                   }
                 ),
                 ),
