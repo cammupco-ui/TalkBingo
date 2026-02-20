@@ -1499,72 +1499,80 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                     // Only show waiting overlay for mini-game types, not for regular quizzes
                     final bool isMiniGameType = (type == 'mini_target' || type == 'mini_penalty' || type == 'challenge');
                     
-                    // If NOT my turn AND it's a mini-game, show waiting overlay
+                    // Determine the mini-game widget (shown to BOTH players)
+                    Widget? miniGameWidget;
+                    if (type == 'mini_target') {
+                        miniGameWidget = TargetShooterGame(
+                          onWin: () async { await _session.resolveInteraction(true); },
+                          onClose: () { _session.resolveInteraction(false); },
+                        );
+                    } else if (type == 'mini_penalty') {
+                        miniGameWidget = PenaltyKickGame(
+                          onWin: () async { await _session.resolveInteraction(true); },
+                          onClose: () { _session.resolveInteraction(false); },
+                        );
+                    } else if (type == 'challenge') {
+                        final subType = state['subType'] ?? 'mini_target';
+                        if (subType == 'mini_target') {
+                            miniGameWidget = TargetShooterGame(
+                              onWin: () async { await _session.closeMiniGame(); },
+                              onClose: () { _session.closeMiniGame(); },
+                            );
+                        } else {
+                            miniGameWidget = PenaltyKickGame(
+                              onWin: () async { await _session.closeMiniGame(); },
+                              onClose: () { _session.closeMiniGame(); },
+                            );
+                        }
+                    }
+                    
+                    if (miniGameWidget == null) return const SizedBox.shrink();
+                    
+                    // Both players see the game; non-active player gets a
+                    // transparent overlay with semi-transparent white text
                     if (!isMyTurn && isMiniGameType) {
                       final opponentRole = _session.myRole == 'A' ? 'B' : 'A';
                       final opponentName = (opponentRole == 'A')
                           ? (_session.hostNickname ?? 'Host')
                           : (_session.guestNickname ?? 'Guest');
-                      
-                      // Determine game name and icon
                       final subType = state['subType'] ?? type;
                       final bool isTarget = subType == 'mini_target';
                       final gameName = isTarget ? '과녁 맞추기' : '골 넣기';
-                      final gameIcon = isTarget ? '🎯' : '⚽';
-                      final round = state['round'] ?? 1;
-                      final bool isFinished = state['step'] == 'finished';
                       
-                      // Build result text if finished
-                      String? resultText;
-                      if (isFinished) {
-                        final scores = state['scores'] as Map<String, dynamic>?;
-                        if (scores != null) {
-                          final opponentScore = scores[opponentRole] ?? 0;
-                          resultText = '$opponentName: $opponentScore점 획득!';
-                        }
-                      }
-                      
-                      return MiniGameWaitingOverlay(
-                        opponentName: opponentName,
-                        gameName: gameName,
-                        gameIcon: gameIcon,
-                        roundNumber: round is int ? round : 1,
-                        isFinished: isFinished,
-                        resultText: resultText,
-                        onCancel: () {
-                          _session.resolveInteraction(false);
-                        },
+                      return Stack(
+                        children: [
+                          miniGameWidget,
+                          // Transparent overlay with centered semi-transparent text
+                          Center(
+                            child: IgnorePointer(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    '$opponentName',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white.withValues(alpha: 0.4),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    '$gameName 도전 중...',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white.withValues(alpha: 0.3),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       );
                     }
                     
-                    // Active player: show the actual mini-game
-                    if (type == 'mini_target') {
-                        return TargetShooterGame(
-                          onWin: () async { await _session.resolveInteraction(true); },
-                          onClose: () { _session.resolveInteraction(false); },
-                        );
-                    } else if (type == 'mini_penalty') {
-                        return PenaltyKickGame(
-                          onWin: () async { await _session.resolveInteraction(true); },
-                          onClose: () { _session.resolveInteraction(false); },
-                        );
-                    } else if (type == 'challenge') {
-                        // Challenge uses subType to determine mini-game
-                        // Uses submitMiniGameScore flow for proper 2-round play
-                        final subType = state['subType'] ?? 'mini_target';
-                        if (subType == 'mini_target') {
-                            return TargetShooterGame(
-                              onWin: () async { await _session.closeMiniGame(); },
-                              onClose: () { _session.closeMiniGame(); },
-                            );
-                        } else {
-                            return PenaltyKickGame(
-                              onWin: () async { await _session.closeMiniGame(); },
-                              onClose: () { _session.closeMiniGame(); },
-                            );
-                        }
-                    }
-                    return const SizedBox.shrink();
+                    return miniGameWidget;
                   }
                 ),
                 ),
