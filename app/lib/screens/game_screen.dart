@@ -1531,6 +1531,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                         roundNumber: round is int ? round : 1,
                         isFinished: isFinished,
                         resultText: resultText,
+                        onCancel: () {
+                          _session.resolveInteraction(false);
+                        },
                       );
                     }
                     

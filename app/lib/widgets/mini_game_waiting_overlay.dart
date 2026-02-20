@@ -6,7 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 ///
 /// Shows:
 /// - Opponent nickname + game name
-/// - Animated progress indicator (no fake timer)
+/// - Animated progress indicator
+/// - Cancel button to stop the game
 /// - Result announcement when finished
 class MiniGameWaitingOverlay extends StatefulWidget {
   final String opponentName;
@@ -15,6 +16,7 @@ class MiniGameWaitingOverlay extends StatefulWidget {
   final int roundNumber;     // 1 or 2
   final bool isFinished;
   final String? resultText;  // e.g. "OOO scored 5 points!"
+  final VoidCallback? onCancel; // Cancel/stop the mini-game
 
   const MiniGameWaitingOverlay({
     super.key,
@@ -24,6 +26,7 @@ class MiniGameWaitingOverlay extends StatefulWidget {
     this.roundNumber = 1,
     this.isFinished = false,
     this.resultText,
+    this.onCancel,
   });
 
   @override
@@ -97,7 +100,7 @@ class _MiniGameWaitingOverlayState extends State<MiniGameWaitingOverlay>
           ),
         ),
         const SizedBox(height: 24),
-        // Animated progress indicator instead of fake timer
+        // Animated progress indicator
         SizedBox(
           width: 36,
           height: 36,
@@ -118,6 +121,34 @@ class _MiniGameWaitingOverlayState extends State<MiniGameWaitingOverlay>
             letterSpacing: 1.0,
           ),
         ),
+        const SizedBox(height: 28),
+        // Cancel button
+        if (widget.onCancel != null)
+          TextButton.icon(
+            onPressed: widget.onCancel,
+            icon: Icon(
+              Icons.stop_circle_outlined,
+              color: Colors.redAccent.withValues(alpha: 0.8),
+              size: 20,
+            ),
+            label: Text(
+              '게임 중단',
+              style: GoogleFonts.alexandria(
+                fontSize: 13,
+                color: Colors.redAccent.withValues(alpha: 0.8),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(
+                  color: Colors.redAccent.withValues(alpha: 0.3),
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
