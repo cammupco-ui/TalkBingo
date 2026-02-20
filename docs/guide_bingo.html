@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>빙고 플레이 방법 - TalkBingo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #BD0558;
+            --secondary-color: #6B14EC;
+            --text-color: #333;
+            --bg-color: #F8F9FA;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 1.4rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            min-height: 100vh;
+        }
+
+        .section-title {
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--secondary-color);
+            padding-left: 10px;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+            margin-right: 5px;
+        }
+
+        .badge-t {
+            background-color: #6B14EC;
+        }
+
+        /* Truth */
+        .badge-b {
+            background-color: #BD0558;
+        }
+
+        /* Balance */
+        .badge-m {
+            background-color: #FFA000;
+        }
+
+        /* Mini-game */
+
+        ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        li {
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+
+        .highlight {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>TalkBingo 게임 규칙</h1>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <p>TalkBingo는 단순한 빙고가 아닙니다. <b>상대방과의 대화를 통해 "공감(Approve)"을 이끌어 내는 것</b>이 핵심입니다.</p>
+        </div>
+
+        <div class="section-title">1. 빙고 셀(칸) 종류</div>
+
+        <div class="card">
+            <h3><span class="badge badge-t">T Type</span> 진실게임 (Truth)</h3>
+            <ul>
+                <li>주어진 질문에 <b>솔직한 답변</b>(텍스트/음성)을 입력하세요.</li>
+                <li>상대방이 답변을 듣고 <b>"공감(Approve)"</b>해야 칸을 획득합니다.</li>
+                <li><b>보상:</b> 해당 칸 점유 + <span class="highlight">EP +1</span></li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3><span class="badge badge-b">B Type</span> 밸런스 게임 (Balance)</h3>
+            <ul>
+                <li>두 가지 선택지 중 하나를 고르고 <b>이유를 설명</b>하세요.</li>
+                <li>상대방이 이유에 납득하여 <b>"공감(Approve)"</b>해야 칸을 획득합니다.</li>
+                <li><b>보상:</b> 해당 칸 점유 + <span class="highlight">EP +1</span></li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3><span class="badge badge-m">M Type</span> 패자부활전 (Mini Game)</h3>
+            <ul>
+                <li>퀴즈 실패 시 칸이 <b>잠김(Lock)</b> 상태가 됩니다.</li>
+                <li>누구든 잠긴 칸을 누르면 <b>미니게임</b>이 발동됩니다.</li>
+                <li>미니게임 승자가 해당 칸을 즉시 차지합니다!</li>
+            </ul>
+        </div>
+
+        <div class="section-title">2. 승리 조건</div>
+        <div class="card">
+            <ul>
+                <li><b>빙고 1줄</b>을 먼저 완성하고 <b>[게임 종료]</b>를 선언하면 승리!</li>
+                <li><b>이어하기 (Continue)</b>를 선택하면 더 높은 보상에 도전할 수 있습니다.</li>
+                <li><b>무승부 (Draw)</b>: 동시에 빙고를 완성하거나 칸이 꽉 찰 때까지 승부가 안 나면 보상을 나눕니다.</li>
+            </ul>
+        </div>
+    </div>
+</body>
+
+</html>
