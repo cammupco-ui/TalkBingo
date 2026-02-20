@@ -787,21 +787,21 @@ class _PenaltyKickGameState extends State<PenaltyKickGame> with TickerProviderSt
                                                         child: SvgPicture.asset('assets/images/soccerball.svg'),
                                                      ),
                                                      // Power Gauge
-                                                     if (_isDraggingBall)
-                                                        Positioned(
-                                                          left: 0, right: 0,
-                                                          top: _ball.y - 100,
-                                                          child: Center(
-                                                            child: SizedBox(
-                                                              width: 220,
-                                                              child: PowerGauge(
-                                                                power: _currentPower,
-                                                                label: _powerLabel,
-                                                                showLevels: true,
-                                                              )
-                                                            ),
-                                                          ),
-                                                        ),
+                                                      if (_isDraggingBall)
+                                                         Positioned(
+                                                           left: 0, right: 0,
+                                                           top: zoneHeight * 2 + (zoneHeight / 2) - (_ball.height / 2) - 100,
+                                                           child: Center(
+                                                             child: SizedBox(
+                                                               width: 220,
+                                                               child: PowerGauge(
+                                                                 power: _currentPower,
+                                                                 label: _powerLabel,
+                                                                 showLevels: true,
+                                                               )
+                                                             ),
+                                                           ),
+                                                         ),
                                                   ],
                                                ),
                                             ),
