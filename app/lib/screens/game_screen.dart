@@ -204,6 +204,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     );
     _confettiController = ConfettiController(duration: const Duration(seconds: 3));
     _pageController = PageController(initialPage: 1); 
+    _pageController.addListener(_onPageChanged); // Register page change listener (clears unread badge)
     
     // Initialize previous points
     _previousGp = _session.gp;
@@ -226,20 +227,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         _session.handlePreviewEvent(payload);
         if (mounted) setState(() {});
       }
-    });
-    
-    // Listen to PageController for Tab Tracking
-    _pageController.addListener(() {
-       // PageController.page is double, round to check index
-       if (_pageController.hasClients) {
-         final int newPage = _pageController.page?.round() ?? 1;
-         if (_currentPage != newPage) {
-           setState(() {
-             _currentPage = newPage;
-             _targetPage = newPage; // Sync _targetPage with _currentPage on swipe
-           });
-         }
-       }
     });
 
     // Preload Ad
@@ -337,7 +324,15 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   void _onPageChanged() {
     final currentPage = _pageController.page?.round() ?? 1;
     
-    // Switch to Chat Tab (0)
+    // Sync tab tracking state
+    if (_currentPage != currentPage) {
+      setState(() {
+        _currentPage = currentPage;
+        _targetPage = currentPage;
+      });
+    }
+    
+    // Switch to Chat Tab (0) — clear unread badge
     if (currentPage == 0 && _previousPage != 0) {
       // Auto Scroll to Bottom
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -2833,8 +2828,13 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
           if (!isGameOver)
             ElevatedButton(
               onPressed: () async {
-                  _isBingoDialogVisible = false;
-                  Navigator.pop(context);
+                  debugPrint('[Continue] Before: status=${_session.gameStatus}, nav=$_navigating, bingoVisible=$_isBingoDialogVisible');
+                  if (_isBingoDialogVisible) {
+                    _isBingoDialogVisible = false;
+                    if (Navigator.canPop(context)) {
+                      Navigator.pop(context);
+                    }
+                  }
                   
                   if (_session.adFree) {
                       _session.setGameStatus('playing');
