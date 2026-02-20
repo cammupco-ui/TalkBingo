@@ -1496,8 +1496,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                     }
                     final bool isMyTurn = activePlayer == _session.myRole;
                     
-                    // If NOT my turn, show waiting overlay instead of mini-game
-                    if (!isMyTurn && type != null) {
+                    // Only show waiting overlay for mini-game types, not for regular quizzes
+                    final bool isMiniGameType = (type == 'mini_target' || type == 'mini_penalty' || type == 'challenge');
+                    
+                    // If NOT my turn AND it's a mini-game, show waiting overlay
+                    if (!isMyTurn && isMiniGameType) {
                       final opponentRole = _session.myRole == 'A' ? 'B' : 'A';
                       final opponentName = (opponentRole == 'A')
                           ? (_session.hostNickname ?? 'Host')
