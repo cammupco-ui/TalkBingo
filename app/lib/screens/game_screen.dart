@@ -1487,18 +1487,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                     final state = _session.interactionState!;
                     final String? type = state['type'];
                     
-                    // Determine if the current player is the active player
-                    final String activePlayer;
-                    if (type == 'challenge') {
-                      activePlayer = state['activePlayer'] ?? state['player'] ?? '';
-                    } else {
-                      activePlayer = state['player'] ?? '';
-                    }
-                    final bool isMyTurn = activePlayer == _session.myRole;
-                    
-                    // Only show waiting overlay for mini-game types, not for regular quizzes
-                    final bool isMiniGameType = (type == 'mini_target' || type == 'mini_penalty' || type == 'challenge');
-                    
                     // Determine the mini-game widget (shown to BOTH players)
                     Widget? miniGameWidget;
                     if (type == 'mini_target') {
@@ -1526,70 +1514,69 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                         }
                     }
                     
-                    if (miniGameWidget == null) return const SizedBox.shrink();
-                    
-                    // Determine overlay info for non-active player
-                    final bool showOverlay = !isMyTurn && isMiniGameType;
-                    
-                    // Debug: trace overlay toggle
-                    debugPrint('[MiniGameOverlay] type=$type, activePlayer=$activePlayer, myRole=${_session.myRole}, isMyTurn=$isMyTurn, showOverlay=$showOverlay');
-                    
-                    final opponentRole = _session.myRole == 'A' ? 'B' : 'A';
-                    final overlayName = (opponentRole == 'A')
-                        ? (_session.hostNickname ?? 'Host')
-                        : (_session.guestNickname ?? 'Guest');
-                    final subType = state['subType'] ?? type;
-                    final bool isTarget = subType == 'mini_target';
-                    final overlayGame = isTarget ? '과녁 맞추기' : '골 넣기';
-                    
-                    // Always return a Stack with both children.
-                    // Toggle overlay with Visibility (stable widget tree).
-                    return Stack(
-                      children: [
-                        Positioned.fill(child: miniGameWidget),
-                        Positioned.fill(
-                          child: Visibility(
-                            visible: showOverlay,
-                            child: IgnorePointer(
-                              child: Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      overlayName,
-                                      style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white.withValues(alpha: 0.5),
-                                        shadows: const [
-                                          Shadow(blurRadius: 8, color: Colors.black),
-                                          Shadow(blurRadius: 16, color: Colors.black),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      '$overlayGame 도전 중...',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white.withValues(alpha: 0.4),
-                                        shadows: const [
-                                          Shadow(blurRadius: 8, color: Colors.black),
-                                          Shadow(blurRadius: 16, color: Colors.black),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
+                    return miniGameWidget ?? const SizedBox.shrink();
                   }
                 ),
                 ),
+
+               // Spectator overlay — SEPARATE from mini-game Builder
+               // Directly in the outer Stack so setState always updates it
+               if (_session.interactionState != null &&
+                   (() {
+                     final s = _session.interactionState!;
+                     final t = s['type'];
+                     return t == 'mini_target' || t == 'mini_penalty' || t == 'challenge';
+                   })() &&
+                   (() {
+                     final s = _session.interactionState!;
+                     final t = s['type'];
+                     final ap = (t == 'challenge')
+                         ? (s['activePlayer'] ?? s['player'] ?? '')
+                         : (s['player'] ?? '');
+                     debugPrint('[Overlay] type=$t ap=$ap myRole=${_session.myRole} isMyTurn=${ap == _session.myRole}');
+                     return ap != _session.myRole; // Show overlay when NOT my turn
+                   })())
+                 Positioned.fill(
+                   child: IgnorePointer(
+                     child: Center(
+                       child: Column(
+                         mainAxisSize: MainAxisSize.min,
+                         children: [
+                           Text(
+                             (_session.myRole == 'A')
+                                 ? (_session.guestNickname ?? 'Guest')
+                                 : (_session.hostNickname ?? 'Host'),
+                             style: TextStyle(
+                               fontSize: 22,
+                               fontWeight: FontWeight.bold,
+                               color: Colors.white.withValues(alpha: 0.5),
+                               shadows: const [
+                                 Shadow(blurRadius: 8, color: Colors.black),
+                                 Shadow(blurRadius: 16, color: Colors.black),
+                               ],
+                             ),
+                           ),
+                           const SizedBox(height: 6),
+                           Text(
+                             '${(() {
+                               final s = _session.interactionState!;
+                               final st = s['subType'] ?? s['type'];
+                               return st == 'mini_target' ? '과녁 맞추기' : '골 넣기';
+                             })()} 도전 중...',
+                             style: TextStyle(
+                               fontSize: 14,
+                               color: Colors.white.withValues(alpha: 0.4),
+                               shadows: const [
+                                 Shadow(blurRadius: 8, color: Colors.black),
+                                 Shadow(blurRadius: 16, color: Colors.black),
+                               ],
+                             ),
+                           ),
+                         ],
+                       ),
+                     ),
+                   ),
+                 ),
 
               // Floating Scores
               ..._floatingScores,
