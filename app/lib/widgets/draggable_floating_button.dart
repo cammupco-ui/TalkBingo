@@ -59,9 +59,20 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
         setState(() {
           _showPreview = true;
         });
-        // 5초 후 사라지는 타이머 제거 (항상 표시)
         _previewTimer?.cancel();
       }
+    }
+    // Clear preview when switching TO chat tab (so button shrinks back)
+    if (widget.isOnChatTab && !oldWidget.isOnChatTab) {
+      setState(() {
+        _showPreview = false;
+      });
+    }
+    // Clear preview when latestMessage is cleared (user sent a message)
+    if (widget.latestMessage == null && oldWidget.latestMessage != null) {
+      setState(() {
+        _showPreview = false;
+      });
     }
   }
   

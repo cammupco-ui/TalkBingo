@@ -2052,6 +2052,10 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
     _chatController.clear();
     setState(() {
       _hasInput = false;
+      // Clear ticker: user's own message is now the latest, so opponent's
+      // preview should disappear from the floating button
+      _latestChatPreview = null;
+      _unreadCount = 0;
     }); 
   }
 
