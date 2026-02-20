@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:talkbingo_app/utils/localization.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -89,13 +88,13 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
          if (x != null && y != null) {
             // CRITICAL: Clamp loaded position to current screen size
             // This prevents the button from disappearing if loaded on a smaller screen
-            double safeX = x.clamp(16.0, size.width - 70.0); // 70 is max width approx
+            double safeX = x.clamp(16.0, size.width - 56.0); // 56 is max width approx
             double safeY = y.clamp(padding.top + 60, size.height - 100);
             _position = Offset(safeX, safeY);
          } else {
             // Default bottom-right
-            double dx = size.width > 100 ? size.width - 80 : 20;
-            double dy = size.height > 200 ? size.height - 180 : 200;
+            double dx = size.width > 100 ? size.width - 64 : 20;
+            double dy = size.height > 200 ? size.height - 160 : 200;
             _position = Offset(dx, dy);
          }
          _initialized = true;
@@ -140,7 +139,7 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
 
         // Clamp immediately to ensure visibility if parent resized
         // (e.g. window resize or mobile wrapper)
-        final double buttonSize = _isDragging ? 70 : ((_showPreview || (!widget.isOnChatTab && widget.unreadCount > 0)) ? 220 : 60);
+        final double buttonSize = _isDragging ? 56 : ((_showPreview || (!widget.isOnChatTab && widget.unreadCount > 0)) ? 160 : 48);
         final double safeX = _position.dx.clamp(0.0, parentWidth - buttonSize);
         final double safeY = _position.dy.clamp(0.0, parentHeight - buttonSize);
         
@@ -176,13 +175,13 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
                       onPanUpdate: _onPanUpdate,
                       onPanEnd: (details) {
                           if (_isDragging) {
-                          double finalX = _position.dx.clamp(16.0, parentWidth - 70.0 - 16.0);
-                          double finalY = _position.dy.clamp(60.0, parentHeight - 70.0 - 50.0);
+                          double finalX = _position.dx.clamp(16.0, parentWidth - 56.0 - 16.0);
+                          double finalY = _position.dy.clamp(60.0, parentHeight - 56.0 - 50.0);
                           
-                          if (finalX + 35 < parentWidth/2) {
+                          if (finalX + 28 < parentWidth/2) {
                              finalX = 16.0;
                           } else {
-                             finalX = parentWidth - 70.0 - 16.0;
+                             finalX = parentWidth - 56.0 - 16.0;
                           }
 
                           setState(() {
@@ -199,12 +198,12 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        width: _isDragging ? 70 : ((_showPreview || (!isChat && widget.unreadCount > 0)) ? 220 : 60), 
-                        height: _isDragging ? 70 : 60,
+                        width: _isDragging ? 56 : ((_showPreview || (!isChat && widget.unreadCount > 0)) ? 160 : 48), 
+                        height: _isDragging ? 56 : 48,
                         curve: Curves.easeOutBack,
                         decoration: BoxDecoration(
                           color: _isDragging ? bgColor.withValues(alpha: 0.95) : bgColor,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: _isDragging ? 0.4 : 0.2),
@@ -225,32 +224,26 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
                              // Content
                              Center(
                                child: isChat 
-                               ? Column(
-                                   mainAxisSize: MainAxisSize.min,
-                                   children: [
-                                     const Icon(Icons.sports_esports, color: Colors.white, size: 28),
-                                     Text(AppLocalizations.get('floating_board'), style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold))
-                                   ],
-                                 )
+                               ? const Icon(Icons.sports_esports, color: Colors.white, size: 22)
                                 : ((_showPreview || widget.unreadCount > 0) 
                                   ? Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                       child: Row(
                                         children: [
-                                           Icon(Icons.chat_bubble, color: Colors.white.withValues(alpha: 0.9), size: 24),
-                                           const SizedBox(width: 8),
+                                           Icon(Icons.chat_bubble, color: Colors.white.withValues(alpha: 0.9), size: 18),
+                                           const SizedBox(width: 6),
                                            Expanded(
                                              child: Text(
                                                widget.latestMessage ?? "", 
-                                               style: const TextStyle(color: Colors.white, fontSize: 11),
-                                               maxLines: 2,
+                                               style: const TextStyle(color: Colors.white, fontSize: 10),
+                                               maxLines: 1,
                                                overflow: TextOverflow.ellipsis
                                              ),
                                            )
                                         ],
                                       ),
                                     )
-                                  : const Icon(Icons.chat_bubble, color: Colors.white, size: 30)
+                                  : const Icon(Icons.chat_bubble, color: Colors.white, size: 22)
                                  )
                              ),
                              
@@ -261,16 +254,16 @@ class _DraggableFloatingButtonState extends State<DraggableFloatingButton>
                                  top: 0,
                                  child: IgnorePointer(
                                    child: Container(
-                                     padding: const EdgeInsets.all(6),
+                                     padding: const EdgeInsets.all(4),
                                      decoration: const BoxDecoration(
                                        color: Colors.red,
                                        shape: BoxShape.circle,
                                      ),
-                                     constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                                     constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
                                      child: Center(
                                        child: Text(
                                          "${widget.unreadCount}",
-                                         style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                         style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                                        ),
                                      ),
                                    ).animate(key: ValueKey(widget.unreadCount)).scale(duration: 300.ms, curve: Curves.elasticOut),

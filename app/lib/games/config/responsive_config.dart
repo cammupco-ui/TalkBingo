@@ -29,12 +29,14 @@ class ResponsiveGameConfig {
     );
   }
   
-  // Responsive Header Height
+  // Responsive Header Height — proportional to screen height
+  // Uses 10% of screen height with min/max clamps for visual balance
   double get headerHeight {
+    final proportional = screenSize.height * 0.10;
     switch (sizeClass) {
-      case GameSize.small: return 50;
-      case GameSize.medium: return 56;
-      case GameSize.large: return 64;
+      case GameSize.small: return proportional.clamp(50, 80);
+      case GameSize.medium: return proportional.clamp(56, 90);
+      case GameSize.large: return proportional.clamp(64, 100);
     }
   }
   
