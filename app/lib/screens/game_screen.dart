@@ -1530,9 +1530,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                    (() {
                      final s = _session.interactionState!;
                      final t = s['type'];
-                     final ap = (t == 'challenge')
-                         ? (s['activePlayer'] ?? s['player'] ?? '')
-                         : (s['player'] ?? '');
+                     // Always prefer activePlayer (updates on round switch)
+                     // Fallback to player (static initiator) for compatibility
+                     final ap = s['activePlayer'] ?? s['player'] ?? '';
                      debugPrint('[Overlay] type=$t ap=$ap myRole=${_session.myRole} isMyTurn=${ap == _session.myRole}');
                      return ap != _session.myRole; // Show overlay when NOT my turn
                    })())
