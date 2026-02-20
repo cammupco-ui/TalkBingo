@@ -1530,25 +1530,26 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                     
                     // Determine overlay info for non-active player
                     final bool showOverlay = !isMyTurn && isMiniGameType;
-                    String overlayName = '';
-                    String overlayGame = '';
-                    if (showOverlay) {
-                      final opponentRole = _session.myRole == 'A' ? 'B' : 'A';
-                      overlayName = (opponentRole == 'A')
-                          ? (_session.hostNickname ?? 'Host')
-                          : (_session.guestNickname ?? 'Guest');
-                      final subType = state['subType'] ?? type;
-                      final bool isTarget = subType == 'mini_target';
-                      overlayGame = isTarget ? '과녁 맞추기' : '골 넣기';
-                    }
                     
-                    // Always return a Stack (consistent widget tree)
+                    // Debug: trace overlay toggle
+                    debugPrint('[MiniGameOverlay] type=$type, activePlayer=$activePlayer, myRole=${_session.myRole}, isMyTurn=$isMyTurn, showOverlay=$showOverlay');
+                    
+                    final opponentRole = _session.myRole == 'A' ? 'B' : 'A';
+                    final overlayName = (opponentRole == 'A')
+                        ? (_session.hostNickname ?? 'Host')
+                        : (_session.guestNickname ?? 'Guest');
+                    final subType = state['subType'] ?? type;
+                    final bool isTarget = subType == 'mini_target';
+                    final overlayGame = isTarget ? '과녁 맞추기' : '골 넣기';
+                    
+                    // Always return a Stack with both children.
+                    // Toggle overlay with Visibility (stable widget tree).
                     return Stack(
                       children: [
                         Positioned.fill(child: miniGameWidget),
-                        // Transparent overlay text for non-active player
-                        if (showOverlay)
-                          Positioned.fill(
+                        Positioned.fill(
+                          child: Visibility(
+                            visible: showOverlay,
                             child: IgnorePointer(
                               child: Center(
                                 child: Column(
@@ -1583,6 +1584,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                               ),
                             ),
                           ),
+                        ),
                       ],
                     );
                   }
