@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:talkbingo_app/styles/app_colors.dart';
 import 'package:talkbingo_app/models/game_session.dart';
 import 'package:talkbingo_app/screens/home_screen.dart';
+import 'package:talkbingo_app/screens/host_setup_screen.dart';
 import 'package:talkbingo_app/screens/signup_screen.dart';
 import 'package:talkbingo_app/screens/point_purchase_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -135,19 +136,47 @@ class _RewardScreenState extends State<RewardScreen> {
 
               // 3. Actions based on Role
               if (isHost) ...[
-                // Host (MP) -> Home
+                // Host (MP) -> Play Again or Home
                 SizedBox(
                   width: double.infinity,
-                  height: 44, // Strict 44px
+                  height: 44,
                   child: AnimatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (_) => HostSetupScreen(
+                            initialGender: session.guestGender,
+                            initialMainRelation: session.relationMain,
+                            initialSubRelation: session.relationSub,
+                            initialIntimacyLevel: session.intimacyLevel,
+                          ),
+                        ),
+                        (route) => false,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.hostPrimary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Text("Play Again 🎮",
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: OutlinedButton(
                     onPressed: () {
                       Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(builder: (_) => const HomeScreen()),
                           (route) => false);
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.hostPrimary,
-                      foregroundColor: Colors.white,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.grey[600],
+                      side: BorderSide(color: Colors.grey[400]!),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8)),
                     ),
