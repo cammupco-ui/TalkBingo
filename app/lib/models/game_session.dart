@@ -124,7 +124,10 @@ class GameSession with ChangeNotifier {
     final type = _miniGameTypes[_miniGameIndex % _miniGameTypes.length];
     _miniGameIndex++;
     return type;
-  } 
+  }
+
+  // 5x5 Grid (25 tiles)
+  List<String> _tileOwnership = List.filled(25, ''); 
   List<String> get tileOwnership => _tileOwnership;
 
   // Track Guest Join Status locally
