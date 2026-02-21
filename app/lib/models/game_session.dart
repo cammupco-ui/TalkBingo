@@ -114,8 +114,17 @@ class GameSession with ChangeNotifier {
   String currentTurn = 'A'; 
   bool get isPaused => gameStatus == 'paused';
   
-  // 5x5 Grid (25 tiles)
-  List<String> _tileOwnership = List.filled(25, ''); 
+  // --- Mini-Game Round-Robin ---
+  static const List<String> _miniGameTypes = ['mini_target', 'mini_penalty'];
+  int _miniGameIndex = 0;
+
+  /// Returns the next mini-game type in round-robin order.
+  /// When more types are added to [_miniGameTypes], they rotate automatically.
+  String _nextMiniGameType() {
+    final type = _miniGameTypes[_miniGameIndex % _miniGameTypes.length];
+    _miniGameIndex++;
+    return type;
+  } 
   List<String> get tileOwnership => _tileOwnership;
 
   // Track Guest Join Status locally
@@ -431,24 +440,19 @@ class GameSession with ChangeNotifier {
        pool = List.from(rawQuestions);
     }
 
-    // 2. Fallback if not enough for 50 items
-    // We aim for 50 (25 Main + 25 Reserve). 
+    // 2. Handle insufficient pool size
+    // We aim for 50 (25 Main + 25 Reserve), but NEVER duplicate questions.
+    if (pool.isEmpty) {
+      debugPrint('❌ Critical Error: Pool is empty. Using fallback mock.');
+      _generateFallbackQuestions();
+      gameStatus = 'playing';
+      await _syncGameState();
+      return;
+    }
+    
     if (pool.length < 50) {
-      debugPrint('⚠️ Pool size (${pool.length}) < 50. Duplicating to fill reserves.');
-      
-      // Critical Safety: Prevent infinite loop if pool is somehow still empty
-      if (pool.isNotEmpty) {
-          while (pool.length < 50) {
-              pool.addAll(List.from(pool)); 
-          }
-      } else {
-          // Should not happen due to failsafe above, but absolute safety:
-          debugPrint('❌ Critical Error: Pool is empty even after reset. Using fallback mock.');
-          _generateFallbackQuestions();
-          gameStatus = 'playing';
-           await _syncGameState();
-          return;
-      }
+      debugPrint('⚠️ Pool size (${pool.length}) < 50. Using available questions without duplication.');
+      // Do NOT duplicate — use what we have. fillList() will handle shortages gracefully.
     }
     
     // 3. Parse & Segregate (Maintain Order for Priority)
@@ -464,25 +468,43 @@ class GameSession with ChangeNotifier {
       }
     }
 
-    // 4. Select 50 (25 Main + 25 Reserve)
+    // 4. Select up to 50 (25 Main + up to 25 Reserve) — NO DUPLICATES
     List<Map<String, dynamic>> mainSelected = [];
     List<Map<String, dynamic>> reserveSelected = [];
+    final Set<String> usedIds = {}; // Track used question IDs across main+reserve
     
-    // Helper to extract Top N items (Preserving High Priority)
-    void fillList(List<Map<String, dynamic>> targetList) {
-        int tCount = 13;
-        int bCount = 12;
+    // Helper to extract Top N unique items (Preserving High Priority)
+    void fillList(List<Map<String, dynamic>> targetList, int maxCount) {
+        int tCount = (maxCount * 0.52).ceil();  // ~52% truth
+        int bCount = maxCount - tCount;          // ~48% balance
         
-        // Do NOT shuffle source lists yet. They are sorted by priority.
-        // We pick the top available items.
-        
-        for (int i=0; i<tCount; i++) {
-            if (truthList.isNotEmpty) targetList.add(truthList.removeAt(0)); // Take Top
-            else if (balanceList.isNotEmpty) targetList.add(balanceList.removeAt(0)); 
+        for (int i = 0; i < tCount; i++) {
+            // Find next unused truth question
+            final idx = truthList.indexWhere((q) => !usedIds.contains(q['id'].toString()));
+            if (idx != -1) {
+              usedIds.add(truthList[idx]['id'].toString());
+              targetList.add(truthList.removeAt(idx));
+            } else {
+              // Fallback to unused balance
+              final bIdx = balanceList.indexWhere((q) => !usedIds.contains(q['id'].toString()));
+              if (bIdx != -1) {
+                usedIds.add(balanceList[bIdx]['id'].toString());
+                targetList.add(balanceList.removeAt(bIdx));
+              }
+            }
         }
-        for (int i=0; i<bCount; i++) {
-            if (balanceList.isNotEmpty) targetList.add(balanceList.removeAt(0)); // Take Top
-            else if (truthList.isNotEmpty) targetList.add(truthList.removeAt(0));
+        for (int i = 0; i < bCount; i++) {
+            final idx = balanceList.indexWhere((q) => !usedIds.contains(q['id'].toString()));
+            if (idx != -1) {
+              usedIds.add(balanceList[idx]['id'].toString());
+              targetList.add(balanceList.removeAt(idx));
+            } else {
+              final tIdx = truthList.indexWhere((q) => !usedIds.contains(q['id'].toString()));
+              if (tIdx != -1) {
+                usedIds.add(truthList[tIdx]['id'].toString());
+                targetList.add(truthList.removeAt(tIdx));
+              }
+            }
         }
         
         // Shuffle the RESULT list so the board layout is random, 
@@ -490,8 +512,8 @@ class GameSession with ChangeNotifier {
         targetList.shuffle();
     }
     
-    fillList(mainSelected); // First 25 (Best Quality)
-    fillList(reserveSelected); // Next 25 (Next Best)
+    fillList(mainSelected, 25); // First 25 (Best Quality)
+    fillList(reserveSelected, 25); // Next 25 (Next Best, no overlap with main)
     
     // 5. Assign to Game Session
 
@@ -1153,7 +1175,7 @@ class GameSession with ChangeNotifier {
     // Randomly select specific mini game if generic 'mini' requested
     String finalType = type;
     if (type == 'mini') {
-       finalType = Random().nextBool() ? 'mini_target' : 'mini_penalty';
+       finalType = _nextMiniGameType();
     }
 
     interactionState = {
@@ -1273,7 +1295,7 @@ class GameSession with ChangeNotifier {
       'index': index,
       'step': 'playing',
       'type': 'challenge', // Special type for Challenge
-      'subType': Random().nextBool() ? 'mini_target' : 'mini_penalty', // Actual Game
+      'subType': _nextMiniGameType(), // Round-robin mini-game selection
       'player': myRole, // Aggressor
       'activePlayer': myRole,
       'round': 1,

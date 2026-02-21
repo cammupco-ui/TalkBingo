@@ -3693,9 +3693,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   }
 
   void _launchRandomMiniGame(int index) {
-      final random = Random();
-      final gameType = random.nextBool() ? 'mini_target' : 'mini_penalty';
-      _launchMiniGame(index, gameType);
+      // Pass generic 'mini' — GameSession.startInteraction() handles
+      // round-robin type selection via _nextMiniGameType()
+      _launchMiniGame(index, 'mini');
   }
   
   Future<void> _launchMiniGame(int index, String gameType) async {
