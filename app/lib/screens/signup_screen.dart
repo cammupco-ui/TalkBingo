@@ -11,6 +11,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:flutter/foundation.dart'; // Added for kIsWeb
 import 'package:talkbingo_app/utils/auth_error_helper.dart';
+import 'package:talkbingo_app/services/social_auth_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -155,6 +156,87 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      final response = await SocialAuthService.signInWithGoogle();
+      if (mounted && response.session != null) {
+        _checkSession(response.session!);
+      }
+    } on AuthException catch (e) {
+      if (mounted) _showSnack(getAuthErrorMessage(e));
+    } catch (e) {
+      if (mounted) _showSnack(getAuthErrorMessage(e));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signInWithKakao() async {
+    setState(() => _isLoading = true);
+    try {
+      await SocialAuthService.signInWithKakao();
+    } catch (e) {
+      if (mounted) _showSnack(getAuthErrorMessage(e));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _checkSession(Session session) async {
+    bool hasProfile = false;
+    try {
+      final profile = await Supabase.instance.client
+          .from('profiles')
+          .select()
+          .eq('id', session.user.id)
+          .maybeSingle();
+      hasProfile = profile != null;
+    } catch (e) {
+      debugPrint("SignupScreen: Error checking profile: $e");
+    }
+    if (!mounted) return;
+    if (hasProfile) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
+      );
+    } else {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HostInfoScreen()),
+        (route) => false,
+      );
+    }
+  }
+
+  Widget _buildSocialButton({
+    required String label,
+    required IconData icon,
+    required Color backgroundColor,
+    required Color textColor,
+    Color? borderColor,
+    VoidCallback? onPressed,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, color: textColor, size: 24),
+        label: Text(label, style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w600)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          foregroundColor: textColor,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: borderColor != null ? BorderSide(color: borderColor) : BorderSide.none,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -246,6 +328,27 @@ class _SignupScreenState extends State<SignupScreen> {
                 ],
               ),
               const SizedBox(height: 20),
+
+              // Social Login Buttons (mobile only)
+              if (!kIsWeb) ...[
+                _buildSocialButton(
+                  label: AppLocalizations.get('sign_in_google') ?? 'Google로 계속하기',
+                  icon: Icons.g_mobiledata,
+                  backgroundColor: Colors.white,
+                  textColor: Colors.black87,
+                  borderColor: Colors.grey[300]!,
+                  onPressed: _isLoading ? null : _signInWithGoogle,
+                ),
+                const SizedBox(height: 12),
+                _buildSocialButton(
+                  label: AppLocalizations.get('sign_in_kakao') ?? '카카오로 계속하기',
+                  icon: Icons.chat_bubble,
+                  backgroundColor: const Color(0xFFFEE500),
+                  textColor: const Color(0xFF191919),
+                  onPressed: _isLoading ? null : _signInWithKakao,
+                ),
+                const SizedBox(height: 20),
+              ],
 
               // Invite Code Button (Guest Mode) - KEPT AS REQUESTED
               if ((Supabase.instance.client.auth.currentSession?.user.isAnonymous ?? false) == false)

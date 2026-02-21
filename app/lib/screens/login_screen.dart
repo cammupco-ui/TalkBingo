@@ -14,6 +14,7 @@ import 'package:talkbingo_app/utils/dev_config.dart';
 import 'package:talkbingo_app/utils/localization.dart';
 import 'package:talkbingo_app/widgets/animated_button.dart';
 import 'package:talkbingo_app/utils/auth_error_helper.dart';
+import 'package:talkbingo_app/services/social_auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -98,30 +99,35 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) => AdState.showAd.value = false);
+    final screenHeight = MediaQuery.of(context).size.height;
+    final logoSize = (screenHeight * 0.08).clamp(48.0, 80.0);
+    final titleFontSize = (screenHeight * 0.028).clamp(18.0, 26.0);
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-               Center(
-                child: SvgPicture.asset('assets/images/logo_vector.svg', width: 80, height: 80),
+              // Top padding — ensures logo is well below the status bar
+              SizedBox(height: screenHeight * 0.04),
+
+              Center(
+                child: SvgPicture.asset('assets/images/logo_vector.svg', width: logoSize, height: logoSize),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
               Text(
                 'TALKBINGO',
-                style: const TextStyle(
-                  fontSize: 24, fontWeight: FontWeight.w700, fontFamily: 'NURA', color: AppColors.hostPrimary,
+                style: TextStyle(
+                  fontSize: titleFontSize, fontWeight: FontWeight.w700, fontFamily: 'NURA', color: AppColors.hostPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 60),
-
-              // Title Removed
+              SizedBox(height: screenHeight * 0.04),
 
               // Email Field
               _buildTextField(
@@ -152,13 +158,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
                     );
                   },
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                   child: Text(
                     AppLocalizations.get('forgot_password') ?? 'Forgot Password?',
-                    style: const TextStyle(color: Colors.grey),
+                    style: const TextStyle(color: Colors.grey, fontSize: 13),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               // Login Button
               AnimatedButton(
@@ -166,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.hostPrimary,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: _isLoading 
@@ -192,6 +203,27 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 20),
 
+              // Social Login Buttons (mobile only)
+              if (!kIsWeb) ...[
+                _buildSocialButton(
+                  label: AppLocalizations.get('sign_in_google') ?? 'Google로 계속하기',
+                  icon: Icons.g_mobiledata,
+                  backgroundColor: Colors.white,
+                  textColor: Colors.black87,
+                  borderColor: Colors.grey[300]!,
+                  onPressed: _isLoading ? null : _signInWithGoogle,
+                ),
+                const SizedBox(height: 12),
+                _buildSocialButton(
+                  label: AppLocalizations.get('sign_in_kakao') ?? '카카오로 계속하기',
+                  icon: Icons.chat_bubble,
+                  backgroundColor: const Color(0xFFFEE500),
+                  textColor: const Color(0xFF191919),
+                  onPressed: _isLoading ? null : _signInWithKakao,
+                ),
+                const SizedBox(height: 20),
+              ],
+
               // Invite Code Button
               AnimatedOutlinedButton(
                 onPressed: () {
@@ -202,7 +234,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.hostPrimary,
                   side: const BorderSide(color: AppColors.hostPrimary),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 child: Text(
@@ -211,27 +243,114 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 24),
 
-              // Sign Up Link
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("Don't have an account? "),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (_) => const SignupScreen()),
-                      );
-                    },
-                    child: Text(
-                      AppLocalizations.get('sign_up_email') ?? 'Sign Up',
-                      style: const TextStyle(color: AppColors.hostPrimary, fontWeight: FontWeight.bold),
+              // Sign Up Link — with enough padding for tap target
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("Don't have an account? "),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (_) => const SignupScreen()),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          AppLocalizations.get('sign_up_email') ?? 'Sign Up',
+                          style: const TextStyle(color: AppColors.hostPrimary, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              // Extra spacing to clear ad banner + bottom safe area
+              const SizedBox(height: 60),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      final response = await SocialAuthService.signInWithGoogle();
+      if (mounted && response.session != null) {
+        _checkSession(response.session!);
+      }
+    } on AuthException catch (e) {
+      debugPrint('Google sign-in AuthException: ${e.message}');
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(getAuthErrorMessage(e)), backgroundColor: Colors.red));
+    } catch (e, stackTrace) {
+      debugPrint('Google sign-in error: $e');
+      debugPrint('Stack trace: $stackTrace');
+      if (mounted) {
+        final errorMsg = e.toString();
+        // Show more helpful message based on common errors
+        String displayMsg;
+        if (errorMsg.contains('sign_in_canceled') || errorMsg.contains('canceled')) {
+          displayMsg = AppLocalizations.get('auth_error_cancelled') ?? 'Login cancelled.';
+        } else if (errorMsg.contains('network_error') || errorMsg.contains('ApiException: 7')) {
+          displayMsg = AppLocalizations.get('auth_error_network') ?? 'Network error. Please check your connection.';
+        } else if (errorMsg.contains('ApiException: 10')) {
+          displayMsg = 'Google Play Services error. Please update Google Play Services.';
+        } else if (errorMsg.contains('ApiException: 12500')) {
+          displayMsg = 'Google Sign-In configuration error. Please check developer settings.';
+        } else {
+          displayMsg = '${AppLocalizations.get('auth_error_generic') ?? 'An error occurred.'}\n(${e.runtimeType}: $errorMsg)';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(displayMsg, maxLines: 3),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signInWithKakao() async {
+    setState(() => _isLoading = true);
+    try {
+      await SocialAuthService.signInWithKakao();
+      // Kakao uses browser redirect; auth state listener handles the rest
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(getAuthErrorMessage(e)), backgroundColor: Colors.red));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Widget _buildSocialButton({
+    required String label,
+    required IconData icon,
+    required Color backgroundColor,
+    required Color textColor,
+    Color? borderColor,
+    VoidCallback? onPressed,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, color: textColor, size: 24),
+        label: Text(label, style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w600)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          foregroundColor: textColor,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: borderColor != null ? BorderSide(color: borderColor) : BorderSide.none,
           ),
         ),
       ),

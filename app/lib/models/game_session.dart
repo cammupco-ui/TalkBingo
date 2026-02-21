@@ -551,10 +551,34 @@ class GameSession with ChangeNotifier {
      final opt = options[index];
      final bool isEn = _language == 'en';
      
-     // 1. Question Content
+     // 1. Question Content — resolve gender variants first, then fallback to raw content
      String q = opt['content_raw'] ?? '';
      if (isEn && opt['content_en_raw'] != null && (opt['content_en_raw'] as String).isNotEmpty) {
         q = opt['content_en_raw'];
+     }
+     
+     // Gender Variant Resolution (matches _resolveQuestionText logic in game_screen.dart)
+     final variants = isEn ? opt['variants_en'] : opt['variants'];
+     if (variants != null && variants is Map && variants.isNotEmpty) {
+        final isHostTurn = (currentTurn == 'A');
+        
+        String norm(String? g) {
+          if (g == null || g.isEmpty) return 'm';
+          final low = g.toLowerCase();
+          if (low.startsWith('f') || low == 'female') return 'f';
+          return 'm';
+        }
+        final hGen = norm(hostGender);
+        final gGen = norm(guestGender);
+        
+        // Attacker speaks to Defender
+        String attacker = isHostTurn ? hGen : gGen;
+        String defender = isHostTurn ? gGen : hGen;
+        
+        final key = "var_${attacker}_${defender}";
+        if (variants[key] != null && variants[key].toString().isNotEmpty) {
+          q = variants[key].toString();
+        }
      }
      
      // 2. Options (A/B)

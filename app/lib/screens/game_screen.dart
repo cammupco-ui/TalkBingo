@@ -1281,7 +1281,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
         canPop: false, // duplicative of onWillPop: () async => false
         // onPopInvoked: (didPop) {}, // Optional
       child: Scaffold(
-        resizeToAvoidBottomInset: !_isQuizInputFocused, // Allow keyboard resizing ONLY when not in Quiz (prevents jumpiness)
+        resizeToAvoidBottomInset: _targetPage == 0 || !_isQuizInputFocused, // Allow keyboard resizing on chat page; prevent jumpiness only on board quiz
         body: BubbleBackground(
           interactive: true,
           child: Stack(
@@ -1385,10 +1385,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                      }
                                    }
 
-                                   return SizedBox.expand(
-                                     child: Container(
-                                       color: Colors.black54,
-                                       child: QuizOverlay(
+                                    return Positioned.fill(
+                                      child: Container(
+                                        color: Colors.black54,
+                                        padding: const EdgeInsets.only(bottom: 80), // Leave room for chat input
+                                        child: QuizOverlay(
                                          question: q,
                                          optionA: optA,
                                          optionB: optB,
@@ -1412,8 +1413,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
                                ),
                       
                              // C. Persistent Input Field (Positioned at Bottom)
-                             if (_targetPage == 0 || _session.interactionState == null || !_isQuizInputFocused) 
-                               Positioned(
+                              // Always show bottom controls — quiz overlay now leaves room via bottom padding
+                              Positioned(
                                  left: 0, right: 0, bottom: 0,
                                  child: Container(
                                     color: Colors.white,
@@ -2820,8 +2821,20 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
   // Modified to handle "Wait Handshake" Overlay
 
   void _showBingoDialog({required int lines, required bool isWinner}) {
-    if (_isBingoDialogVisible) return; // Prevent double show
+    if (_isBingoDialogVisible) {
+      debugPrint('[Bingo] Dialog already visible, skipping (lines=$lines, isWinner=$isWinner)');
+      return;
+    }
+    debugPrint('[Bingo] Showing dialog: lines=$lines, isWinner=$isWinner');
     _isBingoDialogVisible = true;
+    
+    // Safety: auto-reset flag after 30s in case dialog is dismissed abnormally
+    Future.delayed(const Duration(seconds: 30), () {
+      if (mounted && _isBingoDialogVisible) {
+        debugPrint('[Bingo] Safety reset: _isBingoDialogVisible was still true after 30s');
+        _isBingoDialogVisible = false;
+      }
+    });
 
     final isGameOver = lines >= 3;
     final winnerName = isWinner 
@@ -3073,6 +3086,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin, 
       // 1. Calculate Current Lines
       final linesA = _checkForBingo('A');
       final linesB = _checkForBingo('B');
+      
+      debugPrint('[Bingo] Check: linesA=$linesA, linesB=$linesB, prevA=$_previousLinesA, prevB=$_previousLinesB, dialogVisible=$_isBingoDialogVisible, status=${_session.gameStatus}');
       
       bool aWonLine = linesA > _previousLinesA;
       bool bWonLine = linesB > _previousLinesB;

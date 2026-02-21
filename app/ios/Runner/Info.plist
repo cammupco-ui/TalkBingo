@@ -58,6 +58,8 @@
 			<array>
 				<string>io.supabase.talkbingo</string>
 				<string>talkbingo</string>
+				<!-- Google Sign-In reversed client ID -->
+				<string>com.googleusercontent.apps.755086635011-kdku3m74uppikudm0u2ss1jjvlbp5if9</string>
 			</array>
 		</dict>
 	</array>

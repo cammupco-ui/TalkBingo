@@ -39,7 +39,8 @@ class GameHeader extends StatelessWidget {
         : AppColors.guestDark;
     
     return Container(
-      height: config.headerHeight,
+      // No fixed height — let SafeArea + content determine height naturally
+      // Previously config.headerHeight was too small for notched devices (SafeArea eats into it)
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [myColor, darkColor],
@@ -59,7 +60,7 @@ class GameHeader extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.symmetric(
             horizontal: isCompact ? 8 : 16,
-            vertical: isCompact ? 4 : 8,
+            vertical: isCompact ? 6 : 10,
           ),
           child: Row(
             children: [
